@@ -22,10 +22,10 @@
     <None Include="..\LICENSE.TXT" />
     <None Include="ms-pl.rtf" />
     <None Include="..\README.TXT" />
-    <None Include="tsftutcode-x64.wxs">
+    <None Include="tsfvim-x64.wxs">
       <SubType>Designer</SubType>
     </None>
-    <None Include="tsftutcode-x86.wxs">
+    <None Include="tsfvim-x86.wxs">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
@@ -140,8 +140,8 @@
       <SubSystem>NotSet</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>"%WIX%bin\candle.exe" -nologo "tsftutcode-x86.wxs"
-"%WIX%bin\light.exe" -nologo -ext WixUIExtension "tsftutcode-x86.wixobj"
+      <Command>"%WIX%bin\candle.exe" -nologo "tsfvim-x86.wxs"
+"%WIX%bin\light.exe" -nologo -ext WixUIExtension "tsfvim-x86.wixobj"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -162,8 +162,8 @@
       <SubSystem>NotSet</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>"%WIX%bin\candle.exe" -nologo "tsftutcode-x64.wxs"
-"%WIX%bin\light.exe" -nologo -ext WixUIExtension "tsftutcode-x64.wixobj"
+      <Command>"%WIX%bin\candle.exe" -nologo "tsfvim-x64.wxs"
+"%WIX%bin\light.exe" -nologo -ext WixUIExtension "tsfvim-x64.wixobj"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
