@@ -137,7 +137,7 @@ public:
 	HRESULT _HandleCharTerminate(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMAN_KANA_CONV &rkc, WCHAR ch, std::wstring &composition);
 	void _PrepareForFunc(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
-	HRESULT _MoveLeft(TfEditCookie ec, ITfContext *pContext);
+	void _SendKey(UINT vk);
 	HRESULT _HandlePostMaze(TfEditCookie ec, ITfContext *pContext, int count);
 	HRESULT _HandlePostKata(TfEditCookie ec, ITfContext *pContext, int count);
 	HRESULT _HandlePostKataShrink(TfEditCookie ec, ITfContext *pContext, int count);

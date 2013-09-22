@@ -270,7 +270,16 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMA
 	switch(rkc.hiragana[0])
 	{
 	case L'h':
-	    _MoveLeft(ec, pContext);
+	    _SendKey(VK_LEFT);
+	    return;
+	case L'j':
+	    _SendKey(VK_DOWN);
+	    return;
+	case L'k':
+	    _SendKey(VK_UP);
+	    return;
+	case L'l':
+	    _SendKey(VK_RIGHT);
 	    return;
 	default:
 	    break;
@@ -286,9 +295,9 @@ void CTextService::_PrepareForFunc(TfEditCookie ec, ITfContext *pContext, std::w
 	_HandleCharReturn(ec, pContext);
 }
 
-HRESULT CTextService::_MoveLeft(TfEditCookie ec, ITfContext *pContext)
+void CTextService::_SendKey(UINT vk)
 {
-	const KEYBDINPUT keyboard_input = {VK_LEFT, 0, 0, 0, 0};
+	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
 	keydown.type = INPUT_KEYBOARD;
 	keydown.ki = keyboard_input;
@@ -301,9 +310,7 @@ HRESULT CTextService::_MoveLeft(TfEditCookie ec, ITfContext *pContext)
 	inputs.push_back(keydown);
 	inputs.push_back(keyup);
 
-	_HandleCharReturn(ec, pContext);
 	keyboard_->SendInput(inputs);
-	return S_OK;
 }
 
 //後置型交ぜ書き変換
