@@ -137,6 +137,7 @@ public:
 	HRESULT _HandleCharTerminate(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMAN_KANA_CONV &rkc, WCHAR ch, std::wstring &composition);
 	void _PrepareForFunc(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
+	HRESULT _MoveLeft(TfEditCookie ec, ITfContext *pContext);
 	HRESULT _HandlePostMaze(TfEditCookie ec, ITfContext *pContext, int count);
 	HRESULT _HandlePostKata(TfEditCookie ec, ITfContext *pContext, int count);
 	HRESULT _HandlePostKataShrink(TfEditCookie ec, ITfContext *pContext, int count);
@@ -247,6 +248,7 @@ private:
 	TfGuidAtom _gaDisplayAttributeAnnotation;
 
 	mozc::win32::VKBackBasedDeleter deleter;
+	std::unique_ptr<mozc::win32::Win32KeyboardInterface> keyboard_;
 
 private:
 	//ファイルパス

@@ -267,45 +267,13 @@ HRESULT CTextService::_HandleCharTerminate(TfEditCookie ec, ITfContext *pContext
 void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMAN_KANA_CONV &rkc, WCHAR ch, std::wstring &composition)
 {
 	_PrepareForFunc(ec, pContext, composition);
-	//前置型交ぜ書き変換
-	if(wcsncmp(rkc.hiragana, L"maze", 4) == 0)
+	switch(rkc.hiragana[0])
 	{
-		_HandleConvPoint(ec, pContext, ch);
-		return;
-	}
-	//後置型交ぜ書き変換
-	else if(wcsncmp(rkc.hiragana, L"Maze", 4) == 0)
-	{
-		int count = _wtoi(rkc.hiragana + 4);
-		_HandlePostMaze(ec, pContext, count);
-		return;
-	}
-	//後置型カタカナ変換
-	else if(wcsncmp(rkc.hiragana, L"Kata", 4) == 0)
-	{
-		int offset = 4;
-		int isShrink = 0;
-		if(rkc.hiragana[4] == L'>')
-		{
-			offset = 5;
-			isShrink = 1;
-		}
-		int count = _wtoi(rkc.hiragana + offset);
-		if(isShrink)
-		{
-			_HandlePostKataShrink(ec, pContext, count);
-		}
-		else
-		{
-			_HandlePostKata(ec, pContext, count);
-		}
-		return;
-	}
-	//後置型部首合成変換
-	else if(wcsncmp(rkc.hiragana, L"Bushu", 5) == 0)
-	{
-		_HandlePostBushu(ec, pContext);
-		return;
+	case L'h':
+	    _MoveLeft(ec, pContext);
+	    return;
+	default:
+	    break;
 	}
 	_HandleCharReturn(ec, pContext);
 }
@@ -316,6 +284,26 @@ void CTextService::_PrepareForFunc(TfEditCookie ec, ITfContext *pContext, std::w
 	//wordpadやWord2010だとcomposition表示をクリアしないとうまく動かず
 	_ResetStatus();
 	_HandleCharReturn(ec, pContext);
+}
+
+HRESULT CTextService::_MoveLeft(TfEditCookie ec, ITfContext *pContext)
+{
+	const KEYBDINPUT keyboard_input = {VK_LEFT, 0, 0, 0, 0};
+	INPUT keydown = {};
+	keydown.type = INPUT_KEYBOARD;
+	keydown.ki = keyboard_input;
+
+	INPUT keyup = keydown;
+	keyup.type = INPUT_KEYBOARD;
+	keyup.ki.dwFlags = KEYEVENTF_KEYUP;
+
+	vector<INPUT> inputs;
+	inputs.push_back(keydown);
+	inputs.push_back(keyup);
+
+	_HandleCharReturn(ec, pContext);
+	keyboard_->SendInput(inputs);
+	return S_OK;
 }
 
 //後置型交ぜ書き変換
