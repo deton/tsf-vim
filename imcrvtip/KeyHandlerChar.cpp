@@ -281,6 +281,9 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMA
 	case L'l':
 	    _SendKey(VK_RIGHT);
 	    return;
+	case L'o':
+	    _Vi_o();
+	    return;
 	default:
 	    break;
 	}
@@ -295,7 +298,7 @@ void CTextService::_PrepareForFunc(TfEditCookie ec, ITfContext *pContext, std::w
 	_HandleCharReturn(ec, pContext);
 }
 
-void CTextService::_SendKey(UINT vk)
+void CTextService::_QueueKey(vector<INPUT> *inputs, UINT vk)
 {
 	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
@@ -306,11 +309,24 @@ void CTextService::_SendKey(UINT vk)
 	keyup.type = INPUT_KEYBOARD;
 	keyup.ki.dwFlags = KEYEVENTF_KEYUP;
 
-	vector<INPUT> inputs;
-	inputs.push_back(keydown);
-	inputs.push_back(keyup);
+	inputs->push_back(keydown);
+	inputs->push_back(keyup);
+}
 
+void CTextService::_SendKey(UINT vk)
+{
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, vk);
 	keyboard_->SendInput(inputs);
+}
+
+void CTextService::_Vi_o()
+{
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, VK_END);
+	_QueueKey(&inputs, VK_RETURN);
+	keyboard_->SendInput(inputs);
+	_SetKeyboardOpen(FALSE);
 }
 
 //後置型交ぜ書き変換
