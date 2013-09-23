@@ -164,8 +164,13 @@ class VKBackBasedDeleter {
   const mozc::commands::Output &pending_output() const;
   const InputState &pending_ime_state() const;
 
+#ifndef IMCRVTIP_EXPORTS
  private:
   void UnsetModifiers();
+#else
+  void UnsetModifiers();
+ private:
+#endif
 
   std::unique_ptr<VKBackBasedDeleterQueue> wait_queue_;
   std::unique_ptr<Win32KeyboardInterface> keyboard_;
