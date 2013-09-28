@@ -11,9 +11,6 @@
                         <Component Guid="*" Id="CNF_X86">
                             <File Id="cnf_x86" Name="imvimcnf.exe" Source="..\Win32\Release\imvimcnf.exe" />
                         </Component>
-                        <Component Guid="*" Id="MGR_X86">
-                            <File Id="mgr_x86" Name="imvimmgr.exe" Source="..\Win32\Release\imvimmgr.exe" />
-                        </Component>
                         <Component Guid="*" Id="TIP_X86">
                             <File Id="tip_x86" Name="imvimtip.dll" Source="..\Win32\Release\imvimtip.dll" SelfRegCost="1" />
                         </Component>
@@ -26,9 +23,6 @@
                         <Component Guid="*" Id="CNF_X64" Win64="yes">
                             <File Id="cnf_x64" Name="imvimcnf.exe" Source="..\x64\Release\imvimcnf.exe" />
                         </Component>
-                        <Component Guid="*" Id="MGR_X64" Win64="yes">
-                            <File Id="mgr_x64" Name="imvimmgr.exe" Source="..\x64\Release\imvimmgr.exe" />
-                        </Component>
                         <Component Guid="*" Id="TIP_X64" Win64="yes">
                             <File Id="tip_x64" Name="imvimtip.dll" Source="..\x64\Release\imvimtip.dll" SelfRegCost="1" />
                         </Component>
@@ -36,19 +30,11 @@
                 </Directory>
             </Directory>
         </Directory>
-        <Component Id="RegistryRun" Guid="*" Win64="yes" Directory="TARGETDIR">
-            <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Run">
-                <RegistryValue Type="string" Name="imvimmgr" Value="$(env.windir)\System32\IME\IMTSFVIM\imvimmgr.exe" Action="write" />
-            </RegistryKey>
-        </Component>
         <Feature Id="DefaultFeature" Title="Main Feature" Level="1">
             <ComponentRef Id="CNF_X86" />
-            <ComponentRef Id="MGR_X86" />
             <ComponentRef Id="TIP_X86" />
             <ComponentRef Id="CNF_X64" />
-            <ComponentRef Id="MGR_X64" />
             <ComponentRef Id="TIP_X64" />
-            <ComponentRef Id="RegistryRun" />
         </Feature>
         <UI />
         <WixVariable Id="WixUILicenseRtf" Value="ms-pl.rtf" />
