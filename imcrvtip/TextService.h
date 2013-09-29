@@ -135,8 +135,8 @@ public:
 	HRESULT _HandleChar(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, WCHAR ch, WCHAR chO);
 	HRESULT _HandleCharReturn(TfEditCookie ec, ITfContext *pContext, BOOL back = FALSE);
 	HRESULT _HandleCharTerminate(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
-	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMAN_KANA_CONV &rkc, WCHAR ch, std::wstring &composition);
-	void _PrepareForFunc(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
+	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
+	void _PrepareForFunc(TfEditCookie ec, ITfContext *pContext);
 	void _QueueKey(std::vector<INPUT> *inputs, UINT vk, int count = 1);
 	void _QueueKeyForSelection(std::vector<INPUT> *inputs);
 	void _QueueKeyWithControl(std::vector<INPUT> *inputs, UINT vk);
