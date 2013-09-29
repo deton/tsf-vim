@@ -138,6 +138,8 @@ public:
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMAN_KANA_CONV &rkc, WCHAR ch, std::wstring &composition);
 	void _PrepareForFunc(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
 	void _QueueKey(std::vector<INPUT> *inputs, UINT vk, int count = 1);
+	void _QueueKeyForSelection(std::vector<INPUT> *inputs);
+	void _QueueKeyWithControl(std::vector<INPUT> *inputs, UINT vk);
 	void _SendKey(UINT vk, int count = 1);
 	void _Vi_o();
 	void _ViNextSentence(ITfContext *pContext);
@@ -287,6 +289,7 @@ public:
 	BOOL showentry;			//候補表示▼モード
 	BOOL showcandlist;		//候補リスト表示
 	BOOL complement;		//補完
+	WCHAR operator_pending;		//operator-pending mode(c,d,y)
 
 	int exinputmode;		//入力モードの前回状態
 

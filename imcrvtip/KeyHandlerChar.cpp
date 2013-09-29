@@ -270,6 +270,25 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMA
 	_PrepareForFunc(ec, pContext, composition);
 	switch(rkc.hiragana[0])
 	{
+	case L'c':
+	case L'd':
+	case L'y':
+		if(operator_pending)
+		{
+			if(operator_pending == rkc.hiragana[0]) //'cc','dd','yy'
+			{
+				//TODO
+			}
+			else
+			{
+				operator_pending = 0;
+			}
+		}
+		else
+		{
+			operator_pending = rkc.hiragana[0];
+		}
+		return;
 	case L'h':
 	    _SendKey(VK_LEFT);
 	    return;
@@ -284,10 +303,12 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMA
 	    _SendKey(VK_RIGHT);
 	    return;
 	case L'o':
+		operator_pending = 0;
 	    _Vi_o();
 	    return;
 	case L')':
 	    _ViNextSentence(pContext);
+		operator_pending = 0;
 	    return;
 	default:
 	    break;
@@ -319,6 +340,37 @@ void CTextService::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 		inputs->push_back(keydown);
 		inputs->push_back(keyup);
 	}
+}
+
+void CTextService::_QueueKeyForSelection(vector<INPUT> *inputs)
+{
+	const KEYBDINPUT keyboard_input = {VK_SHIFT, 0, 0, 0, 0};
+	INPUT keydown = {};
+	keydown.type = INPUT_KEYBOARD;
+	keydown.ki = keyboard_input;
+
+	INPUT keyup = keydown;
+	keyup.type = INPUT_KEYBOARD;
+	keyup.ki.dwFlags = KEYEVENTF_KEYUP;
+
+	inputs->insert(inputs->begin(), keydown);
+	inputs->push_back(keyup);
+}
+
+void CTextService::_QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
+{
+	const KEYBDINPUT keyboard_input = {VK_CONTROL, 0, 0, 0, 0};
+	INPUT keydown = {};
+	keydown.type = INPUT_KEYBOARD;
+	keydown.ki = keyboard_input;
+
+	INPUT keyup = keydown;
+	keyup.type = INPUT_KEYBOARD;
+	keyup.ki.dwFlags = KEYEVENTF_KEYUP;
+
+	inputs->push_back(keydown);
+	_QueueKey(inputs, vk);
+	inputs->push_back(keyup);
 }
 
 void CTextService::_SendKey(UINT vk, int count)
@@ -460,7 +512,30 @@ void CTextService::_ViNextSentence(ITfContext *pContext)
 okret:
 	size_t movecnt = cs.index();
 	deleter.UnsetModifiers();
-	_SendKey(VK_RIGHT, movecnt);
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, VK_RIGHT, movecnt);
+	switch(operator_pending)
+	{
+	case L'c':
+		_QueueKeyForSelection(&inputs);
+		_QueueKeyWithControl(&inputs, 'X');
+		keyboard_->SendInput(inputs);
+		_SetKeyboardOpen(FALSE);
+		break;
+	case L'd':
+		_QueueKeyForSelection(&inputs);
+		_QueueKeyWithControl(&inputs, 'X');
+		keyboard_->SendInput(inputs);
+		break;
+	case L'y':
+		_QueueKeyForSelection(&inputs);
+		_QueueKeyWithControl(&inputs, 'C');
+		keyboard_->SendInput(inputs);
+		break;
+	default:
+		keyboard_->SendInput(inputs);
+		break;
+	}
 }
 
 //後置型交ぜ書き変換

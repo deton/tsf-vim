@@ -16,6 +16,10 @@ const ROMAN_KANA_CONV roman_kana_conv_default[ROMAN_KANA_TBL_DEF_NUM] =
 	{L"8", L"8", L"-", L"-", FALSE, FALSE, TRUE},
 	{L"9", L"9", L"-", L"-", FALSE, FALSE, TRUE},
 
+	{L"c", L"c", L"-", L"-", FALSE, FALSE, TRUE},
+	{L"d", L"d", L"-", L"-", FALSE, FALSE, TRUE},
+	{L"y", L"y", L"-", L"-", FALSE, FALSE, TRUE},
+
 	{L"h", L"h", L"-", L"-", FALSE, FALSE, TRUE},
 	{L"j", L"j", L"-", L"-", FALSE, FALSE, TRUE},
 	{L"k", L"k", L"-", L"-", FALSE, FALSE, TRUE},
