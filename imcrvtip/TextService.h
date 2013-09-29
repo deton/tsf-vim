@@ -141,8 +141,10 @@ public:
 	void _QueueKeyForSelection(std::vector<INPUT> *inputs);
 	void _QueueKeyWithControl(std::vector<INPUT> *inputs, UINT vk);
 	void _SendKey(UINT vk, int count = 1);
+	void _ViOpOrMove(int count, BOOL backward = FALSE);
 	void _Vi_o();
 	void _ViNextSentence(ITfContext *pContext);
+	void _Vi_f(ITfContext *pContext, WCHAR ch);
 	HRESULT _HandlePostMaze(TfEditCookie ec, ITfContext *pContext, int count);
 	HRESULT _HandlePostKata(TfEditCookie ec, ITfContext *pContext, int count);
 	HRESULT _HandlePostKataShrink(TfEditCookie ec, ITfContext *pContext, int count);
@@ -290,6 +292,7 @@ public:
 	BOOL showcandlist;		//候補リスト表示
 	BOOL complement;		//補完
 	WCHAR operator_pending;		//operator-pending mode(c,d,y)
+	WCHAR char_waiting;		//waiting character(f,t)
 
 	int exinputmode;		//入力モードの前回状態
 

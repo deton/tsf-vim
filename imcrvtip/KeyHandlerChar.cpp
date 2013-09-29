@@ -8,7 +8,22 @@
 
 HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, WCHAR ch, WCHAR chO)
 {
-	_HandleFunc(ec, pContext, ch);
+	if(char_waiting)
+	{
+		switch(char_waiting)
+		{
+		case L'f':
+			_Vi_f(pContext, ch);
+			break;
+		default:
+			break;
+		}
+		char_waiting = 0;
+	}
+	else
+	{
+		_HandleFunc(ec, pContext, ch);
+	}
 	return S_OK;
 }
 
@@ -55,6 +70,9 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		{
 			operator_pending = ch;
 		}
+		return;
+	case L'f':
+		char_waiting = ch;
 		return;
 	case L'h':
 		_SendKey(VK_LEFT);
@@ -145,6 +163,35 @@ void CTextService::_SendKey(UINT vk, int count)
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, vk, count);
 	keyboard_->SendInput(inputs);
+}
+
+void CTextService::_ViOpOrMove(int count, BOOL backward)
+{
+	deleter.UnsetModifiers();
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, VK_RIGHT, count);
+	switch(operator_pending)
+	{
+	case L'c':
+		_QueueKeyForSelection(&inputs);
+		_QueueKeyWithControl(&inputs, 'X');
+		keyboard_->SendInput(inputs);
+		_SetKeyboardOpen(FALSE);
+		break;
+	case L'd':
+		_QueueKeyForSelection(&inputs);
+		_QueueKeyWithControl(&inputs, 'X');
+		keyboard_->SendInput(inputs);
+		break;
+	case L'y':
+		_QueueKeyForSelection(&inputs);
+		_QueueKeyWithControl(&inputs, 'C');
+		keyboard_->SendInput(inputs);
+		break;
+	default:
+		keyboard_->SendInput(inputs);
+		break;
+	}
 }
 
 void CTextService::_Vi_o()
@@ -278,31 +325,56 @@ void CTextService::_ViNextSentence(ITfContext *pContext)
 
 okret:
 	size_t movecnt = cs.index();
-	deleter.UnsetModifiers();
-	vector<INPUT> inputs;
-	_QueueKey(&inputs, VK_RIGHT, movecnt);
-	switch(operator_pending)
+	_ViOpOrMove(movecnt);
+}
+
+//	Search forward in the line for the next occurrence of the
+//	specified character.
+void CTextService::_Vi_f(ITfContext *pContext, WCHAR ch)
+{
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if(!mozc::win32::tsf::TipSurroundingText::Get(this, pContext, &info))
 	{
-	case L'c':
-		_QueueKeyForSelection(&inputs);
-		_QueueKeyWithControl(&inputs, 'X');
-		keyboard_->SendInput(inputs);
-		_SetKeyboardOpen(FALSE);
-		break;
-	case L'd':
-		_QueueKeyForSelection(&inputs);
-		_QueueKeyWithControl(&inputs, 'X');
-		keyboard_->SendInput(inputs);
-		break;
-	case L'y':
-		_QueueKeyForSelection(&inputs);
-		_QueueKeyWithControl(&inputs, 'C');
-		keyboard_->SendInput(inputs);
-		break;
-	default:
-		keyboard_->SendInput(inputs);
-		break;
+		return;
 	}
+	ViCharStream cs(info.following_text);
+	//TODO:取得した文字列にchが含まれていなかったら、
+	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+
+	int cnt = 1;
+	while(cnt--)
+	{
+		while(1)
+		{
+			if(cs.next())
+			{
+				return;
+			}
+			if(cs.flags() == CS_EOF)
+			{
+				return;
+			}
+			if(cs.flags() == CS_EOL)
+			{
+				return;
+			}
+			if(cs.flags() == CS_EMP)
+			{
+				return;
+			}
+			if(cs.ch() == ch)
+			{
+				break;
+			}
+		}
+	}
+
+	size_t movecnt = cs.index();
+	if(operator_pending)
+	{
+		movecnt++;
+	}
+	_ViOpOrMove(movecnt);
 }
 
 //後置型交ぜ書き変換
