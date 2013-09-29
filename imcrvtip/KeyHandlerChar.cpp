@@ -8,6 +8,7 @@
 
 HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, WCHAR ch, WCHAR chO)
 {
+	_PrepareForFunc(ec, pContext);
 	if(char_waiting)
 	{
 		switch(char_waiting)
@@ -19,6 +20,8 @@ HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, std::ws
 			break;
 		}
 		char_waiting = 0;
+		operator_pending = 0;
+		count1 = count2 = 0;
 	}
 	else
 	{
@@ -49,9 +52,43 @@ HRESULT CTextService::_HandleCharTerminate(TfEditCookie ec, ITfContext *pContext
 
 void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 {
-	_PrepareForFunc(ec, pContext);
 	switch(ch)
 	{
+	case L'0':
+		if(count1 == 0 && count2 == 0)
+		{
+			_SendKey(VK_HOME); //TODO: support operator
+		}
+		else
+		{
+			if(operator_pending)
+			{
+				count2 *= 10;
+			}
+			else
+			{
+				count1 *= 10;
+			}
+		}
+		return;
+	case L'1':
+	case L'2':
+	case L'3':
+	case L'4':
+	case L'5':
+	case L'6':
+	case L'7':
+	case L'8':
+	case L'9':
+		if(operator_pending)
+		{
+			count2 = count2 * 10 + ch - L'0';
+		}
+		else
+		{
+			count1 = count1 * 10 + ch - L'0';
+		}
+		return;
 	case L'c':
 	case L'd':
 	case L'y':
@@ -89,11 +126,13 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		return;
 	case L'o':
 		operator_pending = 0;
+		count1 = count2 = 0;
 		_Vi_o();
 		return;
 	case L')':
 		_ViNextSentence(pContext);
 		operator_pending = 0;
+		count1 = count2 = 0;
 		return;
 	default:
 		break;
@@ -215,8 +254,8 @@ void CTextService::_ViNextSentence(ITfContext *pContext)
 	//TODO:取得した文字列に文末が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
+	int cnt = ((count1 == 0) ? 1 : count1) * ((count2 == 0) ? 1 : count2);
 	//cf. v_sentencef() in v_sentence.c of nvi-1.79
-	int cnt = 1;
 	//If in white-space, the next start of sentence counts as one.
 	if(cs.flags() == CS_EMP || cs.flags() == CS_NONE && iswblank(cs.ch()))
 	{
@@ -341,7 +380,7 @@ void CTextService::_Vi_f(ITfContext *pContext, WCHAR ch)
 	//TODO:取得した文字列にchが含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
-	int cnt = 1;
+	int cnt = ((count1 == 0) ? 1 : count1) * ((count2 == 0) ? 1 : count2);
 	while(cnt--)
 	{
 		while(1)

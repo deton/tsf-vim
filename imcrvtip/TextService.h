@@ -291,8 +291,12 @@ public:
 	BOOL showentry;			//候補表示▼モード
 	BOOL showcandlist;		//候補リスト表示
 	BOOL complement;		//補完
+
+	//Vi関係
 	WCHAR operator_pending;		//operator-pending mode(c,d,y)
 	WCHAR char_waiting;		//waiting character(f,t)
+	int count1; //first count for operator or motion
+	int count2; //second count for motion
 
 	int exinputmode;		//入力モードの前回状態
 
