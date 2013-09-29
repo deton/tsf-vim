@@ -290,28 +290,28 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, const ROMA
 		}
 		return;
 	case L'h':
-	    _SendKey(VK_LEFT);
-	    return;
+		_SendKey(VK_LEFT);
+		return;
 	case L'j':
-	    _SendKey(VK_DOWN);
-	    return;
+		_SendKey(VK_DOWN);
+		return;
 	case L'k':
-	    _SendKey(VK_UP);
-	    return;
+		_SendKey(VK_UP);
+		return;
 	case L'l':
 	case L' ':
-	    _SendKey(VK_RIGHT);
-	    return;
+		_SendKey(VK_RIGHT);
+		return;
 	case L'o':
 		operator_pending = 0;
-	    _Vi_o();
-	    return;
+		_Vi_o();
+		return;
 	case L')':
-	    _ViNextSentence(pContext);
+		_ViNextSentence(pContext);
 		operator_pending = 0;
-	    return;
+		return;
 	default:
-	    break;
+		break;
 	}
 	_HandleCharReturn(ec, pContext);
 }
