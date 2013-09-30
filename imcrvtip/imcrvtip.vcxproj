@@ -237,6 +237,7 @@
     <ClCompile Include="ThreadFocusSink.cpp" />
     <ClCompile Include="ThreadMgrEventSink.cpp" />
     <ClCompile Include="ViCharStream.cpp" />
+    <ClCompile Include="ViCmd.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Icon\CorvusSKK.ico" />

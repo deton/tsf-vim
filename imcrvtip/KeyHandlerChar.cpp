@@ -9,9 +9,9 @@
 HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, WCHAR ch, WCHAR chO)
 {
 	_PrepareForFunc(ec, pContext);
-	if(char_waiting)
+	if(vicmd.GetCharWaiting())
 	{
-		switch(char_waiting)
+		switch(vicmd.GetCharWaiting())
 		{
 		case L'f':
 			_Vi_f(pContext, ch);
@@ -19,9 +19,7 @@ HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, std::ws
 		default:
 			break;
 		}
-		char_waiting = 0;
-		operator_pending = 0;
-		count1 = count2 = 0;
+		vicmd.Reset();
 	}
 	else
 	{
@@ -55,20 +53,13 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	switch(ch)
 	{
 	case L'0':
-		if(count1 == 0 && count2 == 0)
+		if(!vicmd.HasCount())
 		{
 			_SendKey(VK_HOME); //TODO: support operator
 		}
 		else
 		{
-			if(operator_pending)
-			{
-				count2 *= 10;
-			}
-			else
-			{
-				count1 *= 10;
-			}
+			vicmd.AddCountChar(ch);
 		}
 		return;
 	case L'1':
@@ -80,36 +71,29 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'7':
 	case L'8':
 	case L'9':
-		if(operator_pending)
-		{
-			count2 = count2 * 10 + ch - L'0';
-		}
-		else
-		{
-			count1 = count1 * 10 + ch - L'0';
-		}
+		vicmd.AddCountChar(ch);
 		return;
 	case L'c':
 	case L'd':
 	case L'y':
-		if(operator_pending)
+		if(vicmd.GetOperatorPending())
 		{
-			if(operator_pending == ch) //'cc','dd','yy'
+			if(vicmd.GetOperatorPending() == ch) //'cc','dd','yy'
 			{
 				//TODO
 			}
 			else
 			{
-				operator_pending = 0;
+				vicmd.SetOperatorPending(0);
 			}
 		}
 		else
 		{
-			operator_pending = ch;
+			vicmd.SetOperatorPending(ch);
 		}
 		return;
 	case L'f':
-		char_waiting = ch;
+		vicmd.SetCharWaiting(ch);
 		return;
 	case L'h':
 		_SendKey(VK_LEFT);
@@ -125,14 +109,12 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_SendKey(VK_RIGHT);
 		return;
 	case L'o':
-		operator_pending = 0;
-		count1 = count2 = 0;
+		vicmd.Reset();
 		_Vi_o();
 		return;
 	case L')':
 		_ViNextSentence(pContext);
-		operator_pending = 0;
-		count1 = count2 = 0;
+		vicmd.Reset();
 		return;
 	default:
 		break;
@@ -209,7 +191,7 @@ void CTextService::_ViOpOrMove(int count, BOOL backward)
 	deleter.UnsetModifiers();
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, VK_RIGHT, count);
-	switch(operator_pending)
+	switch(vicmd.GetOperatorPending())
 	{
 	case L'c':
 		_QueueKeyForSelection(&inputs);
@@ -254,7 +236,7 @@ void CTextService::_ViNextSentence(ITfContext *pContext)
 	//TODO:取得した文字列に文末が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
-	int cnt = ((count1 == 0) ? 1 : count1) * ((count2 == 0) ? 1 : count2);
+	int cnt = vicmd.GetCount();
 	//cf. v_sentencef() in v_sentence.c of nvi-1.79
 	//If in white-space, the next start of sentence counts as one.
 	if(cs.flags() == CS_EMP || cs.flags() == CS_NONE && iswblank(cs.ch()))
@@ -380,7 +362,7 @@ void CTextService::_Vi_f(ITfContext *pContext, WCHAR ch)
 	//TODO:取得した文字列にchが含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
-	int cnt = ((count1 == 0) ? 1 : count1) * ((count2 == 0) ? 1 : count2);
+	int cnt = vicmd.GetCount();
 	while(cnt--)
 	{
 		while(1)
@@ -409,7 +391,7 @@ void CTextService::_Vi_f(ITfContext *pContext, WCHAR ch)
 	}
 
 	size_t movecnt = cs.index();
-	if(operator_pending)
+	if(vicmd.GetOperatorPending())
 	{
 		movecnt++;
 	}

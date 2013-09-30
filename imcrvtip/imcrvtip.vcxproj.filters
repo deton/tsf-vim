@@ -158,6 +158,9 @@
     <ClCompile Include="ViCharStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ViCmd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="imcrvtip.def">
