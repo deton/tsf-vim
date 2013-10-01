@@ -142,7 +142,7 @@ public:
 	void _QueueKeyForSelection(std::vector<INPUT> *inputs);
 	void _QueueKeyWithControl(std::vector<INPUT> *inputs, UINT vk);
 	void _SendKey(UINT vk, int count = 1);
-	void _ViOpOrMove(int count, BOOL backward = FALSE);
+	void _ViOpOrMove(UINT vk, int count);
 	void _Vi_o();
 	void _ViNextSentence(ITfContext *pContext);
 	void _Vi_f(ITfContext *pContext, WCHAR ch);

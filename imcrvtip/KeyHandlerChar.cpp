@@ -96,17 +96,17 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.SetCharWaiting(ch);
 		return;
 	case L'h':
-		_SendKey(VK_LEFT);
+		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
 		return;
 	case L'j':
-		_SendKey(VK_DOWN);
+		_ViOpOrMove(VK_DOWN, vicmd.GetCount()); //TODO: linewise operator
 		return;
 	case L'k':
-		_SendKey(VK_UP);
+		_ViOpOrMove(VK_UP, vicmd.GetCount()); //TODO: linewise operator
 		return;
 	case L'l':
 	case L' ':
-		_ViOpOrMove(vicmd.GetCount());
+		_ViOpOrMove(VK_RIGHT, vicmd.GetCount());
 		return;
 	case L'o':
 		vicmd.Reset();
@@ -185,11 +185,11 @@ void CTextService::_SendKey(UINT vk, int count)
 	keyboard_->SendInput(inputs);
 }
 
-void CTextService::_ViOpOrMove(int count, BOOL backward)
+void CTextService::_ViOpOrMove(UINT vk, int count)
 {
 	deleter.UnsetModifiers();
 	vector<INPUT> inputs;
-	_QueueKey(&inputs, VK_RIGHT, count);
+	_QueueKey(&inputs, vk, count);
 	switch(vicmd.GetOperatorPending())
 	{
 	case L'c':
@@ -346,7 +346,7 @@ void CTextService::_ViNextSentence(ITfContext *pContext)
 
 okret:
 	size_t movecnt = cs.index();
-	_ViOpOrMove(movecnt);
+	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
 //	Search forward in the line for the next occurrence of the
@@ -395,7 +395,7 @@ void CTextService::_Vi_f(ITfContext *pContext, WCHAR ch)
 	{
 		movecnt++;
 	}
-	_ViOpOrMove(movecnt);
+	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
 //後置型交ぜ書き変換
