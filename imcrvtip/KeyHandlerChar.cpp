@@ -95,6 +95,10 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'f':
 		vicmd.SetCharWaiting(ch);
 		return;
+	case L'$':
+		//TODO: OperatorPendingの場合、改行が含まれていたら除く
+		_ViOpOrMove(VK_END, 1);
+		return;
 	case L'h':
 		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
 		return;
