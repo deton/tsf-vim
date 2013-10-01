@@ -113,8 +113,23 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_ViOpOrMove(VK_RIGHT, vicmd.GetCount());
 		return;
 	case L'o':
-		vicmd.Reset();
 		_Vi_o();
+		return;
+	case L'p':
+	case L'P': //paste at caret
+		_Vi_p();
+		return;
+	case L'u':
+		vicmd.Reset();
+		_SendKeyWithControl('Z');
+		return;
+	case L'x':
+		vicmd.SetOperatorPending('d'); //cut to clipboard
+		_ViOpOrMove(VK_RIGHT, vicmd.GetCount());
+		return;
+	case L'X':
+		vicmd.SetOperatorPending('d'); //cut to clipboard
+		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
 		return;
 	case L')':
 		_ViNextSentence(pContext);
@@ -151,9 +166,9 @@ void CTextService::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 	}
 }
 
-void CTextService::_QueueKeyForSelection(vector<INPUT> *inputs)
+void CTextService::_QueueKeyWrap(vector<INPUT> *inputs, UINT vk)
 {
-	const KEYBDINPUT keyboard_input = {VK_SHIFT, 0, 0, 0, 0};
+	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
 	keydown.type = INPUT_KEYBOARD;
 	keydown.ki = keyboard_input;
@@ -189,6 +204,13 @@ void CTextService::_SendKey(UINT vk, int count)
 	keyboard_->SendInput(inputs);
 }
 
+void CTextService::_SendKeyWithControl(UINT vk)
+{
+	vector<INPUT> inputs;
+	_QueueKeyWithControl(&inputs, vk);
+	keyboard_->SendInput(inputs);
+}
+
 void CTextService::_ViOpOrMove(UINT vk, int count)
 {
 	deleter.UnsetModifiers();
@@ -197,18 +219,18 @@ void CTextService::_ViOpOrMove(UINT vk, int count)
 	switch(vicmd.GetOperatorPending())
 	{
 	case L'c':
-		_QueueKeyForSelection(&inputs);
+		_QueueKeyWrap(&inputs, VK_SHIFT);
 		_QueueKeyWithControl(&inputs, 'X');
 		keyboard_->SendInput(inputs);
 		_SetKeyboardOpen(FALSE);
 		break;
 	case L'd':
-		_QueueKeyForSelection(&inputs);
+		_QueueKeyWrap(&inputs, VK_SHIFT);
 		_QueueKeyWithControl(&inputs, 'X');
 		keyboard_->SendInput(inputs);
 		break;
 	case L'y':
-		_QueueKeyForSelection(&inputs);
+		_QueueKeyWrap(&inputs, VK_SHIFT);
 		_QueueKeyWithControl(&inputs, 'C');
 		keyboard_->SendInput(inputs);
 		break;
@@ -226,6 +248,16 @@ void CTextService::_Vi_o()
 	_QueueKey(&inputs, VK_RETURN);
 	keyboard_->SendInput(inputs);
 	_SetKeyboardOpen(FALSE);
+	vicmd.Reset();
+}
+
+void CTextService::_Vi_p()
+{
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, 'V', vicmd.GetCount());
+	_QueueKeyWrap(&inputs, VK_CONTROL);
+	keyboard_->SendInput(inputs);
+	vicmd.Reset();
 }
 
 //次の文に移動

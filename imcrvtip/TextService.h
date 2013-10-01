@@ -139,11 +139,13 @@ public:
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
 	void _PrepareForFunc(TfEditCookie ec, ITfContext *pContext);
 	void _QueueKey(std::vector<INPUT> *inputs, UINT vk, int count = 1);
-	void _QueueKeyForSelection(std::vector<INPUT> *inputs);
+	void _QueueKeyWrap(std::vector<INPUT> *inputs, UINT vk);
 	void _QueueKeyWithControl(std::vector<INPUT> *inputs, UINT vk);
 	void _SendKey(UINT vk, int count = 1);
+	void _SendKeyWithControl(UINT vk);
 	void _ViOpOrMove(UINT vk, int count);
 	void _Vi_o();
+	void _Vi_p();
 	void _ViNextSentence(ITfContext *pContext);
 	void _Vi_f(ITfContext *pContext, WCHAR ch);
 	HRESULT _HandlePostMaze(TfEditCookie ec, ITfContext *pContext, int count);
