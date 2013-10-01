@@ -55,7 +55,7 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'0':
 		if(!vicmd.HasCount())
 		{
-			_SendKey(VK_HOME); //TODO: support operator
+			_ViOpOrMove(VK_HOME, 1);
 		}
 		else
 		{
