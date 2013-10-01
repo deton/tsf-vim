@@ -106,7 +106,7 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		return;
 	case L'l':
 	case L' ':
-		_SendKey(VK_RIGHT);
+		_ViOpOrMove(vicmd.GetCount());
 		return;
 	case L'o':
 		vicmd.Reset();
@@ -114,7 +114,6 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		return;
 	case L')':
 		_ViNextSentence(pContext);
-		vicmd.Reset();
 		return;
 	default:
 		break;
@@ -213,6 +212,7 @@ void CTextService::_ViOpOrMove(int count, BOOL backward)
 		keyboard_->SendInput(inputs);
 		break;
 	}
+	vicmd.Reset();
 }
 
 void CTextService::_Vi_o()
