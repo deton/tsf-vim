@@ -3,7 +3,7 @@
 ViCharStream::ViCharStream(const std::wstring &buf)
 	: _buf(buf), _cno(0), _index(0), _flags(CS_NONE)
 {
-	_len = _buf.find(L"\n");
+	_len = _buf.find_first_of(L"\r\n");
 	if(_len == std::wstring::npos)
 	{
 		_len = _buf.size();
@@ -71,24 +71,32 @@ int ViCharStream::next()
 	case CS_EMP: //EMP; get next line.
 		//TODO: skip to \n
 	case CS_EOL: //EOL; get next line.
+		//_buf[_index] == '\r' || '\n'
 		_index++;
 		if(_index >= _buf.size())
 		{
 			//TODO: acquire following text after moving cursor
 			_flags = CS_EOF;
+			break;
 		}
-		else
+		if(_buf[_index] == L'\n')
 		{
-			_cno = 0;
-			_len = _buf.find(L"\n", _index);
-			if(_len == std::wstring::npos)
+			_index++;
+			if(_index >= _buf.size())
 			{
-				_len = _buf.size() - _index;
+				_flags = CS_EOF;
+				break;
 			}
-			if(_len == 0 || _buf.find_first_not_of(L" \t", _index, _len) == std::wstring::npos)
-			{
-				_flags = CS_EMP;
-			}
+		}
+		_cno = 0;
+		_len = _buf.find_first_of(L"\r\n", _index);
+		if(_len == std::wstring::npos)
+		{
+			_len = _buf.size() - _index;
+		}
+		if(_len == 0 || _buf.find_first_not_of(L" \t", _index, _len) == std::wstring::npos)
+		{
+			_flags = CS_EMP;
 		}
 		break;
 	case CS_NONE:
