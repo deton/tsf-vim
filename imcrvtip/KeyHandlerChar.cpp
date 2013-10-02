@@ -116,8 +116,10 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_Vi_o();
 		return;
 	case L'p':
+		_Vi_p(pContext);
+		return;
 	case L'P': //paste at caret
-		_Vi_p();
+		_Vi_P();
 		return;
 	case L'u':
 		vicmd.Reset();
@@ -133,6 +135,7 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		return;
 	case L')':
 		_ViNextSentence(pContext);
+		vicmd.Reset();
 		return;
 	default:
 		break;
@@ -166,9 +169,9 @@ void CTextService::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 	}
 }
 
-void CTextService::_QueueKeyWrap(vector<INPUT> *inputs, UINT vk)
+void CTextService::_QueueKeyForSelection(vector<INPUT> *inputs)
 {
-	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
+	const KEYBDINPUT keyboard_input = {VK_SHIFT, 0, 0, 0, 0};
 	INPUT keydown = {};
 	keydown.type = INPUT_KEYBOARD;
 	keydown.ki = keyboard_input;
@@ -181,20 +184,31 @@ void CTextService::_QueueKeyWrap(vector<INPUT> *inputs, UINT vk)
 	inputs->push_back(keyup);
 }
 
-void CTextService::_QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
+void CTextService::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up)
 {
-	const KEYBDINPUT keyboard_input = {VK_CONTROL, 0, 0, 0, 0};
+	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
 	keydown.type = INPUT_KEYBOARD;
 	keydown.ki = keyboard_input;
 
-	INPUT keyup = keydown;
-	keyup.type = INPUT_KEYBOARD;
-	keyup.ki.dwFlags = KEYEVENTF_KEYUP;
+	if(up)
+	{
+		INPUT keyup = keydown;
+		keyup.type = INPUT_KEYBOARD;
+		keyup.ki.dwFlags = KEYEVENTF_KEYUP;
+		inputs->push_back(keyup);
+	}
+	else
+	{
+		inputs->push_back(keydown);
+	}
+}
 
-	inputs->push_back(keydown);
+void CTextService::_QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
+{
+	_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
 	_QueueKey(inputs, vk);
-	inputs->push_back(keyup);
+	_QueueKeyForModifier(inputs, VK_CONTROL, TRUE);
 }
 
 void CTextService::_SendKey(UINT vk, int count)
@@ -219,18 +233,18 @@ void CTextService::_ViOpOrMove(UINT vk, int count)
 	switch(vicmd.GetOperatorPending())
 	{
 	case L'c':
-		_QueueKeyWrap(&inputs, VK_SHIFT);
+		_QueueKeyForSelection(&inputs);
 		_QueueKeyWithControl(&inputs, 'X');
 		keyboard_->SendInput(inputs);
 		_SetKeyboardOpen(FALSE);
 		break;
 	case L'd':
-		_QueueKeyWrap(&inputs, VK_SHIFT);
+		_QueueKeyForSelection(&inputs);
 		_QueueKeyWithControl(&inputs, 'X');
 		keyboard_->SendInput(inputs);
 		break;
 	case L'y':
-		_QueueKeyWrap(&inputs, VK_SHIFT);
+		_QueueKeyForSelection(&inputs);
 		_QueueKeyWithControl(&inputs, 'C');
 		keyboard_->SendInput(inputs);
 		break;
@@ -251,11 +265,32 @@ void CTextService::_Vi_o()
 	vicmd.Reset();
 }
 
-void CTextService::_Vi_p()
+void CTextService::_Vi_p(ITfContext *pContext)
 {
 	vector<INPUT> inputs;
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if(mozc::win32::tsf::TipSurroundingText::Get(this, pContext, &info))
+	{
+		if(info.following_text.size() > 0
+				&& info.following_text[0] != L'\n'
+				&& info.following_text[0] != L'\r')
+		{
+			_QueueKey(&inputs, VK_RIGHT);
+		}
+	}
+	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
 	_QueueKey(&inputs, 'V', vicmd.GetCount());
-	_QueueKeyWrap(&inputs, VK_CONTROL);
+	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
+	keyboard_->SendInput(inputs);
+	vicmd.Reset();
+}
+
+void CTextService::_Vi_P()
+{
+	vector<INPUT> inputs;
+	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
+	_QueueKey(&inputs, 'V', vicmd.GetCount());
+	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
 	keyboard_->SendInput(inputs);
 	vicmd.Reset();
 }
