@@ -1,8 +1,9 @@
 #include "ViCharStream.h"
 
 ViCharStream::ViCharStream(const std::wstring &buf)
-	: _buf(buf), _cno(0), _index(0), _flags(CS_NONE)
+	: _cno(0), _index(0), _flags(CS_NONE)
 {
+	_buf = std::regex_replace(buf, std::wregex(L"\r\n"), std::wstring(L"\n"));
 	_len = _buf.find(L"\n");
 	if(_len == std::wstring::npos)
 	{
@@ -88,6 +89,10 @@ int ViCharStream::next()
 			if(_len == 0 || _buf.find_first_not_of(L" \t", _index, _len) == std::wstring::npos)
 			{
 				_flags = CS_EMP;
+			}
+			else
+			{
+				_flags = CS_NONE;
 			}
 		}
 		break;
