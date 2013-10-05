@@ -6,7 +6,7 @@
 #include "mozc/win32/tip/tip_surrounding_text.h"
 #include "mozc/win32/base/input_state.h"
 
-HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, WCHAR ch, WCHAR chO)
+HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 {
 	_PrepareForFunc(ec, pContext);
 	if(vicmd.GetCharWaiting())
@@ -94,6 +94,17 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		return;
 	case L'f':
 		vicmd.SetCharWaiting(ch);
+		return;
+	case CTRL('F'):
+		deleter.UnsetModifiers(); //CTRLキー押下状態のままNEXT押しても期待外
+		_SendKey(VK_NEXT);
+		//TODO: CTRLキー押下状態に戻す。でないとCTRLキー押したまま連続Fできず
+		vicmd.Reset();
+		return;
+	case CTRL('B'):
+		deleter.UnsetModifiers();
+		_SendKey(VK_PRIOR);
+		vicmd.Reset();
 		return;
 	case L'$':
 		//TODO: OperatorPendingの場合、改行が含まれていたら除く

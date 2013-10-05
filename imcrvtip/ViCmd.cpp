@@ -57,3 +57,8 @@ void ViCmd::AddCountChar(WCHAR ch)
 		_count1 = _count1 * 10 + ch - L'0';
 	}
 }
+
+BOOL ViCmd::IsEmpty()
+{
+	return(GetOperatorPending() == 0 && GetCharWaiting() == 0 && !HasCount());
+}

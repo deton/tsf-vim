@@ -1,6 +1,8 @@
 #ifndef VICMD_H
 #define VICMD_H
 
+#define CTRL(c) ((c) & 0x1f)
+
 class ViCmd
 {
 public:
@@ -15,6 +17,7 @@ public:
 	int GetCount();
 	BOOL HasCount();
 	void AddCountChar(WCHAR ch);
+	BOOL IsEmpty();
 
 private:
 	WCHAR _operator_pending;		//operator-pending mode(c,d,y)

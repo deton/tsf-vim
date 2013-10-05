@@ -22,136 +22,23 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 		return FALSE;
 	}
 
-	//カーソル直前文字列削除をBSを送って消す場合のDeleter用処理。
-	//(TSFによるカーソル直前文字列削除ができなかった場合用。)
-	//mozcのwin32/tip/tip_keyevent_handler.ccから。
-	bool is_key_down = isKeyDown;
-	if(isTest)
-	{
-		const mozc::win32::LParamKeyInfo key_info(lParam);
-		is_key_down = key_info.IsKeyDownInImeProcessKey();
-	}
-	const mozc::win32::VKBackBasedDeleter::ClientAction vk_back_action =
-		deleter.OnKeyEvent(wParam, is_key_down, isTest);
-
-	switch(vk_back_action)
-	{
-	case mozc::win32::VKBackBasedDeleter::DO_DEFAULT_ACTION:
-		// do nothing.
-		break;
-	case mozc::win32::VKBackBasedDeleter::CALL_END_DELETION_THEN_DO_DEFAULT_ACTION:
-		deleter.EndDeletion();
-		break;
-	case mozc::win32::VKBackBasedDeleter::SEND_KEY_TO_APPLICATION:
-		if(is_key_down && isTest && !postbuf.empty())
-		{
-			postbuf.pop_back();
-		}
-		return FALSE; // Do not consume this key.
-	case mozc::win32::VKBackBasedDeleter::CONSUME_KEY_BUT_NEVER_SEND_TO_SERVER:
-		return -1; // Consume this key but do not send this key to server.
-	case mozc::win32::VKBackBasedDeleter::CALL_END_DELETION_BUT_NEVER_SEND_TO_SERVER:
-		if(!isTest)
-		{
-			deleter.EndDeletion();
-			return -1;
-		}
-		else
-		{
-			return FALSE;
-		}
-	case mozc::win32::VKBackBasedDeleter::APPLY_PENDING_STATUS:
-		if(!isTest)
-		{
-			_InvokeKeyHandler(pContext, wParam, lParam, SKK_AFTER_DELETER);
-			return -1;
-		}
-		else
-		{
-			return FALSE;
-		}
-	default:
-		break;
-	}
-
-	if(_pCandidateList && _pCandidateList->_IsContextCandidateWindow(pContext))
-	{
-		return FALSE;
-	}
-
-	if(_IsComposing() || !c_showromancomp && !roman.empty())
-	{
-		if(inputmode != im_ascii)
-		{
-			return TRUE;
-		}
-	}
-
-	SHORT vk_ctrl = GetKeyState(VK_CONTROL) & 0x8000;
-	SHORT vk_kana = GetKeyState(VK_KANA) & 0x0001;
-
-	WCHAR ch = _GetCh((BYTE)wParam);
-	BYTE sf = _GetSf((BYTE)wParam, ch);
-
-	//確定状態で処理する機能
-	switch(inputmode)
-	{
-	case im_jlatin:
-	case im_ascii:
-		switch(sf)
-		{
-		case SKK_JMODE:
-			return TRUE;
-			break;
-		default:
-			break;
-		}
-		break;
-	case im_hiragana:
-	case im_katakana:
-		switch(sf)
-		{
-		case SKK_CONV_POINT:
-		case SKK_KANA:
-		case SKK_CONV_CHAR:
-		case SKK_JLATIN:
-		case SKK_ASCII:
-		case SKK_ABBREV:
-			return TRUE;
-			break;
-		default:
-			break;
-		}
-		break;
-	case im_katakana_ank:
-		switch(sf)
-		{
-		case SKK_KANA:
-		case SKK_CONV_CHAR:
-		case SKK_JLATIN:
-		case SKK_ASCII:
-			return TRUE;
-			break;
-		default:
-			break;
-		}
-		break;
-	default:
-		break;
-	}
-	//無効
-	if(_IsKeyVoid(ch, (BYTE)wParam))
+	if(_IsComposing() || !vicmd.IsEmpty())
 	{
 		return TRUE;
 	}
+
+	SHORT vk_ctrl = GetKeyState(VK_CONTROL) & 0x8000;
+
+	WCHAR ch = _GetCh((BYTE)wParam);
+
+	//TODO: 処理するキーを一か所で管理
+	if(ch == CTRL('F') || ch == CTRL('B'))
+	{
+		return TRUE;
+	}
+
 	//処理しないCtrlキー
 	if(vk_ctrl)
-	{
-		postbuf.clear();
-		return FALSE;
-	}
-	//ASCIIモード、かなキーロック
-	if(inputmode == im_ascii && !vk_kana)
 	{
 		return FALSE;
 	}
@@ -159,35 +46,6 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 	if(ch >= L'\x20')
 	{
 		return TRUE;
-	}
-
-	if(!postbuf.empty())
-	{
-		if((wParam == VK_BACK || wParam == VK_LEFT) && is_key_down && isTest)
-		{
-			postbuf.pop_back();
-		}
-		else
-		{
-			switch(wParam)
-			{
-			//case VK_LEFT:
-			case VK_RIGHT:
-			case VK_UP:
-			case VK_DOWN:
-			case VK_HOME:
-			case VK_END:
-			case VK_PRIOR:
-			case VK_NEXT:
-				if(is_key_down && isTest)
-				{
-					postbuf.clear();
-				}
-				break;
-			default:
-				break;
-			}
-		}
 	}
 
 	return FALSE;

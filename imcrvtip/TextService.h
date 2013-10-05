@@ -133,7 +133,7 @@ public:
 	void _ResetStatus();
 
 	// KeyHandlerChar
-	HRESULT _HandleChar(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, WCHAR ch, WCHAR chO);
+	HRESULT _HandleChar(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
 	HRESULT _HandleCharReturn(TfEditCookie ec, ITfContext *pContext, BOOL back = FALSE);
 	HRESULT _HandleCharTerminate(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
