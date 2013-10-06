@@ -209,7 +209,7 @@
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="KeyEventSink.cpp" />
     <ClCompile Include="KeyHandler.cpp" />
-    <ClCompile Include="KeyHandlerChar.cpp" />
+    <ClCompile Include="ViKeyHandler.cpp" />
     <ClCompile Include="KeyHandlerComposition.cpp" />
     <ClCompile Include="KeyHandlerControl.cpp" />
     <ClCompile Include="KeyHandlerConv.cpp" />

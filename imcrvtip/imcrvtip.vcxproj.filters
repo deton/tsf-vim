@@ -92,7 +92,7 @@
     <ClCompile Include="KeyHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyHandlerChar.cpp">
+    <ClCompile Include="ViKeyHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KeyHandlerComposition.cpp">
