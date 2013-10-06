@@ -22,6 +22,7 @@ private:
 	void _QueueKeyForSelection(std::vector<INPUT> *inputs);
 	void _QueueKeyForModifier(std::vector<INPUT> *inputs, UINT vk, BOOL up);
 	void _QueueKeyWithControl(std::vector<INPUT> *inputs, UINT vk);
+	void _SendInputs(std::vector<INPUT> *inputs);
 	void _SendKey(UINT vk, int count = 1);
 	void _SendKeyWithControl(UINT vk);
 	void _ViOpOrMove(UINT vk, int count);

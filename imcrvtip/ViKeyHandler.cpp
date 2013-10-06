@@ -95,13 +95,10 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.SetCharWaiting(ch);
 		return;
 	case CTRL('F'):
-		deleter.UnsetModifiers(); //CTRLキー押下状態のままNEXT押しても期待外
 		_SendKey(VK_NEXT);
-		//TODO: CTRLキー押下状態に戻す。でないとCTRLキー押したまま連続Fできず
 		vicmd.Reset();
 		return;
 	case CTRL('B'):
-		deleter.UnsetModifiers();
 		_SendKey(VK_PRIOR);
 		vicmd.Reset();
 		return;
@@ -213,23 +210,55 @@ void ViKeyHandler::_QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
 	_QueueKeyForModifier(inputs, VK_CONTROL, TRUE);
 }
 
+void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
+{
+	//cf. deleter.UnsetModifiers()
+	mozc::win32::KeyboardStatus keyboard_state;
+	if(keyboard_->GetKeyboardState(&keyboard_state))
+	{
+		const BYTE kUnsetState = 0;
+		bool to_be_updated = false;
+		if(keyboard_state.IsPressed(VK_SHIFT))
+		{
+			to_be_updated = true;
+			keyboard_state.SetState(VK_SHIFT, kUnsetState);
+			//restore modifier
+			//XXX:SendInput()直後にdeleter.EndDeletion()を呼んでも、
+			//CTRL-F押下時にVK_NEXT送り付けても動かない
+			//(おそらくCTRL押下状態になってCTRL-NEXTになるため)
+			_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
+		}
+		if(keyboard_state.IsPressed(VK_CONTROL))
+		{
+			to_be_updated = true;
+			keyboard_state.SetState(VK_CONTROL, kUnsetState);
+			_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
+		}
+		if(to_be_updated)
+		{
+			keyboard_->SetKeyboardState(keyboard_state);
+		}
+	}
+
+	keyboard_->SendInput(*inputs);
+}
+
 void ViKeyHandler::_SendKey(UINT vk, int count)
 {
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, vk, count);
-	keyboard_->SendInput(inputs);
+	_SendInputs(&inputs);
 }
 
 void ViKeyHandler::_SendKeyWithControl(UINT vk)
 {
 	vector<INPUT> inputs;
 	_QueueKeyWithControl(&inputs, vk);
-	keyboard_->SendInput(inputs);
+	_SendInputs(&inputs);
 }
 
 void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 {
-	deleter.UnsetModifiers();
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, vk, count);
 	switch(vicmd.GetOperatorPending())
@@ -237,21 +266,21 @@ void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 	case L'c':
 		_QueueKeyForSelection(&inputs);
 		_QueueKeyWithControl(&inputs, 'X');
-		keyboard_->SendInput(inputs);
+		_SendInputs(&inputs);
 		_textService->_SetKeyboardOpen(FALSE);
 		break;
 	case L'd':
 		_QueueKeyForSelection(&inputs);
 		_QueueKeyWithControl(&inputs, 'X');
-		keyboard_->SendInput(inputs);
+		_SendInputs(&inputs);
 		break;
 	case L'y':
 		_QueueKeyForSelection(&inputs);
 		_QueueKeyWithControl(&inputs, 'C');
-		keyboard_->SendInput(inputs);
+		_SendInputs(&inputs);
 		break;
 	default:
-		keyboard_->SendInput(inputs);
+		_SendInputs(&inputs);
 		break;
 	}
 	vicmd.Reset();
@@ -262,7 +291,7 @@ void ViKeyHandler::_Vi_o()
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, VK_END);
 	_QueueKey(&inputs, VK_RETURN);
-	keyboard_->SendInput(inputs);
+	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
@@ -283,7 +312,7 @@ void ViKeyHandler::_Vi_p(ITfContext *pContext)
 	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
 	_QueueKey(&inputs, 'V', vicmd.GetCount());
 	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
-	keyboard_->SendInput(inputs);
+	_SendInputs(&inputs);
 	vicmd.Reset();
 }
 
@@ -293,7 +322,7 @@ void ViKeyHandler::_Vi_P()
 	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
 	_QueueKey(&inputs, 'V', vicmd.GetCount());
 	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
-	keyboard_->SendInput(inputs);
+	_SendInputs(&inputs);
 	vicmd.Reset();
 }
 
