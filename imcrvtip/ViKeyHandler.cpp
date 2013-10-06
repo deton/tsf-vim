@@ -35,6 +35,9 @@ HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		case L'f':
 			_Vi_f(pContext, ch);
 			break;
+		case L't':
+			_Vi_t(pContext, ch);
+			break;
 		default:
 			break;
 		}
@@ -92,6 +95,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		}
 		return;
 	case L'f':
+	case L't':
 		vicmd.SetCharWaiting(ch);
 		return;
 	case CTRL('F'):
@@ -451,14 +455,12 @@ okret:
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
-//	Search forward in the line for the next occurrence of the
-//	specified character.
-void ViKeyHandler::_Vi_f(ITfContext *pContext, WCHAR ch)
+int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
 	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
-		return;
+		return -1;
 	}
 	ViCharStream cs(info.following_text);
 	//TODO:取得した文字列にchが含まれていなかったら、
@@ -471,19 +473,19 @@ void ViKeyHandler::_Vi_f(ITfContext *pContext, WCHAR ch)
 		{
 			if(cs.next())
 			{
-				return;
+				return -1;
 			}
 			if(cs.flags() == CS_EOF)
 			{
-				return;
+				return -1;
 			}
 			if(cs.flags() == CS_EOL)
 			{
-				return;
+				return -1;
 			}
 			if(cs.flags() == CS_EMP)
 			{
-				return;
+				return -1;
 			}
 			if(cs.ch() == ch)
 			{
@@ -491,11 +493,37 @@ void ViKeyHandler::_Vi_f(ITfContext *pContext, WCHAR ch)
 			}
 		}
 	}
+	return cs.index();
+}
 
-	size_t movecnt = cs.index();
+//	Search forward in the line for the next occurrence of the
+//	specified character.
+void ViKeyHandler::_Vi_f(ITfContext *pContext, WCHAR ch)
+{
+	int movecnt = _Vi_f_sub(pContext, ch);
+	if(movecnt <= 0)
+	{
+		return;
+	}
 	if(vicmd.GetOperatorPending())
 	{
 		movecnt++;
+	}
+	_ViOpOrMove(VK_RIGHT, movecnt);
+}
+
+//	Search forward in the line for the character before the next
+//	occurrence of the specified character.
+void ViKeyHandler::_Vi_t(ITfContext *pContext, WCHAR ch)
+{
+	int movecnt = _Vi_f_sub(pContext, ch);
+	if(movecnt <= 0)
+	{
+		return;
+	}
+	if(!vicmd.GetOperatorPending())
+	{
+		movecnt--;
 	}
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
