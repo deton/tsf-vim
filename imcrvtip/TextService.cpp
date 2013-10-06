@@ -2,10 +2,9 @@
 #include "imcrvtip.h"
 #include "TextService.h"
 #include "CandidateList.h"
-#include "mozc/win32/base/keyboard.h"
 
 CTextService::CTextService()
-	: keyboard_(mozc::win32::Win32KeyboardInterface::CreateDefault())
+	: vihandler(this)
 {
 	DllAddRef();
 

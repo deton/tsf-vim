@@ -1,11 +1,32 @@
 ﻿
 #include "imcrvtip.h"
 #include "TextService.h"
+#include "ViKeyHandler.h"
 #include "ViCharStream.h"
 #include "mozc/win32/tip/tip_surrounding_text.h"
 #include "mozc/win32/base/keyboard.h"
 
-HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
+ViKeyHandler::ViKeyHandler(CTextService *textService)
+	: _textService(textService),
+	keyboard_(mozc::win32::Win32KeyboardInterface::CreateDefault())
+{
+}
+
+ViKeyHandler::~ViKeyHandler()
+{
+}
+
+void ViKeyHandler::Reset()
+{
+	vicmd.Reset();
+}
+
+BOOL ViKeyHandler::IsWaitingNextKey()
+{
+	return !vicmd.IsEmpty();
+}
+
+HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 {
 	if(vicmd.GetCharWaiting())
 	{
@@ -26,7 +47,7 @@ HRESULT CTextService::_HandleChar(TfEditCookie ec, ITfContext *pContext, WCHAR c
 	return S_OK;
 }
 
-void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
+void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 {
 	switch(ch)
 	{
@@ -132,7 +153,7 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	}
 }
 
-void CTextService::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
+void ViKeyHandler::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 {
 	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
@@ -150,7 +171,7 @@ void CTextService::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 	}
 }
 
-void CTextService::_QueueKeyForSelection(vector<INPUT> *inputs)
+void ViKeyHandler::_QueueKeyForSelection(vector<INPUT> *inputs)
 {
 	const KEYBDINPUT keyboard_input = {VK_SHIFT, 0, 0, 0, 0};
 	INPUT keydown = {};
@@ -165,7 +186,7 @@ void CTextService::_QueueKeyForSelection(vector<INPUT> *inputs)
 	inputs->push_back(keyup);
 }
 
-void CTextService::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up)
+void ViKeyHandler::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up)
 {
 	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
@@ -185,28 +206,28 @@ void CTextService::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up)
 	}
 }
 
-void CTextService::_QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
+void ViKeyHandler::_QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
 {
 	_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
 	_QueueKey(inputs, vk);
 	_QueueKeyForModifier(inputs, VK_CONTROL, TRUE);
 }
 
-void CTextService::_SendKey(UINT vk, int count)
+void ViKeyHandler::_SendKey(UINT vk, int count)
 {
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, vk, count);
 	keyboard_->SendInput(inputs);
 }
 
-void CTextService::_SendKeyWithControl(UINT vk)
+void ViKeyHandler::_SendKeyWithControl(UINT vk)
 {
 	vector<INPUT> inputs;
 	_QueueKeyWithControl(&inputs, vk);
 	keyboard_->SendInput(inputs);
 }
 
-void CTextService::_ViOpOrMove(UINT vk, int count)
+void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 {
 	deleter.UnsetModifiers();
 	vector<INPUT> inputs;
@@ -217,7 +238,7 @@ void CTextService::_ViOpOrMove(UINT vk, int count)
 		_QueueKeyForSelection(&inputs);
 		_QueueKeyWithControl(&inputs, 'X');
 		keyboard_->SendInput(inputs);
-		_SetKeyboardOpen(FALSE);
+		_textService->_SetKeyboardOpen(FALSE);
 		break;
 	case L'd':
 		_QueueKeyForSelection(&inputs);
@@ -236,21 +257,21 @@ void CTextService::_ViOpOrMove(UINT vk, int count)
 	vicmd.Reset();
 }
 
-void CTextService::_Vi_o()
+void ViKeyHandler::_Vi_o()
 {
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, VK_END);
 	_QueueKey(&inputs, VK_RETURN);
 	keyboard_->SendInput(inputs);
-	_SetKeyboardOpen(FALSE);
+	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
 
-void CTextService::_Vi_p(ITfContext *pContext)
+void ViKeyHandler::_Vi_p(ITfContext *pContext)
 {
 	vector<INPUT> inputs;
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(mozc::win32::tsf::TipSurroundingText::Get(this, pContext, &info))
+	if(mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		if(info.following_text.size() > 0
 				&& info.following_text[0] != L'\n'
@@ -266,7 +287,7 @@ void CTextService::_Vi_p(ITfContext *pContext)
 	vicmd.Reset();
 }
 
-void CTextService::_Vi_P()
+void ViKeyHandler::_Vi_P()
 {
 	vector<INPUT> inputs;
 	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
@@ -277,10 +298,10 @@ void CTextService::_Vi_P()
 }
 
 //次の文に移動
-void CTextService::_ViNextSentence(ITfContext *pContext)
+void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(this, pContext, &info))
+	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		return;
 	}
@@ -403,10 +424,10 @@ okret:
 
 //	Search forward in the line for the next occurrence of the
 //	specified character.
-void CTextService::_Vi_f(ITfContext *pContext, WCHAR ch)
+void ViKeyHandler::_Vi_f(ITfContext *pContext, WCHAR ch)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(this, pContext, &info))
+	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		return;
 	}

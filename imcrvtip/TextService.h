@@ -4,8 +4,7 @@
 
 #include "imcrvtip.h"
 #include "convtype.h"
-#include "mozc/win32/base/deleter.h"
-#include "ViCmd.h"
+#include "ViKeyHandler.h"
 
 class CLangBarItemButton;
 class CCandidateList;
@@ -132,22 +131,6 @@ public:
 	BOOL _IsKeyVoid(WCHAR ch, BYTE vk);
 	void _ResetStatus();
 
-	// KeyHandlerChar
-	HRESULT _HandleChar(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
-	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
-	void _QueueKey(std::vector<INPUT> *inputs, UINT vk, int count = 1);
-	void _QueueKeyForSelection(std::vector<INPUT> *inputs);
-	void _QueueKeyForModifier(std::vector<INPUT> *inputs, UINT vk, BOOL up);
-	void _QueueKeyWithControl(std::vector<INPUT> *inputs, UINT vk);
-	void _SendKey(UINT vk, int count = 1);
-	void _SendKeyWithControl(UINT vk);
-	void _ViOpOrMove(UINT vk, int count);
-	void _Vi_o();
-	void _Vi_p(ITfContext *pContext);
-	void _Vi_P();
-	void _ViNextSentence(ITfContext *pContext);
-	void _Vi_f(ITfContext *pContext, WCHAR ch);
-
 	// KeyHandlerCompostion
 	HRESULT _Update(TfEditCookie ec, ITfContext *pContext, BOOL fixed = FALSE, BOOL back = FALSE);
 	HRESULT _Update(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, BOOL fixed = FALSE, BOOL back = FALSE);
@@ -245,9 +228,6 @@ private:
 	TfGuidAtom _gaDisplayAttributeCandidate;
 	TfGuidAtom _gaDisplayAttributeAnnotation;
 
-	mozc::win32::VKBackBasedDeleter deleter;
-	std::unique_ptr<mozc::win32::Win32KeyboardInterface> keyboard_;
-
 private:
 	//ファイルパス
 	WCHAR pathconfigxml[MAX_PATH];	//設定
@@ -283,7 +263,7 @@ public:
 	BOOL showcandlist;		//候補リスト表示
 	BOOL complement;		//補完
 
-	ViCmd vicmd;			//Viコマンド
+	ViKeyHandler vihandler;			//Viキー処理
 
 	int exinputmode;		//入力モードの前回状態
 

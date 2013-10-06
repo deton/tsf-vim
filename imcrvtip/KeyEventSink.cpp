@@ -22,7 +22,7 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 		return FALSE;
 	}
 
-	if(_IsComposing() || !vicmd.IsEmpty())
+	if(_IsComposing() || vihandler.IsWaitingNextKey())
 	{
 		return TRUE;
 	}
@@ -40,7 +40,7 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 	//処理しないCtrlキー
 	if(vk_ctrl)
 	{
-		vicmd.Reset();
+		vihandler.Reset();
 		return FALSE;
 	}
 
@@ -49,7 +49,7 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 		return TRUE;
 	}
 
-	vicmd.Reset();
+	vihandler.Reset();
 	return FALSE;
 }
 
