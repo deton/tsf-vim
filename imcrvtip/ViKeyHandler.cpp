@@ -127,6 +127,7 @@ void CTextService::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.Reset();
 		return;
 	default:
+		vicmd.Reset();
 		break;
 	}
 }

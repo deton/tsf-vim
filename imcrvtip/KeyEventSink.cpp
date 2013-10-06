@@ -40,6 +40,7 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 	//処理しないCtrlキー
 	if(vk_ctrl)
 	{
+		vicmd.Reset();
 		return FALSE;
 	}
 
@@ -48,6 +49,7 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 		return TRUE;
 	}
 
+	vicmd.Reset();
 	return FALSE;
 }
 
