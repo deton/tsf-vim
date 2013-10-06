@@ -364,7 +364,7 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 		}
 		if(cs.flags() == CS_EOF)
 		{
-			return;
+			break;
 		}
 		if(cs.flags() == CS_EOL)
 		{
