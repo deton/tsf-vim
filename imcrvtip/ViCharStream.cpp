@@ -1,9 +1,9 @@
 #include "ViCharStream.h"
 
 ViCharStream::ViCharStream(const std::wstring &buf)
-	: _cno(0), _index(0), _flags(CS_NONE)
+	: _buf(buf), _cno(0), _index(0), _flags(CS_NONE)
 {
-	_buf = std::regex_replace(buf, std::wregex(L"\r\n"), std::wstring(L"\n"));
+	remove(_buf.begin(), _buf.end(), L'\r');
 	_len = _buf.find(L"\n");
 	if(_len == std::wstring::npos)
 	{
