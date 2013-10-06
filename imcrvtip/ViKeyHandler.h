@@ -1,7 +1,7 @@
 #ifndef VIKEYHANDLER_H
 #define VIKEYHANDLER_H
 
-#include "mozc/win32/base/deleter.h"
+#include "mozc/win32/base/keyboard.h"
 #include "ViCmd.h"
 
 class CTextService;
@@ -34,7 +34,6 @@ private:
 
 	CTextService *_textService;
 	ViCmd vicmd;
-	mozc::win32::VKBackBasedDeleter deleter;
 	std::unique_ptr<mozc::win32::Win32KeyboardInterface> keyboard_;
 };
 #endif //VIKEYHANDLER_H
