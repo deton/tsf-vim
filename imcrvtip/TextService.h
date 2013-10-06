@@ -134,10 +134,7 @@ public:
 
 	// KeyHandlerChar
 	HRESULT _HandleChar(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
-	HRESULT _HandleCharReturn(TfEditCookie ec, ITfContext *pContext, BOOL back = FALSE);
-	HRESULT _HandleCharTerminate(TfEditCookie ec, ITfContext *pContext, std::wstring &composition);
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
-	void _PrepareForFunc(TfEditCookie ec, ITfContext *pContext);
 	void _QueueKey(std::vector<INPUT> *inputs, UINT vk, int count = 1);
 	void _QueueKeyForSelection(std::vector<INPUT> *inputs);
 	void _QueueKeyForModifier(std::vector<INPUT> *inputs, UINT vk, BOOL up);
@@ -150,23 +147,12 @@ public:
 	void _Vi_P();
 	void _ViNextSentence(ITfContext *pContext);
 	void _Vi_f(ITfContext *pContext, WCHAR ch);
-	HRESULT _HandlePostMaze(TfEditCookie ec, ITfContext *pContext, int count);
-	HRESULT _HandlePostKata(TfEditCookie ec, ITfContext *pContext, int count);
-	HRESULT _HandlePostKataShrink(TfEditCookie ec, ITfContext *pContext, int count);
-	HRESULT _HandlePostBushu(TfEditCookie ec, ITfContext *pContext);
-	HRESULT _AcquirePrecedingText(ITfContext *pContext, std::wstring *text);
-	HRESULT _ReplacePrecedingText(TfEditCookie ec, ITfContext *pContext, int delete_count, bool startMaze = false);
-	HRESULT _ReplacePrecedingTextIMM32(TfEditCookie ec, ITfContext *pContext, int delete_count, bool startMaze = false);
 
 	// KeyHandlerCompostion
 	HRESULT _Update(TfEditCookie ec, ITfContext *pContext, BOOL fixed = FALSE, BOOL back = FALSE);
 	HRESULT _Update(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, BOOL fixed = FALSE, BOOL back = FALSE);
 	HRESULT _SetText(TfEditCookie ec, ITfContext *pContext, const std::wstring &text, LONG cchReq, BOOL fixed);
 	HRESULT _ShowCandidateList(TfEditCookie ec, ITfContext *pContext, BOOL reg);
-
-	// KeyHandlerControl
-	HRESULT _HandleControl(TfEditCookie ec, ITfContext *pContext, BYTE sf, WCHAR &ch);
-	HRESULT _HandleConvPoint(TfEditCookie ec, ITfContext *pContext, WCHAR &ch);
 
 	// KeyHandlerConv
 	WCHAR _GetCh(BYTE vk, BYTE vkoff = 0);

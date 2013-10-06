@@ -98,9 +98,6 @@
     <ClCompile Include="KeyHandlerComposition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyHandlerControl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="KeyHandlerConv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

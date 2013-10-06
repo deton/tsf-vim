@@ -211,7 +211,6 @@
     <ClCompile Include="KeyHandler.cpp" />
     <ClCompile Include="ViKeyHandler.cpp" />
     <ClCompile Include="KeyHandlerComposition.cpp" />
-    <ClCompile Include="KeyHandlerControl.cpp" />
     <ClCompile Include="KeyHandlerConv.cpp" />
     <ClCompile Include="KeyHandlerDictionary.cpp" />
     <ClCompile Include="LanguageBar.cpp" />
