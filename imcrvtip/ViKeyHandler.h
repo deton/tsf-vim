@@ -29,6 +29,7 @@ private:
 	void _Vi_o();
 	void _Vi_p(ITfContext *pContext);
 	void _Vi_P();
+	void _ViNextWord(ITfContext *pContext, WCHAR type);
 	void _ViNextSentence(ITfContext *pContext);
 	int _Vi_f_sub(ITfContext *pContext, WCHAR ch);
 	void _Vi_f(ITfContext *pContext, WCHAR ch);

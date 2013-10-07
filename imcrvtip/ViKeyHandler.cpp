@@ -6,6 +6,11 @@
 #include "mozc/win32/tip/tip_surrounding_text.h"
 #include "mozc/win32/base/keyboard.h"
 
+static int inword(WCHAR c)
+{
+	return isalnum(c) || c == '_';
+}
+
 ViKeyHandler::ViKeyHandler(CTextService *textService)
 	: _textService(textService),
 	keyboard_(mozc::win32::Win32KeyboardInterface::CreateDefault())
@@ -143,6 +148,11 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'X':
 		vicmd.SetOperatorPending('d'); //cut to clipboard
 		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
+		return;
+	case L'w':
+	case L'W':
+		_ViNextWord(pContext, ch);
+		vicmd.Reset();
 		return;
 	case L')':
 		_ViNextSentence(pContext);
@@ -328,6 +338,183 @@ void ViKeyHandler::_Vi_P()
 	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
 	_SendInputs(&inputs);
 	vicmd.Reset();
+}
+
+void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
+{
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	{
+		return;
+	}
+	ViCharStream cs(info.following_text);
+	//TODO:取得した文字列に文末が含まれていなかったら、
+	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+
+	int cnt = vicmd.GetCount();
+	//cf. fword() in v_word.c of nvi-1.79
+	/*
+	 * If in white-space:
+	 *	If the count is 1, and it's a change command, we're done.
+	 *	Else, move to the first non-white-space character, which
+	 *	counts as a single word move.  If it's a motion command,
+	 *	don't move off the end of the line.
+	 */
+	if(cs.flags() == CS_EMP || cs.flags() == CS_NONE && iswblank(cs.ch()))
+	{
+		if(vicmd.GetOperatorPending() && cs.flags() != CS_EMP && cnt == 1)
+		{
+			if(vicmd.GetOperatorPending() == L'c')
+			{
+				return;
+			}
+			if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
+			{
+				if(cs.fspace())
+				{
+					return;
+				}
+				goto ret;
+			}
+		}
+		if(cs.fblank())
+		{
+			return;
+		}
+		--cnt;
+	}
+
+	/*
+	 * Cyclically move to the next word -- this involves skipping
+	 * over word characters and then any trailing non-word characters.
+	 * Note, for the 'w' command, the definition of a word keeps
+	 * switching.
+	 */
+	if(type == L'W')
+	{
+		while(cnt--)
+		{
+			for(;;)
+			{
+				if(cs.next())
+				{
+					return;
+				}
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+			}
+			/*
+			 * If a motion command and we're at the end of the
+			 * last word, we're done.  Delete and yank eat any
+			 * trailing blanks, but we don't move off the end
+			 * of the line regardless.
+			 */
+			if(cnt == 0 && vicmd.GetOperatorPending())
+			{
+				if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
+				{
+					if(cs.fspace())
+					{
+						return;
+					}
+					break;
+				}
+			}
+
+			/* Eat whitespace characters. */
+			if(cs.fblank())
+			{
+				return;
+			}
+			if(cs.flags() == CS_EOF)
+			{
+				goto ret;
+			}
+		}
+	}
+	else //'w'
+	{
+		while(cnt--)
+		{
+			enum { INWORD, NOTWORD } state;
+			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
+			for(;;)
+			{
+				if(cs.next())
+				{
+					return;
+				}
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+				if(state == INWORD)
+				{
+					if(!inword(cs.ch()))
+					{
+						break;
+					}
+				}
+				else
+				{
+					if(inword(cs.ch()))
+					{
+						break;
+					}
+				}
+			}
+			/* See comment above. */
+			if(cnt == 0 && vicmd.GetOperatorPending())
+			{
+				if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
+				{
+					if(cs.fspace())
+					{
+						return;
+					}
+					break;
+				}
+			}
+
+			/* Eat whitespace characters. */
+			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			{
+				if(cs.fblank())
+				{
+					return;
+				}
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+			}
+		}
+	}
+
+	/*
+	 * If we didn't move, we must be at EOF.
+	 *
+	 * !!!
+	 * That's okay for motion commands, however.
+	 */
+ret:
+	int movecnt = cs.index();
+	if(!vicmd.GetOperatorPending() && movecnt == 0)
+	{
+		return;
+	}
+
+	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
 //次の文に移動

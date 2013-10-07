@@ -58,10 +58,28 @@ int ViCharStream::fblank()
 	return 0;
 }
 
+/*
+ *	If on a space, eat forward until something other than a
+ *	whitespace character.
+ */
 int ViCharStream::fspace()
 {
-	//TODO
-	return 1;
+	if(flags() != CS_NONE || !iswblank(ch()))
+	{
+		return 0;
+	}
+	for(;;)
+	{
+		if(next())
+		{
+			return 1;
+		}
+		if(flags() != CS_NONE || !iswblank(ch()))
+		{
+			break;
+		}
+	}
+	return 0;
 }
 
 //Retrieve the next character.
