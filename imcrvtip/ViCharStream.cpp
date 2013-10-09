@@ -82,7 +82,7 @@ int ViCharStream::fspace()
 	return 0;
 }
 
-//Retrieve the next character.
+//set current position to the next character.
 int ViCharStream::next()
 {
 	switch(flags())
@@ -104,7 +104,7 @@ int ViCharStream::next()
 			{
 				_len = _buf.size() - _index;
 			}
-			if(_len == 0 || _buf.find_first_not_of(L" \t", _index, _len) == std::wstring::npos)
+			if(_len <= _index || _buf.find_first_not_of(L" \t", _index, _len) == std::wstring::npos)
 			{
 				_flags = CS_EMP;
 			}
@@ -133,8 +133,66 @@ int ViCharStream::next()
 	return 0;
 }
 
+//set current position to the previous character.
 int ViCharStream::prev()
 {
-	//TODO
-	return 1;
+	int sol;
+	switch(flags())
+	{
+	case CS_EMP:				/* EMP; get previous line. */
+		//TODO: skip to \n
+	case CS_EOL:				/* EOL; get previous line. */
+		--_index;
+		if(_index <= 0)		/* SOF. */
+		{
+			//TODO: acquire preceding text after moving cursor
+			_index = 0;
+			_flags = CS_SOF;
+			break;
+		}
+		sol = _buf.rfind(L"\n", _index); // find start of line
+		if(sol == std::wstring::npos)
+		{
+			sol = 0;
+		}
+		_len = _index + 1;
+		if(_len <= sol || _buf.find_first_not_of(L" \t", sol, _len) == std::wstring::npos)
+		{
+			_cno = 0;
+			_flags = CS_EMP;
+		}
+		else
+		{
+			_flags = CS_NONE;
+			_cno = _len - 1;
+		}
+		break;
+	case CS_EOF:				/* EOF: get previous char. */
+	case CS_NONE:
+		if(_cno == 0)
+		{
+			if(_index == 0)
+			{
+				//TODO: acquire preceding text after moving cursor
+				_flags = CS_SOF;
+			}
+			else
+			{
+				--_index;
+				_flags = CS_EOL;
+			}
+		}
+		else
+		{
+			--_cno;
+			--_index;
+			_flags = CS_NONE;
+		}
+		break;
+	case CS_SOF:				/* SOF. */
+		break;
+	default:
+		break;
+	}
+	return 0;
 }

@@ -154,6 +154,11 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_ViNextWord(pContext, ch);
 		vicmd.Reset();
 		return;
+	case L'e':
+	case L'E':
+		_ViNextWordE(pContext, ch);
+		vicmd.Reset();
+		return;
 	case L')':
 		_ViNextSentence(pContext);
 		vicmd.Reset();
@@ -514,6 +519,178 @@ ret:
 		return;
 	}
 
+	_ViOpOrMove(VK_RIGHT, movecnt);
+}
+
+void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
+{
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	{
+		return;
+	}
+	ViCharStream cs(info.following_text);
+	//TODO:取得した文字列に文末が含まれていなかったら、
+	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+
+	int cnt = vicmd.GetCount();
+	//cf. eword() in v_word.c of nvi-1.79
+	/*
+	 * !!!
+	 * If in whitespace, or the next character is whitespace, move past
+	 * it.  (This doesn't count as a word move.)  Stay at the character
+	 * past the current one, it sets word "state" for the 'e' command.
+	 */
+	if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
+	{
+		if(cs.next())
+		{
+			return;
+		}
+		if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
+		{
+			goto start;
+		}
+	}
+	if(cs.fblank())
+	{
+		return;
+	}
+
+	/*
+	 * Cyclically move to the next word -- this involves skipping
+	 * over word characters and then any trailing non-word characters.
+	 * Note, for the 'e' command, the definition of a word keeps
+	 * switching.
+	 */
+start:
+	if(type == 'E')
+	{
+		while(cnt--)
+		{
+			for(;;)
+			{
+				if(cs.next())
+				{
+					return;
+				}
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+			}
+			/*
+			 * When we reach the start of the word after the last
+			 * word, we're done.  If we changed state, back up one
+			 * to the end of the previous word.
+			 */
+			if(cnt == 0)
+			{
+				if(cs.flags() == CS_NONE)
+				{
+					if(cs.prev())
+					{
+						return;
+					}
+					break;
+				}
+			}
+
+			/* Eat whitespace characters. */
+			if(cs.fblank())
+			{
+				return;
+			}
+			if(cs.flags() == CS_EOF)
+			{
+				goto ret;
+			}
+		}
+	}
+	else //'e'
+	{
+		while(cnt--)
+		{
+			enum { INWORD, NOTWORD } state;
+			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
+			for(;;)
+			{
+				if(cs.next())
+				{
+					return;
+				}
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+				if(state == INWORD)
+				{
+					if(!inword(cs.ch()))
+					{
+						break;
+					}
+				}
+				else
+				{
+					if(inword(cs.ch()))
+					{
+						break;
+					}
+				}
+			}
+			/* See comment above. */
+			if(cnt==0)
+			{
+				if(cs.flags() == CS_NONE)
+				{
+					if (cs.prev())
+					{
+						return;
+					}
+				}
+				break;
+			}
+
+			/* Eat whitespace characters. */
+			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			{
+				if(cs.fblank())
+				{
+					return;
+				}
+			}
+			if(cs.flags() == CS_EOF)
+			{
+				goto ret;
+			}
+		}
+	}
+
+	/*
+	 * If we didn't move, we must be at EOF.
+	 *
+	 * !!!
+	 * That's okay for motion commands, however.
+	 */
+ret:
+	int movecnt = cs.index();
+	if(!vicmd.GetOperatorPending() && movecnt == 0)
+	{
+		return;
+	}
+
+	if(vicmd.GetOperatorPending())
+	{
+		movecnt++;
+	}
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
