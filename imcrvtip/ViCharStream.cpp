@@ -4,12 +4,12 @@ ViCharStream::ViCharStream(const std::wstring &buf)
 	: _buf(buf), _cno(0), _index(0), _flags(CS_NONE)
 {
 	remove(_buf.begin(), _buf.end(), L'\r');
-	_len = _buf.find(L"\n");
-	if(_len == std::wstring::npos)
+	_eol = _buf.find(L"\n");
+	if(_eol == std::wstring::npos)
 	{
-		_len = _buf.size();
+		_eol = _buf.size();
 	}
-	if(_len == 0 || _buf.find_first_not_of(L" \t", 0, _len) == std::wstring::npos)
+	if(_eol == 0 || _buf.find_first_not_of(L" \t", 0, _eol) == std::wstring::npos)
 	{
 		_flags = CS_EMP;
 	}
@@ -99,12 +99,12 @@ int ViCharStream::next()
 		else
 		{
 			_cno = 0;
-			_len = _buf.find(L"\n", _index);
-			if(_len == std::wstring::npos)
+			_eol = _buf.find(L"\n", _index);
+			if(_eol == std::wstring::npos)
 			{
-				_len = _buf.size() - _index;
+				_eol = _buf.size() - _index;
 			}
-			if(_len <= _index || _buf.find_first_not_of(L" \t", _index, _len) == std::wstring::npos)
+			if(_eol <= _index || _buf.find_first_not_of(L" \t", _index, _eol) == std::wstring::npos)
 			{
 				_flags = CS_EMP;
 			}
@@ -116,7 +116,7 @@ int ViCharStream::next()
 		break;
 	case CS_NONE:
 		_index++;
-		if(_cno == _len - 1)
+		if(_cno == _eol - 1)
 		{
 			_flags = CS_EOL;
 		}
@@ -155,8 +155,8 @@ int ViCharStream::prev()
 		{
 			sol = 0;
 		}
-		_len = _index + 1;
-		if(_len <= sol || _buf.find_first_not_of(L" \t", sol, _len) == std::wstring::npos)
+		_eol = _index + 1;
+		if(_eol <= sol || _buf.find_first_not_of(L" \t", sol, _eol) == std::wstring::npos)
 		{
 			_cno = 0;
 			_flags = CS_EMP;
@@ -164,7 +164,7 @@ int ViCharStream::prev()
 		else
 		{
 			_flags = CS_NONE;
-			_cno = _len - 1;
+			_cno = _eol - 1;
 		}
 		break;
 	case CS_EOF:				/* EOF: get previous char. */

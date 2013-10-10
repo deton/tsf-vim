@@ -34,7 +34,7 @@ public:
 private:
 	size_t _index; //current index in buf
 	size_t _cno; //current column in line
-	size_t _len; //current line length
+	size_t _eol; //end index of current line. _buf[_eol] == '\n' || _buf.size()
 	std::wstring _buf;
 	cs_flags _flags;
 };
