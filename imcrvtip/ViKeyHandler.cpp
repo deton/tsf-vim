@@ -687,7 +687,7 @@ ret:
 		return;
 	}
 
-	if(vicmd.GetOperatorPending())
+	if(vicmd.GetOperatorPending() && cs.flags() == CS_NONE)
 	{
 		movecnt++;
 	}
