@@ -826,38 +826,33 @@ int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 	{
 		return -1;
 	}
-	ViCharStream cs(info.following_text);
+	std::wstring text(info.following_text);
+	// erase chars after newline to search in current line.
+	size_t nl = text.find_first_of(L"\r\n");
+	if(nl != std::wstring::npos)
+	{
+		text.erase(nl);
+	}
 	//TODO:取得した文字列にchが含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
+	size_t offset = 0;
 	while(cnt--)
 	{
-		while(1)
+		offset++;
+		if(offset >= text.size())
 		{
-			if(cs.next())
-			{
-				return -1;
-			}
-			if(cs.flags() == CS_EOF)
-			{
-				return -1;
-			}
-			if(cs.flags() == CS_EOL)
-			{
-				return -1;
-			}
-			if(cs.flags() == CS_EMP)
-			{
-				return -1;
-			}
-			if(cs.ch() == ch)
-			{
-				break;
-			}
+			return 0;
 		}
+		size_t i = text.find(ch, offset);
+		if(i == std::wstring::npos)
+		{
+			return 0;
+		}
+		offset = i;
 	}
-	return cs.index();
+	return offset;
 }
 
 //	Search forward in the line for the next occurrence of the
