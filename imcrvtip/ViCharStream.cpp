@@ -1,7 +1,7 @@
 #include "ViCharStream.h"
 
 ViCharStream::ViCharStream(const std::wstring &buf)
-	: _buf(buf), _cno(0), _index(0), _flags(CS_NONE)
+	: _buf(buf), _index(0), _sol(0), _flags(CS_NONE)
 {
 	remove(_buf.begin(), _buf.end(), L'\r');
 	_eol = _buf.find(L"\n");
@@ -9,7 +9,7 @@ ViCharStream::ViCharStream(const std::wstring &buf)
 	{
 		_eol = _buf.size();
 	}
-	if(_eol == 0 || _buf.find_first_not_of(L" \t", 0, _eol) == std::wstring::npos)
+	if(_eol == 0 || _buf.find_first_not_of(L" \t") >= _eol)
 	{
 		_flags = CS_EMP;
 	}
@@ -98,13 +98,13 @@ int ViCharStream::next()
 		}
 		else
 		{
-			_cno = 0;
-			_eol = _buf.find(L"\n", _index);
+			_sol = _index;
+			_eol = _buf.find(L"\n", _sol);
 			if(_eol == std::wstring::npos)
 			{
-				_eol = _buf.size() - _index;
+				_eol = _buf.size();
 			}
-			if(_eol <= _index || _buf.find_first_not_of(L" \t", _index, _eol) == std::wstring::npos)
+			if(_eol == _sol || _buf.find_first_not_of(L" \t", _sol) >= _eol)
 			{
 				_flags = CS_EMP;
 			}
@@ -116,13 +116,9 @@ int ViCharStream::next()
 		break;
 	case CS_NONE:
 		_index++;
-		if(_cno == _eol - 1)
+		if(_index == _eol)
 		{
 			_flags = CS_EOL;
-		}
-		else
-		{
-			_cno++;
 		}
 		break;
 	case CS_EOF:
@@ -136,12 +132,12 @@ int ViCharStream::next()
 //set current position to the previous character.
 int ViCharStream::prev()
 {
-	int sol;
 	switch(flags())
 	{
 	case CS_EMP:				/* EMP; get previous line. */
 		//TODO: skip to \n
 	case CS_EOL:				/* EOL; get previous line. */
+		_eol = _index;
 		--_index;
 		if(_index <= 0)		/* SOF. */
 		{
@@ -150,26 +146,28 @@ int ViCharStream::prev()
 			_flags = CS_SOF;
 			break;
 		}
-		sol = _buf.rfind(L"\n", _index); // find start of line
-		if(sol == std::wstring::npos)
+		// find start of line
+		_sol = _buf.rfind(L"\n", _index);
+		if(_sol == std::wstring::npos)
 		{
-			sol = 0;
+			_sol = 0;
 		}
-		_eol = _index + 1;
-		if(_eol <= sol || _buf.find_first_not_of(L" \t", sol, _eol) == std::wstring::npos)
+		else
 		{
-			_cno = 0;
+			_sol++;
+		}
+		if(_buf.find_first_not_of(L" \t", _sol) >= _eol)
+		{
 			_flags = CS_EMP;
 		}
 		else
 		{
 			_flags = CS_NONE;
-			_cno = _eol - 1;
 		}
 		break;
 	case CS_EOF:				/* EOF: get previous char. */
 	case CS_NONE:
-		if(_cno == 0)
+		if(_index == _sol)
 		{
 			if(_index == 0)
 			{
@@ -184,7 +182,6 @@ int ViCharStream::prev()
 		}
 		else
 		{
-			--_cno;
 			--_index;
 			_flags = CS_NONE;
 		}
