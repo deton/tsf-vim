@@ -88,7 +88,6 @@ int ViCharStream::next()
 	switch(flags())
 	{
 	case CS_EMP: //EMP; get next line.
-		//TODO: skip to \n
 	case CS_EOL: //EOL; get next line.
 		_index++;
 		if(_index >= _buf.size())
@@ -106,6 +105,7 @@ int ViCharStream::next()
 			}
 			if(_eol == _sol || _buf.find_first_not_of(L" \t", _sol) >= _eol)
 			{
+				_index = _eol;
 				_flags = CS_EMP;
 			}
 			else
@@ -135,9 +135,8 @@ int ViCharStream::prev()
 	switch(flags())
 	{
 	case CS_EMP:				/* EMP; get previous line. */
-		//TODO: skip to \n
+		_index = _sol - 1;
 	case CS_EOL:				/* EOL; get previous line. */
-		_eol = _index;
 		--_index;
 		if(_index <= 0)		/* SOF. */
 		{
@@ -158,6 +157,7 @@ int ViCharStream::prev()
 		}
 		if(_buf.find_first_not_of(L" \t", _sol) >= _eol)
 		{
+			_index = _eol;
 			_flags = CS_EMP;
 		}
 		else
@@ -177,6 +177,7 @@ int ViCharStream::prev()
 			else
 			{
 				--_index;
+				_eol = _index;
 				_flags = CS_EOL;
 			}
 		}
