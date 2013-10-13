@@ -352,7 +352,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	{
 		return;
 	}
-	ViCharStream cs(info.following_text);
+	ViCharStream cs(info.preceding_text, info.following_text);
 	//TODO:取得した文字列に文末が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
@@ -513,7 +513,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	 * That's okay for motion commands, however.
 	 */
 ret:
-	int movecnt = cs.index();
+	int movecnt = cs.difference();
 	if(!vicmd.GetOperatorPending() && movecnt == 0)
 	{
 		return;
@@ -529,7 +529,7 @@ void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
 	{
 		return;
 	}
-	ViCharStream cs(info.following_text);
+	ViCharStream cs(info.preceding_text, info.following_text);
 	//TODO:取得した文字列に文末が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
@@ -681,7 +681,7 @@ start:
 	 * That's okay for motion commands, however.
 	 */
 ret:
-	int movecnt = cs.index();
+	int movecnt = cs.difference();
 	if(!vicmd.GetOperatorPending() && movecnt == 0)
 	{
 		return;
@@ -702,7 +702,7 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 	{
 		return;
 	}
-	ViCharStream cs(info.following_text);
+	ViCharStream cs(info.preceding_text, info.following_text);
 	//TODO:取得した文字列に文末が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
@@ -815,7 +815,7 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 	}
 
 okret:
-	size_t movecnt = cs.index();
+	size_t movecnt = cs.difference();
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 

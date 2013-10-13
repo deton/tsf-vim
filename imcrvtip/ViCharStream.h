@@ -19,7 +19,7 @@ enum cs_flags
 class ViCharStream
 {
 public:
-	ViCharStream(const std::wstring &buf);
+	ViCharStream(const std::wstring &preceding, const std::wstring &following);
 	~ViCharStream();
 
 	int bblank();
@@ -29,9 +29,14 @@ public:
 	int prev();
 	wchar_t ch();
 	cs_flags flags();
-	size_t index();
+	int difference();
 
 private:
+	void _update_sol();
+	void _update_eol();
+	void _update_flags();
+
+	size_t _orig; // original index in buf
 	size_t _index; // current index in buf
 	size_t _sol; // start index of current line
 	size_t _eol; // end index of current line. _buf[_eol] == '\n' || _buf.size()

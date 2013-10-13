@@ -1,19 +1,54 @@
 #include "ViCharStream.h"
 
-ViCharStream::ViCharStream(const std::wstring &buf)
-	: _buf(buf), _index(0), _sol(0), _flags(CS_NONE)
+ViCharStream::ViCharStream(const std::wstring &preceding, const std::wstring &following)
+	: _buf(preceding)
 {
 	remove(_buf.begin(), _buf.end(), L'\r');
-	_eol = _buf.find(L"\n");
+	_orig = _index = _buf.size();
+	remove_copy(following.begin(), following.end(), back_inserter(_buf), L'\r');
+
+	_update_sol();
+	_update_eol();
+	_update_flags();
+}
+
+// find start of line
+void ViCharStream::_update_sol()
+{
+	_sol = _buf.rfind(L"\n", _index);
+	if(_sol == std::wstring::npos)
+	{
+		_sol = 0;
+	}
+	else
+	{
+		_sol++;
+	}
+}
+
+// find end of line
+void ViCharStream::_update_eol()
+{
+	_eol = _buf.find(L"\n", _index);
 	if(_eol == std::wstring::npos)
 	{
 		_eol = _buf.size();
 	}
-	if(_eol == 0 || _buf.find_first_not_of(L" \t") >= _eol)
+}
+
+void ViCharStream::_update_flags()
+{
+	if(_buf.find_first_not_of(L" \t", _sol) >= _eol)
 	{
+		_index = _eol;
 		_flags = CS_EMP;
 	}
+	else
+	{
+		_flags = CS_NONE;
+	}
 }
+
 ViCharStream::~ViCharStream()
 {
 }
@@ -28,9 +63,9 @@ cs_flags ViCharStream::flags()
 	return _flags;
 }
 
-size_t ViCharStream::index()
+int ViCharStream::difference()
 {
-	return _index;
+	return _index - _orig;
 }
 
 int ViCharStream::bblank()
@@ -98,20 +133,8 @@ int ViCharStream::next()
 		else
 		{
 			_sol = _index;
-			_eol = _buf.find(L"\n", _sol);
-			if(_eol == std::wstring::npos)
-			{
-				_eol = _buf.size();
-			}
-			if(_eol == _sol || _buf.find_first_not_of(L" \t", _sol) >= _eol)
-			{
-				_index = _eol;
-				_flags = CS_EMP;
-			}
-			else
-			{
-				_flags = CS_NONE;
-			}
+			_update_eol();
+			_update_flags();
 		}
 		break;
 	case CS_NONE:
@@ -145,25 +168,8 @@ int ViCharStream::prev()
 			_flags = CS_SOF;
 			break;
 		}
-		// find start of line
-		_sol = _buf.rfind(L"\n", _index);
-		if(_sol == std::wstring::npos)
-		{
-			_sol = 0;
-		}
-		else
-		{
-			_sol++;
-		}
-		if(_buf.find_first_not_of(L" \t", _sol) >= _eol)
-		{
-			_index = _eol;
-			_flags = CS_EMP;
-		}
-		else
-		{
-			_flags = CS_NONE;
-		}
+		_update_sol();
+		_update_flags();
 		break;
 	case CS_EOF:				/* EOF: get previous char. */
 	case CS_NONE:
