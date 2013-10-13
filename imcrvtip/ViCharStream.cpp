@@ -1,9 +1,8 @@
 #include "ViCharStream.h"
 
 ViCharStream::ViCharStream(const std::wstring &preceding, const std::wstring &following)
-	: _buf(preceding)
 {
-	remove(_buf.begin(), _buf.end(), L'\r');
+	remove_copy(preceding.begin(), preceding.end(), back_inserter(_buf), L'\r');
 	_orig = _index = _buf.size();
 	remove_copy(following.begin(), following.end(), back_inserter(_buf), L'\r');
 
@@ -15,7 +14,7 @@ ViCharStream::ViCharStream(const std::wstring &preceding, const std::wstring &fo
 // find start of line
 void ViCharStream::_update_sol()
 {
-	_sol = _buf.rfind(L"\n", _index);
+	_sol = _buf.rfind(L'\n', _index);
 	if(_sol == std::wstring::npos)
 	{
 		_sol = 0;
@@ -29,7 +28,7 @@ void ViCharStream::_update_sol()
 // find end of line
 void ViCharStream::_update_eol()
 {
-	_eol = _buf.find(L"\n", _index);
+	_eol = _buf.find(L'\n', _index);
 	if(_eol == std::wstring::npos)
 	{
 		_eol = _buf.size();
@@ -68,10 +67,23 @@ int ViCharStream::difference()
 	return _index - _orig;
 }
 
+//Eat backward to the next non-whitespace character.
 int ViCharStream::bblank()
 {
-	//TODO
-	return 1;
+	for(;;)
+	{
+		if(prev())
+		{
+			return 1;
+		}
+		if(flags() == CS_EOL || flags() == CS_EMP ||
+				flags() == CS_NONE && iswblank(ch()))
+		{
+			continue;
+		}
+		break;
+	}
+	return 0;
 }
 
 //Eat forward to the next non-whitespace character.
@@ -158,8 +170,10 @@ int ViCharStream::prev()
 	switch(flags())
 	{
 	case CS_EMP:				/* EMP; get previous line. */
-		_index = _sol - 1;
+		_index = _sol;
 	case CS_EOL:				/* EOL; get previous line. */
+		--_index;
+		_eol = _index;
 		--_index;
 		if(_index <= 0)		/* SOF. */
 		{
@@ -182,8 +196,6 @@ int ViCharStream::prev()
 			}
 			else
 			{
-				--_index;
-				_eol = _index;
 				_flags = CS_EOL;
 			}
 		}

@@ -159,6 +159,11 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_ViNextWordE(pContext, ch);
 		vicmd.Reset();
 		return;
+	case L'b':
+	case L'B':
+		_ViPrevWord(pContext, ch);
+		vicmd.Reset();
+		return;
 	case L')':
 		_ViNextSentence(pContext);
 		vicmd.Reset();
@@ -692,6 +697,170 @@ ret:
 		movecnt++;
 	}
 	_ViOpOrMove(VK_RIGHT, movecnt);
+}
+
+void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
+{
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	{
+		return;
+	}
+	ViCharStream cs(info.preceding_text, info.following_text);
+	//TODO:取得した文字列に文末が含まれていなかったら、
+	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+
+	int cnt = vicmd.GetCount();
+	//cf. bword() in v_word.c of nvi-1.79
+	/*
+	 * !!!
+	 * If in whitespace, or the previous character is whitespace, move
+	 * past it.  (This doesn't count as a word move.)  Stay at the
+	 * character before the current one, it sets word "state" for the
+	 * 'b' command.
+	 */
+	if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
+	{
+		if(cs.prev())
+		{
+			return;
+		}
+		if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
+		{
+			goto start;
+		}
+	}
+	if(cs.bblank())
+	{
+		return;
+	}
+
+	/*
+	 * Cyclically move to the beginning of the previous word -- this
+	 * involves skipping over word characters and then any trailing
+	 * non-word characters.  Note, for the 'b' command, the definition
+	 * of a word keeps switching.
+	 */
+start:
+	if(type == 'B')
+	{
+		while(cnt--)
+		{
+			for(;;)
+			{
+				if(cs.prev())
+				{
+					return;
+				}
+				if(cs.flags() == CS_SOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+			}
+			/*
+			 * When we reach the end of the word before the last
+			 * word, we're done.  If we changed state, move forward
+			 * one to the end of the next word.
+			 */
+			if(cnt == 0)
+			{
+				if(cs.flags() == CS_NONE)
+				{
+					if(cs.next())
+					{
+						return;
+					}
+					break;
+				}
+			}
+
+			/* Eat whitespace characters. */
+			if(cs.bblank())
+			{
+				return;
+			}
+			if(cs.flags() == CS_SOF)
+			{
+				goto ret;
+			}
+		}
+	}
+	else //'b'
+	{
+		while(cnt--)
+		{
+			enum { INWORD, NOTWORD } state;
+			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
+			for(;;)
+			{
+				if(cs.prev())
+				{
+					return;
+				}
+				if(cs.flags() == CS_SOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+				if(state == INWORD)
+				{
+					if(!inword(cs.ch()))
+					{
+						break;
+					}
+				}
+				else
+				{
+					if(inword(cs.ch()))
+					{
+						break;
+					}
+				}
+			}
+			/* See comment above. */
+			if(cnt==0)
+			{
+				if(cs.flags() == CS_NONE)
+				{
+					if (cs.next())
+					{
+						return;
+					}
+				}
+				break;
+			}
+
+			/* Eat whitespace characters. */
+			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			{
+				if(cs.bblank())
+				{
+					return;
+				}
+			}
+			if(cs.flags() == CS_SOF)
+			{
+				goto ret;
+			}
+		}
+	}
+
+	/* If we didn't move, we must be at SOF. */
+ret:
+	int movecnt = cs.difference();
+	if(movecnt == 0)
+	{
+		return;
+	}
+
+	_ViOpOrMove(VK_LEFT, -movecnt);
 }
 
 //次の文に移動
