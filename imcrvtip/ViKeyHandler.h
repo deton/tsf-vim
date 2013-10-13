@@ -36,6 +36,8 @@ private:
 	int _Vi_f_sub(ITfContext *pContext, WCHAR ch);
 	void _Vi_f(ITfContext *pContext, WCHAR ch);
 	void _Vi_t(ITfContext *pContext, WCHAR ch);
+	int _Vi_F_sub(ITfContext *pContext, WCHAR ch);
+	void _Vi_F(ITfContext *pContext, WCHAR ch);
 
 	CTextService *_textService;
 	ViCmd vicmd;

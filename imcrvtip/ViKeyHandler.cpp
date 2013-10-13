@@ -43,6 +43,9 @@ HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		case L't':
 			_Vi_t(pContext, ch);
 			break;
+		case L'F':
+			_Vi_F(pContext, ch);
+			break;
 		default:
 			break;
 		}
@@ -101,6 +104,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		return;
 	case L'f':
 	case L't':
+	case L'F':
 		vicmd.SetCharWaiting(ch);
 		return;
 	case CTRL('F'):
@@ -1054,4 +1058,52 @@ void ViKeyHandler::_Vi_t(ITfContext *pContext, WCHAR ch)
 		movecnt--;
 	}
 	_ViOpOrMove(VK_RIGHT, movecnt);
+}
+
+int ViKeyHandler::_Vi_F_sub(ITfContext *pContext, WCHAR ch)
+{
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	{
+		return -1;
+	}
+	std::wstring text(info.preceding_text);
+	// erase chars before newline to search in current line.
+	size_t nl = text.find_last_of(L"\r\n");
+	if(nl != std::wstring::npos)
+	{
+		text.erase(0, nl);
+	}
+	//TODO:取得した文字列にchが含まれていなかったら、
+	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+
+	int cnt = vicmd.GetCount();
+	size_t offset = text.size();
+	while(cnt--)
+	{
+		offset--;
+		if(offset < 0)
+		{
+			return 0;
+		}
+		size_t i = text.rfind(ch, offset);
+		if(i == std::wstring::npos)
+		{
+			return 0;
+		}
+		offset = i;
+	}
+	return text.size() - offset;
+}
+
+//	Search backward in the line for the next occurrence of the
+//	specified character.
+void ViKeyHandler::_Vi_F(ITfContext *pContext, WCHAR ch)
+{
+	int movecnt = _Vi_F_sub(pContext, ch);
+	if(movecnt <= 0)
+	{
+		return;
+	}
+	_ViOpOrMove(VK_LEFT, movecnt);
 }
