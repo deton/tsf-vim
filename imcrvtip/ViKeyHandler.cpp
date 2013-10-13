@@ -46,6 +46,9 @@ HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		case L'F':
 			_Vi_F(pContext, ch);
 			break;
+		case L'T':
+			_Vi_T(pContext, ch);
+			break;
 		default:
 			break;
 		}
@@ -105,6 +108,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'f':
 	case L't':
 	case L'F':
+	case L'T':
 		vicmd.SetCharWaiting(ch);
 		return;
 	case CTRL('F'):
@@ -1105,5 +1109,18 @@ void ViKeyHandler::_Vi_F(ITfContext *pContext, WCHAR ch)
 	{
 		return;
 	}
+	_ViOpOrMove(VK_LEFT, movecnt);
+}
+
+//	Search backward in the line for the character after the next
+//	occurrence of the specified character.
+void ViKeyHandler::_Vi_T(ITfContext *pContext, WCHAR ch)
+{
+	int movecnt = _Vi_F_sub(pContext, ch);
+	if(movecnt <= 1)
+	{
+		return;
+	}
+	movecnt--;
 	_ViOpOrMove(VK_LEFT, movecnt);
 }
