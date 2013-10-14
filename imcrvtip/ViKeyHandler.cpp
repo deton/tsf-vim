@@ -358,6 +358,13 @@ void ViKeyHandler::_Vi_P()
 	vicmd.Reset();
 }
 
+#define RETURN_IF_FAIL(movefunc) if(movefunc()) return
+#define CS_PREV() RETURN_IF_FAIL(cs.prev)
+#define CS_NEXT() RETURN_IF_FAIL(cs.next)
+#define CS_FSPACE() RETURN_IF_FAIL(cs.fspace)
+#define CS_FBLANK() RETURN_IF_FAIL(cs.fblank)
+#define CS_BBLANK() RETURN_IF_FAIL(cs.bblank)
+
 void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
@@ -388,17 +395,11 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 			}
 			if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
 			{
-				if(cs.fspace())
-				{
-					return;
-				}
+				CS_FSPACE();
 				goto ret;
 			}
 		}
-		if(cs.fblank())
-		{
-			return;
-		}
+		CS_FBLANK();
 		--cnt;
 	}
 
@@ -414,10 +415,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 		{
 			for(;;)
 			{
-				if(cs.next())
-				{
-					return;
-				}
+				CS_NEXT();
 				if(cs.flags() == CS_EOF)
 				{
 					goto ret;
@@ -437,19 +435,13 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 			{
 				if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
 				{
-					if(cs.fspace())
-					{
-						return;
-					}
+					CS_FSPACE();
 					break;
 				}
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.fblank())
-			{
-				return;
-			}
+			CS_FBLANK();
 			if(cs.flags() == CS_EOF)
 			{
 				goto ret;
@@ -464,10 +456,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
 			{
-				if(cs.next())
-				{
-					return;
-				}
+				CS_NEXT();
 				if(cs.flags() == CS_EOF)
 				{
 					goto ret;
@@ -496,10 +485,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 			{
 				if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
 				{
-					if(cs.fspace())
-					{
-						return;
-					}
+					CS_FSPACE();
 					break;
 				}
 			}
@@ -507,10 +493,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 			/* Eat whitespace characters. */
 			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
-				if(cs.fblank())
-				{
-					return;
-				}
+				CS_FBLANK();
 				if(cs.flags() == CS_EOF)
 				{
 					goto ret;
@@ -556,19 +539,13 @@ void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
 	 */
 	if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
 	{
-		if(cs.next())
-		{
-			return;
-		}
+		CS_NEXT();
 		if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
 		{
 			goto start;
 		}
 	}
-	if(cs.fblank())
-	{
-		return;
-	}
+	CS_FBLANK();
 
 	/*
 	 * Cyclically move to the next word -- this involves skipping
@@ -583,10 +560,7 @@ start:
 		{
 			for(;;)
 			{
-				if(cs.next())
-				{
-					return;
-				}
+				CS_NEXT();
 				if(cs.flags() == CS_EOF)
 				{
 					goto ret;
@@ -605,19 +579,13 @@ start:
 			{
 				if(cs.flags() == CS_NONE)
 				{
-					if(cs.prev())
-					{
-						return;
-					}
+					CS_PREV();
 					break;
 				}
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.fblank())
-			{
-				return;
-			}
+			CS_FBLANK();
 			if(cs.flags() == CS_EOF)
 			{
 				goto ret;
@@ -632,10 +600,7 @@ start:
 			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
 			{
-				if(cs.next())
-				{
-					return;
-				}
+				CS_NEXT();
 				if(cs.flags() == CS_EOF)
 				{
 					goto ret;
@@ -664,10 +629,7 @@ start:
 			{
 				if(cs.flags() == CS_NONE)
 				{
-					if (cs.prev())
-					{
-						return;
-					}
+					CS_PREV();
 				}
 				break;
 			}
@@ -675,10 +637,7 @@ start:
 			/* Eat whitespace characters. */
 			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
-				if(cs.fblank())
-				{
-					return;
-				}
+				CS_FBLANK();
 			}
 			if(cs.flags() == CS_EOF)
 			{
@@ -729,19 +688,13 @@ void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
 	 */
 	if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
 	{
-		if(cs.prev())
-		{
-			return;
-		}
+		CS_PREV();
 		if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
 		{
 			goto start;
 		}
 	}
-	if(cs.bblank())
-	{
-		return;
-	}
+	CS_BBLANK();
 
 	/*
 	 * Cyclically move to the beginning of the previous word -- this
@@ -756,10 +709,7 @@ start:
 		{
 			for(;;)
 			{
-				if(cs.prev())
-				{
-					return;
-				}
+				CS_PREV();
 				if(cs.flags() == CS_SOF)
 				{
 					goto ret;
@@ -778,19 +728,13 @@ start:
 			{
 				if(cs.flags() == CS_NONE)
 				{
-					if(cs.next())
-					{
-						return;
-					}
+					CS_NEXT();
 					break;
 				}
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.bblank())
-			{
-				return;
-			}
+			CS_BBLANK();
 			if(cs.flags() == CS_SOF)
 			{
 				goto ret;
@@ -805,10 +749,7 @@ start:
 			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
 			{
-				if(cs.prev())
-				{
-					return;
-				}
+				CS_PREV();
 				if(cs.flags() == CS_SOF)
 				{
 					goto ret;
@@ -837,10 +778,7 @@ start:
 			{
 				if(cs.flags() == CS_NONE)
 				{
-					if (cs.next())
-					{
-						return;
-					}
+					CS_NEXT();
 				}
 				break;
 			}
@@ -848,10 +786,7 @@ start:
 			/* Eat whitespace characters. */
 			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
-				if(cs.bblank())
-				{
-					return;
-				}
+				CS_BBLANK();
 			}
 			if(cs.flags() == CS_SOF)
 			{
@@ -871,7 +806,7 @@ ret:
 	_ViOpOrMove(VK_LEFT, -movecnt);
 }
 
-//次の文に移動
+//	Move forward count sentences.
 void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
@@ -888,10 +823,7 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 	//If in white-space, the next start of sentence counts as one.
 	if(cs.flags() == CS_EMP || cs.flags() == CS_NONE && iswblank(cs.ch()))
 	{
-		if(cs.fblank())
-		{
-			return;
-		}
+		CS_FBLANK();
 		if(--cnt == 0)
 		{
 			goto okret;
@@ -903,10 +835,7 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 	for(state = NONE;;)
 	{
 		//XXX:現在位置に'.'がある場合、'.'が読みとばされる。
-		if(cs.next())
-		{
-			return;
-		}
+		CS_NEXT();
 		if(cs.flags() == CS_EOF)
 		{
 			break;
@@ -915,16 +844,10 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 		{
 			if((state == PERIOD || state == BLANK) && --cnt == 0)
 			{
-				if(cs.next())
-				{
-					return;
-				}
+				CS_NEXT();
 				if(cs.flags() == CS_NONE && iswblank(cs.ch()))
 				{
-					if(cs.fblank())
-					{
-						return;
-					}
+					CS_FBLANK();
 					goto okret;
 				}
 			}
@@ -937,10 +860,7 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 			{
 				goto okret;
 			}
-			if(cs.fblank())
-			{
-				return;
-			}
+			CS_FBLANK();
 			if(--cnt == 0)
 			{
 				goto okret;
@@ -978,10 +898,7 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 			}
 			if(state == BLANK && --cnt == 0)
 			{
-				if(cs.fblank())
-				{
-					return;
-				}
+				CS_FBLANK();
 				goto okret;
 			}
 			//FALLTHROUGH
