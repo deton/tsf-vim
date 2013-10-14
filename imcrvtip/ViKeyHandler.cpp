@@ -173,7 +173,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.Reset();
 		return;
 	case L')':
-		_ViNextSentence(pContext);
+		_VimForwardSent(pContext);
 		vicmd.Reset();
 		return;
 	case L'(':
@@ -377,7 +377,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 		return;
 	}
 	ViCharStream cs(info.preceding_text, info.following_text);
-	//TODO:取得した文字列に文末が含まれていなかったら、
+	//TODO:取得した文字列に単語末が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
@@ -530,7 +530,7 @@ void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
 		return;
 	}
 	ViCharStream cs(info.preceding_text, info.following_text);
-	//TODO:取得した文字列に文末が含まれていなかったら、
+	//TODO:取得した文字列に単語末が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
@@ -678,7 +678,7 @@ void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
 		return;
 	}
 	ViCharStream cs(info.preceding_text, info.following_text);
-	//TODO:取得した文字列に文末が含まれていなかったら、
+	//TODO:取得した文字列に単語頭が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
@@ -810,110 +810,124 @@ ret:
 	_ViOpOrMove(VK_LEFT, -movecnt);
 }
 
-//	Move forward count sentences.
-void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
+void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
 	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		return;
 	}
-	ViCharStream cs(info.preceding_text, info.following_text);
 	//TODO:取得した文字列に文末が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
-	int cnt = vicmd.GetCount();
-	//cf. v_sentencef() in v_sentence.c of nvi-1.79
-	//If in white-space, the next start of sentence counts as one.
-	if(cs.flags() == CS_EMP || cs.flags() == CS_NONE && iswblank(cs.ch()))
-	{
-		CS_FBLANK();
-		if(--cnt == 0)
-		{
-			goto okret;
-			return;
-		}
-	}
+	wstring buf;
+	remove_copy(info.preceding_text.begin(), info.preceding_text.end(), back_inserter(buf), L'\r');
+	size_t origindex = buf.size();
+	size_t index = origindex;
+	remove_copy(info.following_text.begin(), info.following_text.end(), back_inserter(buf), L'\r');
 
-	enum { BLANK, NONE, PERIOD } state;
-	for(state = NONE;;)
+    BOOL noskip = FALSE;
+	int count = vicmd.GetCount();
+	// cf. findsent() in search.c of vim.
+	while(count--)
 	{
-		//XXX:現在位置に'.'がある場合、'.'が読みとばされる。
-		CS_NEXT();
-		if(cs.flags() == CS_EOF)
+		/*
+		 * if on an empty line, skip upto a non-empty line
+		 */
+		if(buf[index] == L'\n')
 		{
-			break;
+			index = buf.find_first_not_of(L'\n', index);
+			if(index == std::wstring::npos)
+			{
+				index = buf.size() - 1;
+			}
+			goto found;
 		}
-		if(cs.flags() == CS_EOL)
+
+		/* go back to the previous non-blank char */
+		while(iswblank(buf[index]))
 		{
-			if((state == PERIOD || state == BLANK) && --cnt == 0)
+			if(index == 0)
 			{
-				CS_NEXT();
-				if(cs.flags() == CS_NONE && iswblank(cs.ch()))
-				{
-					CS_FBLANK();
-					goto okret;
-				}
-			}
-			state = NONE;
-			continue;
-		}
-		if(cs.flags() == CS_EMP) // An EMP is two sentences.
-		{
-			if(--cnt == 0)
-			{
-				goto okret;
-			}
-			CS_FBLANK();
-			if(--cnt == 0)
-			{
-				goto okret;
-			}
-			state = NONE;
-			continue;
-		}
-		switch(cs.ch())
-		{
-		case L'.':
-		case L'?':
-		case L'!':
-			state = PERIOD;
-			break;
-		case L')':
-		case L']':
-		case L'"':
-		case L'\'':
-			if(state != PERIOD)
-			{
-				state = NONE;
-			}
-			break;
-		case L'\t':
-			if(state == PERIOD)
-			{
-				state = BLANK;
-			}
-			//FALLTHROUGH
-		case L' ':
-			if(state == PERIOD)
-			{
-				state = BLANK;
 				break;
 			}
-			if(state == BLANK && --cnt == 0)
+			--index;
+			if(buf[index] == L'\n')
 			{
-				CS_FBLANK();
-				goto okret;
+				if(index == 0)
+				{
+					break;
+				}
+				--index;
+				/* Stop in front of empty line */
+				if(buf[index] == L'\n')
+				{
+					index += 2;
+					goto found;
+				}
 			}
-			//FALLTHROUGH
-		default:
-			state = NONE;
-			break;
+		}
+
+		for(;;)		/* find end of sentence */
+		{
+			WCHAR c = buf[index];
+			if(c == L'\n')
+			{
+				break;
+			}
+			if(c == L'.' || c == L'!' || c == L'?')
+			{
+				size_t tindex = index + 1;
+				if(tindex >= buf.size())
+				{
+					break;
+				}
+				tindex = buf.find_first_not_of(L")]\"'", tindex);
+				if(tindex == std::wstring::npos)
+				{
+					index = buf.size() - 1;
+					break;
+				}
+				else if(iswblank(buf[tindex]))
+				{
+					index = tindex;
+					break;
+				}
+				else if(buf[tindex] == L'\n')
+				{
+					index = tindex + 1;
+					if(index >= buf.size())
+					{
+						index = buf.size() - 1;
+					}
+					break;
+				}
+			}
+			++index;
+			if(index >= buf.size())
+			{
+				if(count)
+				{
+					return;
+				}
+				index = buf.size() - 1;
+				noskip = TRUE;
+				break;
+			}
+		}
+found:
+		// skip white space
+		if(!noskip)
+		{
+			index = buf.find_first_not_of(L" \t", index);
+			if(index == std::wstring::npos)
+			{
+				index = buf.size() - 1;
+			}
 		}
 	}
 
-okret:
-	size_t movecnt = cs.difference();
+	size_t movecnt = index - origindex;
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
@@ -926,7 +940,7 @@ void ViKeyHandler::_ViPrevSentence(ITfContext *pContext)
 		return;
 	}
 	ViCharStream cs(info.preceding_text, info.following_text);
-	//TODO:取得した文字列に文末が含まれていなかったら、
+	//TODO:取得した文字列に文頭が含まれていなかったら、
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
