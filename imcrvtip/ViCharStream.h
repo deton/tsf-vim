@@ -30,6 +30,8 @@ public:
 	wchar_t ch();
 	cs_flags flags();
 	int difference();
+	void save_state();
+	void restore_state();
 
 private:
 	void _update_sol();
@@ -42,5 +44,10 @@ private:
 	size_t _eol; // end index of current line. _buf[_eol] == '\n' || _buf.size()
 	std::wstring _buf;
 	cs_flags _flags;
+
+	size_t _index_save;
+	size_t _sol_save;
+	size_t _eol_save;
+	cs_flags _flags_save;
 };
 #endif //VICHARSTREAM_H

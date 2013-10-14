@@ -176,6 +176,10 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_ViNextSentence(pContext);
 		vicmd.Reset();
 		return;
+	case L'(':
+		_ViPrevSentence(pContext);
+		vicmd.Reset();
+		return;
 	default:
 		vicmd.Reset();
 		break;
@@ -911,6 +915,150 @@ void ViKeyHandler::_ViNextSentence(ITfContext *pContext)
 okret:
 	size_t movecnt = cs.difference();
 	_ViOpOrMove(VK_RIGHT, movecnt);
+}
+
+//	Move backward count sentences.
+void ViKeyHandler::_ViPrevSentence(ITfContext *pContext)
+{
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	{
+		return;
+	}
+	ViCharStream cs(info.preceding_text, info.following_text);
+	//TODO:取得した文字列に文末が含まれていなかったら、
+	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+
+	int cnt = vicmd.GetCount();
+	//cf. v_sentencef() in v_sentence.c of nvi-1.79
+	// In empty lines, skip to the previous non-white-space character.
+	// If in text, skip to the prevous white-space character.
+	if(cs.flags() == CS_EMP)
+	{
+		CS_BBLANK();
+		for(;;)
+		{
+			CS_PREV();
+			if(cs.flags() != CS_EOL)
+			{
+				break;
+			}
+		}
+	}
+	else if (cs.flags() == CS_NONE && !iswblank(cs.ch()))
+	{
+		for(;;)
+		{
+			CS_PREV();
+			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			{
+				break;
+			}
+		}
+	}
+
+	for(int last = 0;;)
+	{
+		CS_PREV();
+		if(cs.flags() == CS_SOF)	// SOF is a movement sink.
+		{
+			break;
+		}
+		if(cs.flags() == CS_EOL)
+		{
+			last = 1;
+			continue;
+		}
+		if(cs.flags() == CS_EMP)
+		{
+			if(--cnt == 0)
+			{
+				goto ret;
+			}
+			CS_BBLANK();
+			last = 0;
+			continue;
+		}
+		switch(cs.ch())
+		{
+		case L'.':
+		case L'?':
+		case L'!':
+			if(!last || --cnt != 0)
+			{
+				last = 0;
+				continue;
+			}
+
+ret:
+			cs.save_state();
+
+			/*
+			 * Move to the start of the sentence, skipping blanks
+			 * and special characters.
+			 */
+			do {
+				CS_NEXT();
+			} while (cs.flags() == CS_NONE &&
+					(cs.ch() == ')' || cs.ch() == ']' ||
+					 cs.ch() == '"' || cs.ch() == '\''));
+			if((cs.flags() != CS_NONE || iswblank(cs.ch())))
+			{
+				CS_FBLANK();
+			}
+
+			/*
+			 * If it was ".  xyz", with the cursor on the 'x', or
+			 * "end.  ", with the cursor in the spaces, or the
+			 * beginning of a sentence preceded by an empty line,
+			 * we can end up where we started.  Fix it.
+			 */
+			if(cs.difference() != 0)
+			{
+				goto okret;
+			}
+
+			/*
+			 * Well, if an empty line preceded possible blanks
+			 * and the sentence, it could be a real sentence.
+			 */
+			for(;;)
+			{
+				CS_PREV();
+				if(cs.flags() == CS_EOL)
+				{
+					continue;
+				}
+				if(cs.flags() == CS_NONE && iswblank(cs.ch()))
+				{
+					continue;
+				}
+				break;
+			}
+			if(cs.flags() == CS_EMP)
+			{
+				goto okret;
+			}
+
+			/* But it wasn't; try again. */
+			++cnt;
+			cs.restore_state();
+			last = 0;
+			break;
+		case L'\t':
+			last = 1;
+			break;
+		default:
+			last =
+				cs.flags() == CS_EOL || iswblank(cs.ch()) ||
+				cs.ch() == L')' || cs.ch() == L']' ||
+				cs.ch() == L'"' || cs.ch() == L'\'' ? 1 : 0;
+		}
+	}
+
+okret:
+	int movecnt = cs.difference();
+	_ViOpOrMove(VK_LEFT, -movecnt);
 }
 
 int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)

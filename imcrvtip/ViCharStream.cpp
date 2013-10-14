@@ -67,6 +67,22 @@ int ViCharStream::difference()
 	return _index - _orig;
 }
 
+void ViCharStream::save_state()
+{
+	_index_save = _index;
+	_sol_save = _sol;
+	_eol_save = _eol;
+	_flags_save = _flags;
+}
+
+void ViCharStream::restore_state()
+{
+	_index = _index_save;
+	_sol = _sol_save;
+	_eol = _eol_save;
+	_flags = _flags_save;
+}
+
 //Eat backward to the next non-whitespace character.
 int ViCharStream::bblank()
 {
