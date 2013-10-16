@@ -924,6 +924,10 @@ found:
 			{
 				index = buf.size() - 1;
 			}
+			else if(buf[index] == L'\n' && index < buf.size() - 1)
+			{
+				++index;
+			}
 		}
 	}
 
