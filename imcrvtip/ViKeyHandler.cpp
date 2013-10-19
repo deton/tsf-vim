@@ -178,7 +178,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.Reset();
 		return;
 	case L'(':
-		_ViPrevSentence(pContext);
+		_VimBackwardSent(pContext);
 		vicmd.Reset();
 		return;
 	default:
@@ -811,6 +811,18 @@ ret:
 	_ViOpOrMove(VK_LEFT, -movecnt);
 }
 
+static int issentend(wchar_t c)
+{
+	const std::wstring chars(L".!?)]\"'");
+	return chars.find(c) != std::wstring::npos;
+}
+
+static int issentendex(wchar_t c)
+{
+	const std::wstring chars(L")]\"'");
+	return chars.find(c) != std::wstring::npos;
+}
+
 void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 {
 	VimCharStream pos(_textService, pContext);
@@ -859,8 +871,6 @@ void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 			}
 			if(c == L'.' || c == L'!' || c == L'?')
 			{
-				const std::wstring skipchars(L")]\"'");
-#define isskip(c) (skipchars.find(c) != std::wstring::npos)
 				pos.save_index();
 				bool eof = false;
 				do {
@@ -869,8 +879,7 @@ void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 						eof = true;
 						break;
 					}
-				} while(isskip(pos.gchar()));
-#undef isskip
+				} while(issentendex(pos.gchar()));
 				if(eof)
 				{
 					break;
@@ -914,148 +923,118 @@ found:
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
-//	Move backward count sentences.
-void ViKeyHandler::_ViPrevSentence(ITfContext *pContext)
+void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 {
-	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
-	{
-		return;
-	}
-	ViCharStream cs(info.preceding_text, info.following_text);
-	//TODO:取得した文字列に文頭が含まれていなかったら、
-	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	VimCharStream pos(_textService, pContext);
 
-	int cnt = vicmd.GetCount();
-	//cf. v_sentencef() in v_sentence.c of nvi-1.79
-	// In empty lines, skip to the previous non-white-space character.
-	// If in text, skip to the prevous white-space character.
-	if(cs.flags() == CS_EMP)
+    BOOL noskip = FALSE;
+	int count = vicmd.GetCount();
+	// cf. findsent() in search.c of vim.
+	while(count--)
 	{
-		CS_BBLANK();
-		for(;;)
+		/*
+		 * if on an empty line, skip upto a non-empty line
+		 */
+		if(pos.gchar() == L'\n')
 		{
-			CS_PREV();
-			if(cs.flags() != CS_EOL)
-			{
-				break;
-			}
-		}
-	}
-	else if (cs.flags() == CS_NONE && !iswblank(cs.ch()))
-	{
-		for(;;)
-		{
-			CS_PREV();
-			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
-			{
-				break;
-			}
-		}
-	}
-
-	for(int last = 0;;)
-	{
-		CS_PREV();
-		if(cs.flags() == CS_SOF)	// SOF is a movement sink.
-		{
-			break;
-		}
-		if(cs.flags() == CS_EOL)
-		{
-			last = 1;
-			continue;
-		}
-		if(cs.flags() == CS_EMP)
-		{
-			if(--cnt == 0)
-			{
-				goto ret;
-			}
-			CS_BBLANK();
-			last = 0;
-			continue;
-		}
-		switch(cs.ch())
-		{
-		case L'.':
-		case L'?':
-		case L'!':
-			if(!last || --cnt != 0)
-			{
-				last = 0;
-				continue;
-			}
-
-ret:
-			cs.save_state();
-
-			/*
-			 * Move to the start of the sentence, skipping blanks
-			 * and special characters.
-			 */
 			do {
-				CS_NEXT();
-			} while (cs.flags() == CS_NONE &&
-					(cs.ch() == ')' || cs.ch() == ']' ||
-					 cs.ch() == '"' || cs.ch() == '\''));
-			if((cs.flags() != CS_NONE || iswblank(cs.ch())))
-			{
-				CS_FBLANK();
-			}
-
-			/*
-			 * If it was ".  xyz", with the cursor on the 'x', or
-			 * "end.  ", with the cursor in the spaces, or the
-			 * beginning of a sentence preceded by an empty line,
-			 * we can end up where we started.  Fix it.
-			 */
-			if(cs.difference() != 0)
-			{
-				goto okret;
-			}
-
-			/*
-			 * Well, if an empty line preceded possible blanks
-			 * and the sentence, it could be a real sentence.
-			 */
-			for(;;)
-			{
-				CS_PREV();
-				if(cs.flags() == CS_EOL)
+				if(pos.decl() == -1)
 				{
-					continue;
+					break;
 				}
-				if(cs.flags() == CS_NONE && iswblank(cs.ch()))
+			} while(pos.gchar() == L'\n');
+		}
+		else
+		{
+			pos.decl();
+		}
+
+		/* go back to the previous non-blank char */
+		BOOL found_dot = FALSE;
+		while(iswblank(pos.gchar()) || issentend(pos.gchar()))
+		{
+			WCHAR c = pos.gchar();
+			if(c == L'.' || c == L'!' || c == L'?')
+			{
+				/* Only skip over a '.', '!' and '?' once. */
+				if(found_dot)
 				{
-					continue;
+					break;
+				}
+				found_dot = TRUE;
+			}
+			if(pos.decl() == -1)
+			{
+				break;
+			}
+		}
+
+		/* remember the index where the search started */
+		size_t startindex = pos.index();
+
+		for(;;)		/* find end of sentence */
+		{
+			WCHAR c = pos.gchar();
+			if(c == L'\n')
+			{
+				if(pos.index() != startindex)
+				{
+					pos.inc();
 				}
 				break;
 			}
-			if(cs.flags() == CS_EMP)
+			if(c == L'.' || c == L'!' || c == L'?')
 			{
-				goto okret;
+				pos.save_index();
+				bool eof = false;
+				do {
+					if(pos.inc() == -1)
+					{
+						eof = true;
+						break;
+					}
+				} while(issentendex(pos.gchar()));
+				if(eof)
+				{
+					break;
+				}
+				else if(iswblank(pos.gchar()))
+				{
+					break;
+				}
+				else if(pos.gchar() == L'\n')
+				{
+					pos.inc();
+					break;
+				}
+				pos.restore_index();
 			}
-
-			/* But it wasn't; try again. */
-			++cnt;
-			cs.restore_state();
-			last = 0;
-			break;
-		case L'\t':
-			last = 1;
-			break;
-		default:
-			last =
-				cs.flags() == CS_EOL || iswblank(cs.ch()) ||
-				cs.ch() == L')' || cs.ch() == L']' ||
-				cs.ch() == L'"' || cs.ch() == L'\'' ? 1 : 0;
+			if(pos.decl() == -1)
+			{
+				if(count)
+				{
+					return;
+				}
+				noskip = TRUE;
+				break;
+			}
+		}
+//found:
+		/* skip white space */
+		if(!noskip)
+		{
+			while(iswblank(pos.gchar()))
+			{
+				if(pos.incl() == -1)
+				{
+					break;
+				}
+			}
 		}
 	}
 
-okret:
-	int movecnt = cs.difference();
-	_ViOpOrMove(VK_LEFT, -movecnt);
+	size_t movecnt = -pos.difference();
+	_ViOpOrMove(VK_LEFT, movecnt);
 }
 
 int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)

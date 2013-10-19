@@ -33,7 +33,7 @@ private:
 	void _ViNextWordE(ITfContext *pContext, WCHAR type);
 	void _ViPrevWord(ITfContext *pContext, WCHAR type);
 	void _VimForwardSent(ITfContext *pContext);
-	void _ViPrevSentence(ITfContext *pContext);
+	void _VimBackwardSent(ITfContext *pContext);
 	int _Vi_f_sub(ITfContext *pContext, WCHAR ch);
 	void _Vi_f(ITfContext *pContext, WCHAR ch);
 	void _Vi_t(ITfContext *pContext, WCHAR ch);

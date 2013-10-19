@@ -15,12 +15,13 @@ public:
 	int dec();
 	int decl();
 	wchar_t gchar();
+	size_t index();
 	int difference();
 	void save_index();
 	void restore_index();
 
 private:
-	int _GetMore();
+	int _GetMore(bool backward);
 
 	CTextService *_textService;
 	ITfContext *_tfContext;

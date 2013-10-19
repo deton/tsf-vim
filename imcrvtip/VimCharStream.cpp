@@ -23,10 +23,10 @@ VimCharStream::~VimCharStream()
 {
 }
 
-int VimCharStream::_GetMore()
+int VimCharStream::_GetMore(bool backward)
 {
 	int offset = _following_count; // includes '\r'
-	if (difference() < 0)
+	if (backward)
 	{
 		offset = -_preceding_count;
 	}
@@ -43,11 +43,15 @@ int VimCharStream::_GetMore()
 		}
 		size_t oldsize = _buf.size();
 		remove_copy(info.preceding_text.begin(), info.preceding_text.end(),
-				_buf.begin(), L'\r');
+				inserter(_buf, _buf.begin()), L'\r');
 		size_t addsize = _buf.size() - oldsize;
 		_orig += addsize;
 		_index += addsize;
 		_preceding_count += info.preceding_text.size();
+#if DEBUGLOG
+		std::wofstream log("\\tsfvim.log");
+		log << _buf.c_str() << std::endl;
+#endif
 	}
 	else
 	{
@@ -58,10 +62,6 @@ int VimCharStream::_GetMore()
 		remove_copy(info.following_text.begin(), info.following_text.end(),
 				back_inserter(_buf), L'\r');
 		_following_count += info.following_text.size();
-#if DEBUGLOG
-		std::wofstream log("\\tsfvim.log");
-		log << _buf.c_str() << std::endl;
-#endif
 	}
 	return 0;
 }
@@ -70,6 +70,12 @@ wchar_t VimCharStream::gchar()
 {
 	return _buf[_index];
 }
+
+size_t VimCharStream::index()
+{
+	return _index;
+}
+
 
 int VimCharStream::difference()
 {
@@ -98,7 +104,7 @@ int VimCharStream::inc()
 	if (_index == _buf.size() - 1)
 	{
 		// acquire more following text
-		if (_GetMore() == -1 || _index == _buf.size() - 1)
+		if (_GetMore(false) == -1 || _index == _buf.size() - 1)
 		{
 			return -1; // cannot get more text || get more text but emtpy
 		}
@@ -134,7 +140,7 @@ int VimCharStream::dec()
 	if (_index == 0)
 	{
 		// acquire more preceding text
-		if (_GetMore() == -1 || _index == 0)
+		if (_GetMore(true) == -1 || _index == 0)
 		{
 			return -1; // cannot get more text || get more text but emtpy
 		}
