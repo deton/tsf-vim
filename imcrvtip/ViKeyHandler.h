@@ -28,6 +28,7 @@ private:
 	void _ViOp(std::vector<INPUT> *inputs);
 	void _ViOpOrMove(UINT vk, int count);
 	void _Vi_j();
+	void _Vi_k();
 	void _Vi_o();
 	void _Vi_p(ITfContext *pContext);
 	void _Vi_P();

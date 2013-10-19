@@ -132,7 +132,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_Vi_j();
 		return;
 	case L'k':
-		_ViOpOrMove(VK_UP, vicmd.GetCount()); //TODO: linewise operator
+		_Vi_k();
 		return;
 	case L'l':
 	case L' ':
@@ -349,6 +349,27 @@ void ViKeyHandler::_Vi_j()
 	else
 	{
 		_ViOpOrMove(VK_DOWN, vicmd.GetCount());
+	}
+}
+
+void ViKeyHandler::_Vi_k()
+{
+	if(vicmd.GetOperatorPending()) //linewise operator
+	{
+		vector<INPUT> inputs;
+		_QueueKey(&inputs, VK_END);
+		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
+		_QueueKey(&inputs, VK_HOME);
+		for(int count = vicmd.GetCount(); count > 0; --count)
+		{
+			_QueueKey(&inputs, VK_UP);
+		}
+		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
+		_ViOp(&inputs);
+	}
+	else
+	{
+		_ViOpOrMove(VK_UP, vicmd.GetCount());
 	}
 }
 
