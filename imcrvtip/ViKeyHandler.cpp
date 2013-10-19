@@ -332,7 +332,7 @@ void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 
 void ViKeyHandler::_Vi_j()
 {
-	if(vicmd.GetOperatorPending()) //linewise operator
+	if(vicmd.GetOperatorPending()) // linewise operator
 	{
 		vector<INPUT> inputs;
 		_QueueKey(&inputs, VK_HOME);
@@ -343,6 +343,7 @@ void ViKeyHandler::_Vi_j()
 			_QueueKey(&inputs, VK_DOWN);
 			_QueueKey(&inputs, VK_END);
 		}
+		_QueueKey(&inputs, VK_RIGHT); // to include last '\n'
 		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
 		_ViOp(&inputs);
 	}
@@ -354,13 +355,13 @@ void ViKeyHandler::_Vi_j()
 
 void ViKeyHandler::_Vi_k()
 {
-	if(vicmd.GetOperatorPending()) //linewise operator
+	if(vicmd.GetOperatorPending()) // linewise operator
 	{
 		vector<INPUT> inputs;
 		_QueueKey(&inputs, VK_END);
+		_QueueKey(&inputs, VK_RIGHT); // to include '\n'
 		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
-		_QueueKey(&inputs, VK_HOME);
-		for(int count = vicmd.GetCount(); count > 0; --count)
+		for(int count = vicmd.GetCount() + 1; count > 0; --count)
 		{
 			_QueueKey(&inputs, VK_UP);
 		}
