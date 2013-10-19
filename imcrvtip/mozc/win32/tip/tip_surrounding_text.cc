@@ -69,8 +69,15 @@ const int kMaxCharacterLength = 1024*1024;
 
 class SurroudingTextUpdater : public ITfEditSession {
  public:
+#ifndef IMCRVTIP_EXPORTS
   SurroudingTextUpdater(ITfContext *context, bool move_anchor)
+#else
+  SurroudingTextUpdater(ITfContext *context, bool move_anchor, int offset = 0)
+#endif
       : context_(context),
+#ifdef IMCRVTIP_EXPORTS
+        offset_(offset),
+#endif
         move_anchor_(move_anchor) {
   }
 
@@ -143,9 +150,15 @@ class SurroudingTextUpdater : public ITfEditSession {
         return result;
       }
 
+#ifdef IMCRVTIP_EXPORTS
+      if (offset_ == 0) {
+#endif
       result = TipRangeUtil::GetText(
           selected_range, edit_cookie, &result_.selected_text);
       result_.has_selected_text = SUCCEEDED(result);
+#ifdef IMCRVTIP_EXPORTS
+      }
+#endif
 
       // For reconversion, the active selection end should be moved to the
       // front character.
@@ -166,6 +179,15 @@ class SurroudingTextUpdater : public ITfEditSession {
       if (SUCCEEDED(selected_range->Clone(&preceeding_range)) &&
           SUCCEEDED(preceeding_range->Collapse(edit_cookie,
                                                TF_ANCHOR_START)) &&
+#ifdef IMCRVTIP_EXPORTS
+          (offset_ == 0 ||
+          offset_ < 0 &&
+          // Start is also shifted to End
+          SUCCEEDED(preceeding_range->ShiftEnd(edit_cookie,
+                                               offset_,
+                                               &preceeding_range_shifted,
+                                               &halt_cond))) &&
+#endif
           SUCCEEDED(preceeding_range->ShiftStart(edit_cookie,
                                                  -kMaxSurroundingLength,
                                                  &preceeding_range_shifted,
@@ -182,6 +204,15 @@ class SurroudingTextUpdater : public ITfEditSession {
       if (SUCCEEDED(selected_range->Clone(&following_range)) &&
           SUCCEEDED(following_range->Collapse(edit_cookie,
                                               TF_ANCHOR_END)) &&
+#ifdef IMCRVTIP_EXPORTS
+          (offset_ == 0 ||
+          offset_ > 0 &&
+          // End is also shifted to Start
+          SUCCEEDED(following_range->ShiftStart(edit_cookie,
+                                                offset_,
+                                                &following_range_shifted,
+                                                &halt_cond))) &&
+#endif
           SUCCEEDED(following_range->ShiftEnd(edit_cookie,
                                               kMaxSurroundingLength,
                                               &following_range_shifted,
@@ -199,6 +230,9 @@ class SurroudingTextUpdater : public ITfEditSession {
   CComPtr<ITfContext> context_;
   TipSurroundingTextInfo result_;
   bool move_anchor_;
+#ifdef IMCRVTIP_EXPORTS
+  int offset_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SurroudingTextUpdater);
 };
@@ -513,6 +547,49 @@ bool GetTSF(CTextService *text_service,
 
   return true;
 }
+
+#ifdef IMCRVTIP_EXPORTS
+bool TipSurroundingText::GetMore(CTextService *text_service,
+                                 ITfContext *context,
+                                 int offset,
+                                 TipSurroundingTextInfo *info) {
+  if (info == nullptr) {
+    return false;
+  }
+  *info = TipSurroundingTextInfo();
+
+  // Use Transitory Extensions when supported. Common controls provides
+  // surrounding text via Transitory Extensions.
+  CComPtr<ITfContext> target_context(
+      TipTransitoryExtension::ToParentContextIfExists(context));
+
+  // When RequestEditSession fails, it does not maintain the reference count.
+  // So we need to ensure that AddRef/Release should be called at least once
+  // per object.
+  CComPtr<SurroudingTextUpdater> updater(
+      new SurroudingTextUpdater(target_context, false, offset));
+
+  HRESULT edit_session_result = S_OK;
+  const HRESULT hr = target_context->RequestEditSession(
+      text_service->_GetClientId(),
+      updater,
+      TF_ES_SYNC | TF_ES_READ,
+      &edit_session_result);
+  if (FAILED(hr)) {
+    return false;
+  }
+  if (FAILED(edit_session_result)) {
+    return false;
+  }
+
+  *info = updater->result();
+
+  if (!info->is_transitory) {
+    return true;
+  }
+  return false;
+}
+#endif // IMCRVTIP_EXPORTS
 
 #ifndef IMCRVTIP_EXPORTS
 bool PrepareForReconversionTSF(TipTextService *text_service,

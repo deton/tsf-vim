@@ -3,6 +3,7 @@
 #include "TextService.h"
 #include "ViKeyHandler.h"
 #include "ViCharStream.h"
+#include "VimCharStream.h"
 #include "mozc/win32/tip/tip_surrounding_text.h"
 #include "mozc/win32/base/keyboard.h"
 
@@ -812,19 +813,7 @@ ret:
 
 void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 {
-	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
-	{
-		return;
-	}
-	//TODO:取得した文字列に文末が含まれていなかったら、
-	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
-
-	wstring buf;
-	remove_copy(info.preceding_text.begin(), info.preceding_text.end(), back_inserter(buf), L'\r');
-	size_t origindex = buf.size();
-	size_t index = origindex;
-	remove_copy(info.following_text.begin(), info.following_text.end(), back_inserter(buf), L'\r');
+	VimCharStream pos(_textService, pContext);
 
     BOOL noskip = FALSE;
 	int count = vicmd.GetCount();
@@ -834,104 +823,94 @@ void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 		/*
 		 * if on an empty line, skip upto a non-empty line
 		 */
-		if(buf[index] == L'\n')
+		if(pos.gchar() == L'\n')
 		{
-			index = buf.find_first_not_of(L'\n', index);
-			if(index == std::wstring::npos)
-			{
-				index = buf.size() - 1;
-			}
+			do {
+				if(pos.incl() == -1)
+				{
+					break;
+				}
+			} while(pos.gchar() == L'\n');
 			goto found;
 		}
 
 		/* go back to the previous non-blank char */
-		while(iswblank(buf[index]))
+		while(iswblank(pos.gchar()))
 		{
-			if(index == 0)
+			int r = pos.decl();
+			if(r == -1)
 			{
 				break;
 			}
-			--index;
-			if(buf[index] == L'\n')
+			/* Stop in front of empty line */
+			if(r == 2)
 			{
-				if(index == 0)
-				{
-					break;
-				}
-				--index;
-				/* Stop in front of empty line */
-				if(buf[index] == L'\n')
-				{
-					index += 2;
-					goto found;
-				}
+				pos.incl();
+				goto found;
 			}
 		}
 
 		for(;;)		/* find end of sentence */
 		{
-			WCHAR c = buf[index];
+			WCHAR c = pos.gchar();
 			if(c == L'\n')
 			{
 				break;
 			}
 			if(c == L'.' || c == L'!' || c == L'?')
 			{
-				size_t tindex = index + 1;
-				if(tindex >= buf.size())
-				{
-					break;
-				}
-				tindex = buf.find_first_not_of(L")]\"'", tindex);
-				if(tindex == std::wstring::npos)
-				{
-					index = buf.size() - 1;
-					break;
-				}
-				else if(iswblank(buf[tindex]))
-				{
-					index = tindex;
-					break;
-				}
-				else if(buf[tindex] == L'\n')
-				{
-					index = tindex + 1;
-					if(index >= buf.size())
+				const std::wstring skipchars(L")]\"'");
+#define isskip(c) (skipchars.find(c) != std::wstring::npos)
+				pos.save_index();
+				bool eof = false;
+				do {
+					if(pos.inc() == -1)
 					{
-						index = buf.size() - 1;
+						eof = true;
+						break;
 					}
+				} while(isskip(pos.gchar()));
+#undef isskip
+				if(eof)
+				{
 					break;
 				}
+				else if(iswblank(pos.gchar()))
+				{
+					break;
+				}
+				else if(pos.gchar() == L'\n')
+				{
+					pos.inc();
+					break;
+				}
+				pos.restore_index();
 			}
-			++index;
-			if(index >= buf.size())
+			if(pos.incl() == -1)
 			{
 				if(count)
 				{
 					return;
 				}
-				index = buf.size() - 1;
 				noskip = TRUE;
 				break;
 			}
 		}
 found:
-		// skip white space
+		/* skip white space */
 		if(!noskip)
 		{
-			index = buf.find_first_not_of(L" \t", index);
-			if(index == std::wstring::npos)
+			while(iswblank(pos.gchar()))
 			{
-				index = buf.size() - 1;
-			}
-			else if(buf[index] == L'\n' && index < buf.size() - 1)
-			{
-				++index;
+				if(pos.incl() == -1)
+				{
+					break;
+				}
 			}
 		}
 	}
 
-	size_t movecnt = index - origindex;
+	size_t movecnt = pos.difference();
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 

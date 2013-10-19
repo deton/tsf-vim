@@ -85,6 +85,13 @@ class TipSurroundingText {
                   ITfContext *context,
                   TipSurroundingTextInfo *info);
 
+#ifdef IMCRVTIP_EXPORTS
+  static bool GetMore(CTextService *text_service,
+                      ITfContext *context,
+                      int offset,
+                      TipSurroundingTextInfo *info);
+#endif
+
   // A variant of TipSurroundingText::Get. One difference is that this method
   // moves the anchor position of the selection at the end of the range.
   // Another difference is that this method uses IMM32 message when fails to
