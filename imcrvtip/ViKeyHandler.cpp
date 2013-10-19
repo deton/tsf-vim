@@ -95,7 +95,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		{
 			if(vicmd.GetOperatorPending() == ch) //'cc','dd','yy'
 			{
-				//TODO
+				_ViOpLines(vicmd.GetCount() - 1);
 			}
 			else
 			{
@@ -330,22 +330,27 @@ void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 	_ViOp(&inputs);
 }
 
+void ViKeyHandler::_ViOpLines(int count)
+{
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, VK_HOME);
+	_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
+	_QueueKey(&inputs, VK_END);
+	while(count-- > 0)
+	{
+		_QueueKey(&inputs, VK_DOWN);
+		_QueueKey(&inputs, VK_END);
+	}
+	_QueueKey(&inputs, VK_RIGHT); // to include last '\n'
+	_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
+	_ViOp(&inputs);
+}
+
 void ViKeyHandler::_Vi_j()
 {
 	if(vicmd.GetOperatorPending()) // linewise operator
 	{
-		vector<INPUT> inputs;
-		_QueueKey(&inputs, VK_HOME);
-		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
-		_QueueKey(&inputs, VK_END);
-		for(int count = vicmd.GetCount(); count > 0; --count)
-		{
-			_QueueKey(&inputs, VK_DOWN);
-			_QueueKey(&inputs, VK_END);
-		}
-		_QueueKey(&inputs, VK_RIGHT); // to include last '\n'
-		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
-		_ViOp(&inputs);
+		_ViOpLines(vicmd.GetCount());
 	}
 	else
 	{
@@ -386,6 +391,7 @@ void ViKeyHandler::_Vi_o()
 
 void ViKeyHandler::_Vi_p(ITfContext *pContext)
 {
+	//TODO: 行指向の場合は、次行にペースト
 	vector<INPUT> inputs;
 	mozc::win32::tsf::TipSurroundingTextInfo info;
 	if(mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))

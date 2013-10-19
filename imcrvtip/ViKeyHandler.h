@@ -27,6 +27,7 @@ private:
 	void _SendKeyWithControl(UINT vk);
 	void _ViOp(std::vector<INPUT> *inputs);
 	void _ViOpOrMove(UINT vk, int count);
+	void _ViOpLines(int count);
 	void _Vi_j();
 	void _Vi_k();
 	void _Vi_o();
