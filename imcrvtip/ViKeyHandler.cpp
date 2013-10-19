@@ -4,6 +4,7 @@
 #include "ViKeyHandler.h"
 #include "ViCharStream.h"
 #include "VimCharStream.h"
+#include "VimMByte.h"
 #include "mozc/win32/tip/tip_surrounding_text.h"
 #include "mozc/win32/base/keyboard.h"
 
@@ -814,13 +815,64 @@ ret:
 static int issentend(wchar_t c)
 {
 	const std::wstring chars(L".!?)]\"'");
-	return chars.find(c) != std::wstring::npos;
+	return chars.find(c) != std::wstring::npos
+		|| VimMByte::chclass(c) == VimMByte::PUNCT;
 }
 
 static int issentendex(wchar_t c)
 {
 	const std::wstring chars(L")]\"'");
 	return chars.find(c) != std::wstring::npos;
+}
+
+static BOOL endsent(VimCharStream *pos)
+{
+	WCHAR c = pos->gchar();
+	if(c == L'.' || c == L'!' || c == L'?')
+	{
+		pos->save_index();
+		do {
+			if(pos->inc() == -1)
+			{
+				return TRUE;
+			}
+		} while(issentendex(pos->gchar()));
+		if(iswblank(pos->gchar()))
+		{
+			return TRUE;
+		}
+		else if(pos->gchar() == L'\n')
+		{
+			pos->inc();
+			return TRUE;
+		}
+		pos->restore_index();
+	}
+	return FALSE;
+}
+
+static BOOL endmbsent(VimCharStream *pos)
+{
+	if(VimMByte::chclass(pos->gchar()) == VimMByte::PUNCT)
+	{
+		for(;;)
+		{
+			if(pos->inc() == -1)
+			{
+				return TRUE;
+			}
+			WCHAR c = pos->gchar();
+			if(!VimMByte::ismulti(c) || VimMByte::chclass(c) != VimMByte::PUNCT)
+			{
+				if(c == L'\n')
+				{
+					pos->inc();
+				}
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
 }
 
 void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
@@ -864,36 +916,17 @@ void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 
 		for(;;)		/* find end of sentence */
 		{
-			WCHAR c = pos.gchar();
-			if(c == L'\n')
+			if(pos.gchar() == L'\n')
 			{
 				break;
 			}
-			if(c == L'.' || c == L'!' || c == L'?')
+			if(endsent(&pos))
 			{
-				pos.save_index();
-				bool eof = false;
-				do {
-					if(pos.inc() == -1)
-					{
-						eof = true;
-						break;
-					}
-				} while(issentendex(pos.gchar()));
-				if(eof)
-				{
-					break;
-				}
-				else if(iswblank(pos.gchar()))
-				{
-					break;
-				}
-				else if(pos.gchar() == L'\n')
-				{
-					pos.inc();
-					break;
-				}
-				pos.restore_index();
+				break;
+			}
+			if(endmbsent(&pos))
+			{
+				break;
 			}
 			if(pos.incl() == -1)
 			{
@@ -974,8 +1007,7 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 
 		for(;;)		/* find end of sentence */
 		{
-			WCHAR c = pos.gchar();
-			if(c == L'\n')
+			if(pos.gchar() == L'\n')
 			{
 				if(pos.index() != startindex)
 				{
@@ -983,31 +1015,13 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 				}
 				break;
 			}
-			if(c == L'.' || c == L'!' || c == L'?')
+			if(endsent(&pos))
 			{
-				pos.save_index();
-				bool eof = false;
-				do {
-					if(pos.inc() == -1)
-					{
-						eof = true;
-						break;
-					}
-				} while(issentendex(pos.gchar()));
-				if(eof)
-				{
-					break;
-				}
-				else if(iswblank(pos.gchar()))
-				{
-					break;
-				}
-				else if(pos.gchar() == L'\n')
-				{
-					pos.inc();
-					break;
-				}
-				pos.restore_index();
+				break;
+			}
+			if(endmbsent(&pos))
+			{
+				break;
 			}
 			if(pos.decl() == -1)
 			{
