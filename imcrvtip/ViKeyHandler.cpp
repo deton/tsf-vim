@@ -129,7 +129,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
 		return;
 	case L'j':
-		_ViOpOrMove(VK_DOWN, vicmd.GetCount()); //TODO: linewise operator
+		_Vi_j();
 		return;
 	case L'k':
 		_ViOpOrMove(VK_UP, vicmd.GetCount()); //TODO: linewise operator
@@ -295,33 +295,61 @@ void ViKeyHandler::_SendKeyWithControl(UINT vk)
 	_SendInputs(&inputs);
 }
 
+void ViKeyHandler::_ViOp(vector<INPUT> *inputs)
+{
+	switch(vicmd.GetOperatorPending())
+	{
+	case L'c':
+		_QueueKeyWithControl(inputs, 'X');
+		_SendInputs(inputs);
+		_textService->_SetKeyboardOpen(FALSE);
+		break;
+	case L'd':
+		_QueueKeyWithControl(inputs, 'X');
+		_SendInputs(inputs);
+		break;
+	case L'y':
+		_QueueKeyWithControl(inputs, 'C');
+		_SendInputs(inputs);
+		break;
+	default:
+		_SendInputs(inputs);
+		break;
+	}
+	vicmd.Reset();
+}
+
 void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 {
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, vk, count);
-	switch(vicmd.GetOperatorPending())
+	if(vicmd.GetOperatorPending())
 	{
-	case L'c':
 		_QueueKeyForSelection(&inputs);
-		_QueueKeyWithControl(&inputs, 'X');
-		_SendInputs(&inputs);
-		_textService->_SetKeyboardOpen(FALSE);
-		break;
-	case L'd':
-		_QueueKeyForSelection(&inputs);
-		_QueueKeyWithControl(&inputs, 'X');
-		_SendInputs(&inputs);
-		break;
-	case L'y':
-		_QueueKeyForSelection(&inputs);
-		_QueueKeyWithControl(&inputs, 'C');
-		_SendInputs(&inputs);
-		break;
-	default:
-		_SendInputs(&inputs);
-		break;
 	}
-	vicmd.Reset();
+	_ViOp(&inputs);
+}
+
+void ViKeyHandler::_Vi_j()
+{
+	if(vicmd.GetOperatorPending()) //linewise operator
+	{
+		vector<INPUT> inputs;
+		_QueueKey(&inputs, VK_HOME);
+		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
+		_QueueKey(&inputs, VK_END);
+		for(int count = vicmd.GetCount(); count > 0; --count)
+		{
+			_QueueKey(&inputs, VK_DOWN);
+			_QueueKey(&inputs, VK_END);
+		}
+		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
+		_ViOp(&inputs);
+	}
+	else
+	{
+		_ViOpOrMove(VK_DOWN, vicmd.GetCount());
+	}
 }
 
 void ViKeyHandler::_Vi_o()
