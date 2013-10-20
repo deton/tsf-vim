@@ -44,6 +44,11 @@ ViMulti::ChClass ViMulti::chclass(wchar_t c, ViMulti::ChClass curchclass)
 	return NONKANJI;
 }
 
+bool ViMulti::ismulti(wchar_t c)
+{
+	return c >= 0x80; // XXX
+}
+
 bool ViMulti::Wordbound(ViMulti::ChClass oldchclass, ViMulti::ChClass curchclass, bool forward)
 {
 	/*

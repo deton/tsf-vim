@@ -477,7 +477,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	{
 		while(cnt--)
 		{
-			if(cs.flags() != CS_NONE)
+			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto Singlebyte;
 			}
@@ -489,7 +489,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				if(cs.flags() != CS_NONE)
 				{
 					goto Taileater;
 				}
@@ -512,6 +512,10 @@ Singlebyte:
 				{
 					break;
 				}
+				if(ViMulti::ismulti(cs.ch()))
+				{
+					break;
+				}
 			}
 Taileater:
 			/*
@@ -530,6 +534,10 @@ Taileater:
 			}
 
 			/* Eat whitespace characters. */
+			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			{
+				continue;
+			}
 			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
@@ -544,7 +552,7 @@ Taileater:
 	{
 		while(cnt--)
 		{
-			if(cs.flags() != CS_NONE)
+			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto singlebyte;
 			}
@@ -556,7 +564,7 @@ Taileater:
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				if(cs.flags() != CS_NONE)
 				{
 					goto taileater;
 				}
@@ -578,6 +586,10 @@ singlebyte:
 					goto ret;
 				}
 				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+				if(ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
@@ -608,6 +620,10 @@ taileater:
 			}
 
 			/* Eat whitespace characters. */
+			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			{
+				continue;
+			}
 			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();

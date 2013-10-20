@@ -17,6 +17,7 @@ public:
 
 	// TODO: surrogate pair
 	static ChClass chclass(wchar_t c, ChClass curchclass);
+	static bool ismulti(wchar_t c);
 	static bool Wordbound(ChClass oldchclass, ChClass curchclass, bool forward);
 	static bool wordbound(ChClass oldchclass, ChClass curchclass, bool forward);
 };
