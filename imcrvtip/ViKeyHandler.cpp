@@ -152,7 +152,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_Vi_I();
 		return;
 	case L'a':
-		_Vi_a();
+		_Vi_a(pContext);
 		return;
 	case L'A':
 		_Vi_A();
@@ -409,9 +409,28 @@ void ViKeyHandler::_Vi_I()
 	vicmd.Reset();
 }
 
-void ViKeyHandler::_Vi_a()
+BOOL ViKeyHandler::_AtEndOfLine(ITfContext *pContext)
 {
-	_SendKey(VK_RIGHT);
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if(mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	{
+		if(info.following_text.size() == 0
+				|| info.following_text[0] == L'\r'
+				|| info.following_text[0] == L'\n')
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+void ViKeyHandler::_Vi_a(ITfContext *pContext)
+{
+	//行末にいる場合にVK_RIGHTを送り付けると次行に移動するので
+	if(!_AtEndOfLine(pContext))
+	{
+		_SendKey(VK_RIGHT);
+	}
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
@@ -448,15 +467,9 @@ void ViKeyHandler::_Vi_p(ITfContext *pContext)
 {
 	//TODO: 行指向の場合は、次行にペースト
 	vector<INPUT> inputs;
-	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	if(!_AtEndOfLine(pContext))
 	{
-		if(info.following_text.size() > 0
-				&& info.following_text[0] != L'\n'
-				&& info.following_text[0] != L'\r')
-		{
-			_QueueKey(&inputs, VK_RIGHT);
-		}
+		_QueueKey(&inputs, VK_RIGHT);
 	}
 	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
 	_QueueKey(&inputs, 'V', vicmd.GetCount());

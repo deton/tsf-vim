@@ -31,7 +31,8 @@ private:
 	void _Vi_j();
 	void _Vi_k();
 	void _Vi_I();
-	void _Vi_a();
+	BOOL _AtEndOfLine(ITfContext *pContext);
+	void _Vi_a(ITfContext *pContext);
 	void _Vi_A();
 	void _Vi_o();
 	void _Vi_O();
