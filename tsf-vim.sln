@@ -3,7 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "installer", "installer\installer.vcxproj", "{9DFDE531-8EF0-475B-BA69-5D2768B91187}"
 	ProjectSection(ProjectDependencies) = postProject
-		{22523C04-5D55-4A25-B228-161A29344DA6} = {22523C04-5D55-4A25-B228-161A29344DA6}
 		{0D83E604-A285-475A-8FEE-F532A3BD4CF4} = {0D83E604-A285-475A-8FEE-F532A3BD4CF4}
 		{FBA02FED-84D0-4889-9039-EB0CFB5F26D5} = {FBA02FED-84D0-4889-9039-EB0CFB5F26D5}
 	EndProjectSection
@@ -11,11 +10,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "common\common.vcxproj", "{FBA02FED-84D0-4889-9039-EB0CFB5F26D5}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imcrvtip", "imcrvtip\imcrvtip.vcxproj", "{0D83E604-A285-475A-8FEE-F532A3BD4CF4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{FBA02FED-84D0-4889-9039-EB0CFB5F26D5} = {FBA02FED-84D0-4889-9039-EB0CFB5F26D5}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imcrvcnf", "imcrvcnf\imcrvcnf.vcxproj", "{22523C04-5D55-4A25-B228-161A29344DA6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{FBA02FED-84D0-4889-9039-EB0CFB5F26D5} = {FBA02FED-84D0-4889-9039-EB0CFB5F26D5}
 	EndProjectSection
@@ -52,14 +46,6 @@ Global
 		{0D83E604-A285-475A-8FEE-F532A3BD4CF4}.Release|Win32.Build.0 = Release|Win32
 		{0D83E604-A285-475A-8FEE-F532A3BD4CF4}.Release|x64.ActiveCfg = Release|x64
 		{0D83E604-A285-475A-8FEE-F532A3BD4CF4}.Release|x64.Build.0 = Release|x64
-		{22523C04-5D55-4A25-B228-161A29344DA6}.Debug|Win32.ActiveCfg = Debug|Win32
-		{22523C04-5D55-4A25-B228-161A29344DA6}.Debug|Win32.Build.0 = Debug|Win32
-		{22523C04-5D55-4A25-B228-161A29344DA6}.Debug|x64.ActiveCfg = Debug|x64
-		{22523C04-5D55-4A25-B228-161A29344DA6}.Debug|x64.Build.0 = Debug|x64
-		{22523C04-5D55-4A25-B228-161A29344DA6}.Release|Win32.ActiveCfg = Release|Win32
-		{22523C04-5D55-4A25-B228-161A29344DA6}.Release|Win32.Build.0 = Release|Win32
-		{22523C04-5D55-4A25-B228-161A29344DA6}.Release|x64.ActiveCfg = Release|x64
-		{22523C04-5D55-4A25-B228-161A29344DA6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

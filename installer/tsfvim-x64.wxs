@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <?define version="0.0.4" ?>
+    <?define version="0.0.1" ?>
     <Product Id="*" Name="tsf-vim" Language="1033" Version="$(var.version)" Manufacturer="KIHARA Hideto" UpgradeCode="9EBA70C8-054C-4f03-80CD-783651B524B5">
         <Package Id="*" Compressed="yes" Description="tsf-vim" Comments="version $(var.version)" Platform="x64" InstallerVersion="200" InstallScope="perMachine" InstallPrivileges="elevated" />
         <Media Id="1" Cabinet="tsfvim.cab" EmbedCab="yes" />
@@ -8,9 +8,6 @@
             <Directory Id="SystemFolder" Name="SystemFolder">
                 <Directory Id="ime_x86" Name="IME">
                     <Directory Id="tsfvim_x86" Name="IMTSFVIM">
-                        <Component Guid="*" Id="CNF_X86">
-                            <File Id="cnf_x86" Name="imvimcnf.exe" Source="..\Win32\Release\imvimcnf.exe" />
-                        </Component>
                         <Component Guid="*" Id="TIP_X86">
                             <File Id="tip_x86" Name="imvimtip.dll" Source="..\Win32\Release\imvimtip.dll" SelfRegCost="1" />
                         </Component>
@@ -20,9 +17,6 @@
             <Directory Id="System64Folder" Name="System64Folder">
                 <Directory Id="ime_x64" Name="IME">
                     <Directory Id="tsfvim_x64" Name="IMTSFVIM">
-                        <Component Guid="*" Id="CNF_X64" Win64="yes">
-                            <File Id="cnf_x64" Name="imvimcnf.exe" Source="..\x64\Release\imvimcnf.exe" />
-                        </Component>
                         <Component Guid="*" Id="TIP_X64" Win64="yes">
                             <File Id="tip_x64" Name="imvimtip.dll" Source="..\x64\Release\imvimtip.dll" SelfRegCost="1" />
                         </Component>
@@ -31,9 +25,7 @@
             </Directory>
         </Directory>
         <Feature Id="DefaultFeature" Title="Main Feature" Level="1">
-            <ComponentRef Id="CNF_X86" />
             <ComponentRef Id="TIP_X86" />
-            <ComponentRef Id="CNF_X64" />
             <ComponentRef Id="TIP_X64" />
         </Feature>
         <UI />
