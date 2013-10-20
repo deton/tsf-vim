@@ -489,7 +489,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE)
+				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto Taileater;
 				}
@@ -564,7 +564,7 @@ Taileater:
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE)
+				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto taileater;
 				}
