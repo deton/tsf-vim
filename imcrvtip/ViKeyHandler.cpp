@@ -109,6 +109,11 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 			vicmd.SetOperatorPending(ch);
 		}
 		return;
+	case L'C':
+	case L'D':
+		vicmd.SetOperatorPending(towlower(ch));
+		_ViOpOrMove(VK_END, 1);
+		return;
 	case L'f':
 	case L't':
 	case L'F':
@@ -124,7 +129,6 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.Reset();
 		return;
 	case L'$':
-		//TODO: OperatorPendingの場合、改行が含まれていたら除く
 		_ViOpOrMove(VK_END, 1);
 		return;
 	case L'h':
