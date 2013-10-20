@@ -713,8 +713,8 @@ start:
 				if(cs.flags() == CS_NONE)
 				{
 					CS_PREV();
-					break;
 				}
+				break;
 			}
 
 			/* Eat whitespace characters. */
@@ -862,8 +862,8 @@ start:
 				if(cs.flags() == CS_NONE)
 				{
 					CS_NEXT();
-					break;
 				}
+				break;
 			}
 
 			/* Eat whitespace characters. */
