@@ -30,7 +30,11 @@ private:
 	void _ViOpLines(int count);
 	void _Vi_j();
 	void _Vi_k();
+	void _Vi_I();
+	void _Vi_a();
+	void _Vi_A();
 	void _Vi_o();
+	void _Vi_O();
 	void _Vi_p(ITfContext *pContext);
 	void _Vi_P();
 	void _ViNextWord(ITfContext *pContext, WCHAR type);

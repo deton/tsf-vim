@@ -144,8 +144,24 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L' ':
 		_ViOpOrMove(VK_RIGHT, vicmd.GetCount());
 		return;
+	case L'i':
+		_textService->_SetKeyboardOpen(FALSE);
+		vicmd.Reset();
+		return;
+	case L'I':
+		_Vi_I();
+		return;
+	case L'a':
+		_Vi_a();
+		return;
+	case L'A':
+		_Vi_A();
+		return;
 	case L'o':
 		_Vi_o();
+		return;
+	case L'O':
+		_Vi_O();
 		return;
 	case L'p':
 		_Vi_p(pContext);
@@ -385,11 +401,44 @@ void ViKeyHandler::_Vi_k()
 	}
 }
 
+void ViKeyHandler::_Vi_I()
+{
+	_SendKey(VK_HOME);
+	//TODO: 非空白文字の前に移動
+	_textService->_SetKeyboardOpen(FALSE);
+	vicmd.Reset();
+}
+
+void ViKeyHandler::_Vi_a()
+{
+	_SendKey(VK_RIGHT);
+	_textService->_SetKeyboardOpen(FALSE);
+	vicmd.Reset();
+}
+
+void ViKeyHandler::_Vi_A()
+{
+	_SendKey(VK_END);
+	_textService->_SetKeyboardOpen(FALSE);
+	vicmd.Reset();
+}
+
 void ViKeyHandler::_Vi_o()
 {
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, VK_END);
 	_QueueKey(&inputs, VK_RETURN);
+	_SendInputs(&inputs);
+	_textService->_SetKeyboardOpen(FALSE);
+	vicmd.Reset();
+}
+
+void ViKeyHandler::_Vi_O()
+{
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, VK_HOME);
+	_QueueKey(&inputs, VK_RETURN);
+	_QueueKey(&inputs, VK_UP);
 	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
