@@ -909,6 +909,30 @@ start:
 	{
 		while(cnt--)
 		{
+			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			{
+				goto Singlebyte;
+			}
+			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
+			for(;;)
+			{
+				CS_PREV();
+				if(cs.flags() == CS_SOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				{
+					goto Cntmodify;
+				}
+				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
+				if(ViMulti::Wordbound(ochclass, chclass, false))
+				{
+					goto Cntmodify;
+				}
+				ochclass = chclass;
+			}
+Singlebyte:
 			for(;;)
 			{
 				CS_PREV();
@@ -920,7 +944,12 @@ start:
 				{
 					break;
 				}
+				if(ViMulti::ismulti(cs.ch()))
+				{
+					break;
+				}
 			}
+Cntmodify:
 			/*
 			 * When we reach the end of the word before the last
 			 * word, we're done.  If we changed state, move forward
@@ -936,6 +965,11 @@ start:
 			}
 
 			/* Eat whitespace characters. */
+			if(cs.flags() == CS_NONE
+					&& (ViMulti::ismulti(cs.ch()) || !iswblank(cs.ch())))
+			{
+				continue;
+			}
 			CS_BBLANK();
 			if(cs.flags() == CS_SOF)
 			{
@@ -947,6 +981,30 @@ start:
 	{
 		while(cnt--)
 		{
+			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			{
+				goto singlebyte;
+			}
+			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
+			for(;;)
+			{
+				CS_PREV();
+				if(cs.flags() == CS_SOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				{
+					goto cntmodify;
+				}
+				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
+				if(ViMulti::wordbound(ochclass, chclass, false))
+				{
+					goto cntmodify;
+				}
+				ochclass = chclass;
+			}
+singlebyte:
 			enum { INWORD, NOTWORD } state;
 			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
@@ -957,6 +1015,10 @@ start:
 					goto ret;
 				}
 				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+				if(ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
@@ -975,6 +1037,7 @@ start:
 					}
 				}
 			}
+cntmodify:
 			/* See comment above. */
 			if(cnt==0)
 			{
@@ -986,6 +1049,10 @@ start:
 			}
 
 			/* Eat whitespace characters. */
+			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			{
+				continue;
+			}
 			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
 				CS_BBLANK();
