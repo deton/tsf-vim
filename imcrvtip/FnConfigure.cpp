@@ -235,6 +235,9 @@ void CTextService::_LoadPreservedKey()
 			idxon++;
 		}
 	}
+	preservedkeyon[idxon].uVKey = VK_ESCAPE;
+	preservedkeyon[idxon].uModifiers = TF_MOD_IGNORE_ALL_MODIFIER;
+	idxon++;
 	//Onに無くOffだけにある定義
 	int idxoff = 0;
 	for(j=0; j<MAX_PRESERVEDKEY; j++)
@@ -253,43 +256,13 @@ void CTextService::_LoadPreservedKey()
 
 void CTextService::_LoadPreservedKeySub(LPCWSTR SectionPreservedKey, TF_PRESERVEDKEY preservedkey[])
 {
-	APPDATAXMLLIST list;
-	APPDATAXMLLIST::iterator l_itr;
-	APPDATAXMLROW::iterator r_itr;
 	int i = 0;
 
 	ZeroMemory(preservedkey, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
 
-	if(ReadList(pathconfigxml, SectionPreservedKey, list) == S_OK && list.size() != 0)
+	for(i=0; i<_countof(c_PreservedKey); i++)
 	{
-		for(l_itr = list.begin(); l_itr != list.end() && i < MAX_PRESERVEDKEY; l_itr++)
-		{
-			for(r_itr = l_itr->begin(); r_itr != l_itr->end(); r_itr++)
-			{
-				if(r_itr->first == AttributeVKey)
-				{
-					preservedkey[i].uVKey = wcstoul(r_itr->second.c_str(), NULL, 0);
-				}
-				else if(r_itr->first == AttributeMKey)
-				{
-					preservedkey[i].uModifiers =
-						wcstoul(r_itr->second.c_str(), NULL, 0) & (TF_MOD_ALT | TF_MOD_CONTROL | TF_MOD_SHIFT);
-					if((preservedkey[i].uModifiers & (TF_MOD_ALT | TF_MOD_CONTROL | TF_MOD_SHIFT)) == 0)
-					{
-						preservedkey[i].uModifiers = TF_MOD_IGNORE_ALL_MODIFIER;
-					}
-				}
-			}
-
-			i++;
-		}
-	}
-	else
-	{
-		for(i=0; i<_countof(c_PreservedKey); i++)
-		{
-			preservedkey[i] = c_PreservedKey[i];
-		}
+		preservedkey[i] = c_PreservedKey[i];
 	}
 }
 
