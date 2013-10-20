@@ -541,10 +541,10 @@ Taileater:
 			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
-				if(cs.flags() == CS_EOF)
-				{
-					goto ret;
-				}
+			}
+			if(cs.flags() == CS_EOF)
+			{
+				goto ret;
 			}
 		}
 	}
@@ -691,6 +691,30 @@ start:
 	{
 		while(cnt--)
 		{
+			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			{
+				goto Singlebyte;
+			}
+			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
+			for(;;)
+			{
+				CS_NEXT();
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				{
+					goto Taileater;
+				}
+				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
+				if(ViMulti::Wordbound(ochclass, chclass, true))
+				{
+					goto Taileater;
+				}
+				ochclass = chclass;
+			}
+Singlebyte:
 			for(;;)
 			{
 				CS_NEXT();
@@ -702,7 +726,12 @@ start:
 				{
 					break;
 				}
+				if(ViMulti::ismulti(cs.ch()))
+				{
+					break;
+				}
 			}
+Taileater:
 			/*
 			 * When we reach the start of the word after the last
 			 * word, we're done.  If we changed state, back up one
@@ -718,7 +747,14 @@ start:
 			}
 
 			/* Eat whitespace characters. */
-			CS_FBLANK();
+			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			{
+				continue;
+			}
+			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			{
+				CS_FBLANK();
+			}
 			if(cs.flags() == CS_EOF)
 			{
 				goto ret;
@@ -729,6 +765,30 @@ start:
 	{
 		while(cnt--)
 		{
+			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			{
+				goto singlebyte;
+			}
+			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
+			for(;;)
+			{
+				CS_NEXT();
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				{
+					goto taileater;
+				}
+				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
+				if(ViMulti::wordbound(ochclass, chclass, true))
+				{
+					goto taileater;
+				}
+				ochclass = chclass;
+			}
+singlebyte:
 			enum { INWORD, NOTWORD } state;
 			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
@@ -739,6 +799,10 @@ start:
 					goto ret;
 				}
 				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					break;
+				}
+				if(ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
@@ -757,6 +821,7 @@ start:
 					}
 				}
 			}
+taileater:
 			/* See comment above. */
 			if(cnt==0)
 			{
@@ -768,6 +833,10 @@ start:
 			}
 
 			/* Eat whitespace characters. */
+			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			{
+				continue;
+			}
 			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
