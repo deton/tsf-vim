@@ -1,11 +1,6 @@
 #ifndef VICHARSTREAM_H
 #define VICHARSTREAM_H
 
-inline int iswblank(wchar_t c)
-{
-	return c == L' ' || c == L'\t';
-}
-
 enum cs_flags
 {
 	CS_NONE = 0,

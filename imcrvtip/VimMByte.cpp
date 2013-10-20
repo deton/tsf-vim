@@ -1,9 +1,5 @@
 #include "VimMByte.h"
-
-static int iswblank(wchar_t c)
-{
-	return c == L' ' || c == L'\t';
-}
+#include "ViUtil.h"
 
 VimMByte::ChClass VimMByte::chclass(wchar_t c)
 {

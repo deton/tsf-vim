@@ -1,4 +1,5 @@
 #include "VimCharStream.h"
+#include "ViUtil.h"
 #include "mozc/win32/tip/tip_surrounding_text.h"
 //#define DEBUGLOG 1
 #if DEBUGLOG
@@ -170,4 +171,16 @@ int VimCharStream::decl()
 		}
 	}
 	return r;
+}
+
+int VimCharStream::fblank()
+{
+	while (iswblank(gchar()))
+	{
+		if (incl() == -1)
+		{
+			return -1;
+		}
+	}
+	return 0;
 }

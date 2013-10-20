@@ -1,4 +1,5 @@
 #include "ViCharStream.h"
+#include "ViUtil.h"
 
 ViCharStream::ViCharStream(const std::wstring &preceding, const std::wstring &following)
 {

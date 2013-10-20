@@ -3,6 +3,7 @@
 #include "TextService.h"
 #include "ViKeyHandler.h"
 #include "ViCharStream.h"
+#include "ViUtil.h"
 #include "VimCharStream.h"
 #include "VimMByte.h"
 #include "mozc/win32/tip/tip_surrounding_text.h"
@@ -998,13 +999,7 @@ found:
 		/* skip white space */
 		if(!noskip)
 		{
-			while(iswblank(pos.gchar()))
-			{
-				if(pos.incl() == -1)
-				{
-					break;
-				}
-			}
+			pos.fblank();
 		}
 	}
 
@@ -1093,13 +1088,7 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 		/* skip white space */
 		if(!noskip)
 		{
-			while(iswblank(pos.gchar()))
-			{
-				if(pos.incl() == -1)
-				{
-					break;
-				}
-			}
+			pos.fblank();
 		}
 	}
 

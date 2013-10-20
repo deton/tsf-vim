@@ -14,6 +14,7 @@ public:
 	int incl();
 	int dec();
 	int decl();
+	int fblank();
 	wchar_t gchar();
 	size_t index();
 	int difference();
