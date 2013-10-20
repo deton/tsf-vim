@@ -11,12 +11,12 @@
 // monochrome icons
 static const WORD iconIDX[] =
 {
-	IDI_X_DEFAULT, IDI_X_HIRAGANA, IDI_X_KATAKANA, IDI_X_KATAKANA1, IDI_X_JLATIN, IDI_X_ASCII
+	IDI_X_INSERT, IDI_X_NORMAL
 };
 // png icons
 static const WORD iconIDZ[] =
 {
-	IDI_Z_DEFAULT, IDI_Z_HIRAGANA, IDI_Z_KATAKANA, IDI_Z_KATAKANA1, IDI_Z_JLATIN, IDI_Z_ASCII
+	IDI_Z_INSERT, IDI_Z_NORMAL
 };
 
 CLangBarItemButton::CLangBarItemButton(CTextService *pTextService, REFGUID guid)
@@ -180,26 +180,7 @@ STDAPI CLangBarItemButton::GetIcon(HICON *phIcon)
 
 	if(!_pTextService->_IsKeyboardDisabled() && _pTextService->_IsKeyboardOpen())
 	{
-		switch(_pTextService->inputmode)
-		{
-		case im_hiragana:
-			iconindex = 1;
-			break;
-		case im_katakana:
-			iconindex = 2;
-			break;
-		case im_katakana_ank:
-			iconindex = 3;
-			break;
-		case im_jlatin:
-			iconindex = 4;
-			break;
-		case im_ascii:
-			iconindex = 5;
-			break;
-		default:
-			break;
-		}
+		iconindex = 1;
 	}
 
 	if(IsVersion62AndOver())
