@@ -156,6 +156,7 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 		else
 		{
 			_ClearComposition();
+			vihandler.Reset();
 		}
 		_SetKeyboardOpen(TRUE);
 		*pfEaten = TRUE;
