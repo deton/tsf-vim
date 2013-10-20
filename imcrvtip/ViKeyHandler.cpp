@@ -3,6 +3,7 @@
 #include "TextService.h"
 #include "ViKeyHandler.h"
 #include "ViCharStream.h"
+#include "ViMulti.h"
 #include "ViUtil.h"
 #include "VimCharStream.h"
 #include "VimMByte.h"
@@ -476,6 +477,30 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	{
 		while(cnt--)
 		{
+			if(cs.flags() != CS_NONE)
+			{
+				goto Singlebyte;
+			}
+			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
+			for(;;)
+			{
+				CS_NEXT();
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					goto Taileater;
+				}
+				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
+				if(ViMulti::Wordbound(ochclass, chclass, true))
+				{
+					goto Taileater;
+				}
+				ochclass = chclass;
+			}
+Singlebyte:
 			for(;;)
 			{
 				CS_NEXT();
@@ -488,6 +513,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 					break;
 				}
 			}
+Taileater:
 			/*
 			 * If a motion command and we're at the end of the
 			 * last word, we're done.  Delete and yank eat any
@@ -504,10 +530,13 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 			}
 
 			/* Eat whitespace characters. */
-			CS_FBLANK();
-			if(cs.flags() == CS_EOF)
+			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
 			{
-				goto ret;
+				CS_FBLANK();
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
 			}
 		}
 	}
@@ -515,6 +544,30 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	{
 		while(cnt--)
 		{
+			if(cs.flags() != CS_NONE)
+			{
+				goto singlebyte;
+			}
+			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
+			for(;;)
+			{
+				CS_NEXT();
+				if(cs.flags() == CS_EOF)
+				{
+					goto ret;
+				}
+				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				{
+					goto taileater;
+				}
+				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
+				if(ViMulti::wordbound(ochclass, chclass, true))
+				{
+					goto taileater;
+				}
+				ochclass = chclass;
+			}
+singlebyte:
 			enum { INWORD, NOTWORD } state;
 			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
@@ -543,6 +596,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 					}
 				}
 			}
+taileater:
 			/* See comment above. */
 			if(cnt == 0 && vicmd.GetOperatorPending())
 			{

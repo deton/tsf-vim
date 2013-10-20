@@ -158,6 +158,9 @@
     <ClCompile Include="ViCmd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ViMulti.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="VimCharStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
