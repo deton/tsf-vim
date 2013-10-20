@@ -3,7 +3,6 @@
 #include "TextService.h"
 #include "CandidateList.h"
 #include "LanguageBar.h"
-#include "mozc/win32/base/deleter.h"
 #include "mozc/win32/base/keyboard.h"
 
 static LPCWSTR c_PreservedKeyOnOffDesc = L"OnOff";
