@@ -29,7 +29,7 @@ int VimCharStream::_GetMore(bool backward)
 	int offset = _following_count; // includes '\r'
 	if (backward)
 	{
-		offset = -_preceding_count;
+		offset = 0 - _preceding_count;
 	}
 	mozc::win32::tsf::TipSurroundingTextInfo info;
 	if (!mozc::win32::tsf::TipSurroundingText::GetMore(_textService, _tfContext, offset, &info))

@@ -1275,7 +1275,7 @@ found:
 		}
 	}
 
-	size_t movecnt = pos.difference();
+	int movecnt = pos.difference();
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
@@ -1364,7 +1364,7 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 		}
 	}
 
-	size_t movecnt = -pos.difference();
+	int movecnt = -pos.difference();
 	_ViOpOrMove(VK_LEFT, movecnt);
 }
 
@@ -1386,7 +1386,7 @@ int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
-	size_t offset = 0;
+	int offset = 0;
 	while(cnt--)
 	{
 		offset++;
@@ -1454,7 +1454,7 @@ int ViKeyHandler::_Vi_F_sub(ITfContext *pContext, WCHAR ch)
 	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
-	size_t offset = text.size();
+	int offset = text.size();
 	while(cnt--)
 	{
 		offset--;
