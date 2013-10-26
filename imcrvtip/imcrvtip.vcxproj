@@ -190,6 +190,13 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TextService.h" />
+    <ClInclude Include="ViCharStream.h" />
+    <ClInclude Include="ViCmd.h" />
+    <ClInclude Include="ViKeyHandler.h" />
+    <ClInclude Include="VimCharStream.h" />
+    <ClInclude Include="VimMByte.h" />
+    <ClInclude Include="ViMulti.h" />
+    <ClInclude Include="ViUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Compartment.cpp" />

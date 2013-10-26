@@ -36,6 +36,27 @@
     <ClInclude Include="mozc\win32\tip\tip_surrounding_text.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ViCharStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ViCmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ViKeyHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VimCharStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VimMByte.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ViMulti.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ViUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
