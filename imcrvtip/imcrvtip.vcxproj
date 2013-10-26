@@ -183,9 +183,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DisplayAttributeInfo.h" />
     <ClInclude Include="EditSession.h" />
-    <ClInclude Include="EnumDisplayAttributeInfo.h" />
     <ClInclude Include="imcrvtip.h" />
     <ClInclude Include="LanguageBar.h" />
     <ClInclude Include="mozc\win32\tip\tip_surrounding_text.h" />

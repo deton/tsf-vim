@@ -18,13 +18,7 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DisplayAttributeInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EditSession.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EnumDisplayAttributeInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="imcrvtip.h">
