@@ -210,6 +210,12 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	}
 }
 
+static bool isextendedkey(UINT vk)
+{
+	// http://stackoverflow.com/questions/9233679/sendinput-doesnt-send-chars-or-numbers
+	return vk >= VK_PRIOR && vk <= VK_DELETE || vk >= VK_LWIN && vk <= VK_APPS;
+}
+
 void ViKeyHandler::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 {
 	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
@@ -220,6 +226,12 @@ void ViKeyHandler::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 	INPUT keyup = keydown;
 	keyup.type = INPUT_KEYBOARD;
 	keyup.ki.dwFlags = KEYEVENTF_KEYUP;
+
+	if(isextendedkey(vk))
+	{
+		keydown.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+		keyup.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+	}
 
 	for(int i = 0; i < count; ++i)
 	{
