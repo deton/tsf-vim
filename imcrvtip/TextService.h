@@ -11,12 +11,8 @@ class CLangBarItemButton;
 class CTextService :
 	public ITfTextInputProcessorEx,
 	public ITfThreadMgrEventSink,
-	public ITfThreadFocusSink,
 	public ITfCompartmentEventSink,
-	public ITfKeyEventSink,
-	public ITfFunctionProvider,
-	public ITfFnConfigure,
-	public ITfFnShowHelp
+	public ITfKeyEventSink
 {
 public:
 	CTextService();
@@ -41,10 +37,6 @@ public:
 	STDMETHODIMP OnPushContext(ITfContext *pic);
 	STDMETHODIMP OnPopContext(ITfContext *pic);
 
-	// ITfThreadFocusSink
-	STDMETHODIMP OnSetThreadFocus();
-	STDMETHODIMP OnKillThreadFocus();
-
 	// ItfCompartmentEventSink
 	STDMETHODIMP OnChange(REFGUID rguid);
 
@@ -58,20 +50,6 @@ public:
 
 	// ITfCompositionSink
 	STDMETHODIMP OnCompositionTerminated(TfEditCookie ecWrite, ITfComposition *pComposition);
-
-	// ITfFunctionProvider
-    STDMETHODIMP GetType(GUID *pguid);
-    STDMETHODIMP GetDescription(BSTR *pbstrDesc);
-    STDMETHODIMP GetFunction(REFGUID rguid, REFIID riid, IUnknown **ppunk);
-
-	// ITfFunction
-	STDMETHODIMP GetDisplayName(BSTR *pbstrName);
-
-	// ITfFnConfigure
-	STDMETHODIMP Show(HWND hwndParent, LANGID langid, REFGUID rguidProfile);
-
-	// ITfFnShowHelp
-	STDMETHODIMP Show(HWND hwndParent);
 
 	ITfThreadMgr *_GetThreadMgr()
 	{
@@ -101,30 +79,6 @@ public:
 	// KeyHandlerConv
 	WCHAR _GetCh(BYTE vk, BYTE vkoff = 0);
 	BYTE _GetSf(BYTE vk, WCHAR ch);
-	HRESULT _ConvRomanKana(ROMAN_KANA_CONV *pconv);
-	HRESULT _ConvAsciiJLatin(ASCII_JLATIN_CONV *pconv);
-	void _StartConv();
-	void _NextConv();
-	void _PrevConv();
-	void _NextComp();
-	void _PrevComp();
-	void _SetComp(const std::wstring &candidate);
-	BOOL _ConvN(WCHAR ch);
-	BOOL _ConvNN();
-	void _ConvKanaToKana(std::wstring &dst, int dstmode, const std::wstring &src, int srcmode);
-
-	// KeyHandlerDictionary
-	void _ConnectDic();
-	void _DisconnectDic();
-	void _SearchDic(WCHAR command);
-	WCHAR _SearchBushuDic(WCHAR bushu1, WCHAR bushu2);
-	void _ConvertCandidate(std::wstring &conv, const std::wstring &key, const std::wstring &candidate);
-	void _AddUserDic(WCHAR command, const std::wstring &key, const std::wstring &candidate, const std::wstring &annotation);
-	void _DelUserDic(WCHAR command, const std::wstring &key, const std::wstring &candidate);
-	void _SaveUserDic();
-	void _StartManager();
-	void _StartConfigure();
-	void _StartProcess(LPCWSTR fname);
 
 	// FnConfigure
 	void _CreateConfigPath();
@@ -144,9 +98,6 @@ private:
 	BOOL _InitThreadMgrEventSink();
 	void _UninitThreadMgrEventSink();
 
-	BOOL _InitThreadFocusSink();
-	void _UninitThreadFocusSink();
-
 	BOOL _InitCompartmentEventSink();
 	void _UninitCompartmentEventSink();
 
@@ -159,16 +110,12 @@ private:
 	BOOL _InitLanguageBar();
 	void _UninitLanguageBar();
 
-	BOOL _InitFunctionProvider();
-	void _UninitFunctionProvider();
-
 	int _IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam, bool isKeyDown, bool isTest);
 
 	ITfThreadMgr *_pThreadMgr;
 	TfClientId _ClientId;
 
 	DWORD _dwThreadMgrEventSinkCookie;
-	DWORD _dwThreadFocusSinkCookie;
 	DWORD _dwCompartmentEventSinkCookie;
 
 	CLangBarItemButton *_pLangBarItem;

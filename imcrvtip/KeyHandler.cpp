@@ -109,8 +109,6 @@ void CTextService::_KeyboardChanged()
 			break;
 		}
 
-		_StartManager();
-
 		_ResetStatus();
 
 		_LoadBehavior();
@@ -131,18 +129,11 @@ void CTextService::_KeyboardChanged()
 		exinputmode = inputmode;
 		inputmode = im_default;
 
-		if(exinputmode != im_default)
-		{
-			_SaveUserDic();
-		}
-
 		_UninitPreservedKey();
 		_LoadPreservedKey();
 		_InitPreservedKey();
 
 		_ResetStatus();
-
-		postbuf.clear();
 	}
 
 	_UpdateLanguageBar();

@@ -43,22 +43,6 @@ const GUID c_guidPreservedKeyOnOff =
 const GUID c_guidLangBarItemButton = 
 { 0x5a18b688, 0xa76c, 0x4c07, { 0xa0, 0x95, 0xbe, 0xe6, 0xdb, 0x14, 0x1d, 0x6d } };
 
-// {9F977779-B922-421a-9E91-F3C7462CB2DA}
-const GUID c_guidDisplayAttributeInput = 
-{ 0x9f977779, 0xb922, 0x421a, { 0x9e, 0x91, 0xf3, 0xc7, 0x46, 0x2c, 0xb2, 0xda } };
-
-// {97CC7D92-1BF5-4e7d-9994-B7802D2DE0C4}
-const GUID c_guidDisplayAttributeCandidate = 
-{ 0x97cc7d92, 0x1bf5, 0x4e7d, { 0x99, 0x94, 0xb7, 0x80, 0x2d, 0x2d, 0xe0, 0xc4 } };
-
-// {CBAEABB9-CBDC-4e46-A451-F9545172BE16}
-const GUID c_guidDisplayAttributeAnnotation = 
-{ 0xcbaeabb9, 0xcbdc, 0x4e46, { 0xa4, 0x51, 0xf9, 0x54, 0x51, 0x72, 0xbe, 0x16 } };
-
-// {8CB23002-E3F4-47ff-B035-46CF48FD5586}
-const GUID c_guidCandidateListUIElement = 
-{ 0x8cb23002, 0xe3f4, 0x47ff, { 0xb0, 0x35, 0x46, 0xcf, 0x48, 0xfd, 0x55, 0x86 } };
-
 #else
 
 // {4D97960C-1D59-4466-BEFE-4C1328D2550D}
@@ -77,50 +61,4 @@ const GUID c_guidPreservedKeyOnOff =
 const GUID c_guidLangBarItemButton = 
 { 0xf4bf0d3c, 0xd4ce, 0x456f, { 0x83, 0x7e, 0xfe, 0x67, 0x12, 0xc6, 0xa8, 0xc3 } };
 
-// {6F99E3F1-36AC-4015-B334-211CFFCB3262}
-const GUID c_guidDisplayAttributeInput = 
-{ 0x6f99e3f1, 0x36ac, 0x4015, { 0xb3, 0x34, 0x21, 0x1c, 0xff, 0xcb, 0x32, 0x62 } };
-
-// {6877D302-1C51-4ba4-9329-2F80B5E3A4E7}
-const GUID c_guidDisplayAttributeCandidate = 
-{ 0x6877d302, 0x1c51, 0x4ba4, { 0x93, 0x29, 0x2f, 0x80, 0xb5, 0xe3, 0xa4, 0xe7 } };
-
-// {C6040719-6FF3-4b92-A589-36E93BFD53EC}
-const GUID c_guidDisplayAttributeAnnotation = 
-{ 0xc6040719, 0x6ff3, 0x4b92, { 0xa5, 0x89, 0x36, 0xe9, 0x3b, 0xfd, 0x53, 0xec } };
-
-// {25A6388F-D3CB-4866-A2C3-94E00970BF45}
-const GUID c_guidCandidateListUIElement = 
-{ 0x25a6388f, 0xd3cb, 0x4866, { 0xa2, 0xc3, 0x94, 0xe0, 0x09, 0x70, 0xbf, 0x45 } };
-
 #endif
-
-const TF_DISPLAYATTRIBUTE c_daDisplayAttributeInput =
-{
-	{TF_CT_NONE, 0},			// TF_DA_COLOR crText;
-	{TF_CT_NONE, 0},			// TF_DA_COLOR crBk;
-	TF_LS_DOT,					// TF_DA_LINESTYLE lsStyle;
-	FALSE,						// BOOL fBoldLine;
-	{ TF_CT_NONE, 0},			// TF_DA_COLOR crLine;
-	TF_ATTR_INPUT				// TF_DA_ATTR_INFO bAttr;
-};
-
-const TF_DISPLAYATTRIBUTE c_daDisplayAttributeCandidate =
-{
-	{TF_CT_NONE, 0},			// TF_DA_COLOR crText;
-	{TF_CT_NONE, 0},			// TF_DA_COLOR crBk;
-	TF_LS_SOLID,				// TF_DA_LINESTYLE lsStyle;
-	FALSE,						// BOOL fBoldLine;
-	{TF_CT_NONE, 0},			// TF_DA_COLOR crLine;
-	TF_ATTR_TARGET_CONVERTED	// TF_DA_ATTR_INFO bAttr;
-};
-
-const TF_DISPLAYATTRIBUTE c_daDisplayAttributeAnnotation =
-{
-	{TF_CT_NONE, 0},			// TF_DA_COLOR crText;
-	{TF_CT_NONE, 0},			// TF_DA_COLOR crBk;
-	TF_LS_DASH,					// TF_DA_LINESTYLE lsStyle;
-	FALSE,						// BOOL fBoldLine;
-	{TF_CT_NONE, 0},			// TF_DA_COLOR crLine;
-	TF_ATTR_CONVERTED			// TF_DA_ATTR_INFO bAttr;
-};

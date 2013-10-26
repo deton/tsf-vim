@@ -11,7 +11,6 @@ CTextService::CTextService()
 
 	_pThreadMgr = NULL;
 	_dwThreadMgrEventSinkCookie = TF_INVALID_COOKIE;
-	_dwThreadFocusSinkCookie = TF_INVALID_COOKIE;
 	_dwCompartmentEventSinkCookie = TF_INVALID_COOKIE;
 
 	_dwActiveFlags = 0;
@@ -50,10 +49,6 @@ STDAPI CTextService::QueryInterface(REFIID riid, void **ppvObj)
 	{
 		*ppvObj = (ITfThreadMgrEventSink *)this;
 	}
-	else if(IsEqualIID(riid, IID_ITfThreadFocusSink))
-	{
-		*ppvObj = (ITfThreadFocusSink *)this;
-	}
 	else if(IsEqualIID(riid, IID_ITfCompartmentEventSink))
 	{
 		*ppvObj = (ITfCompartmentEventSink *)this;
@@ -61,22 +56,6 @@ STDAPI CTextService::QueryInterface(REFIID riid, void **ppvObj)
 	else if(IsEqualIID(riid, IID_ITfKeyEventSink))
 	{
 		*ppvObj = (ITfKeyEventSink *)this;
-	}
-	else if(IsEqualIID(riid, IID_ITfDisplayAttributeProvider))
-	{
-		*ppvObj = (ITfDisplayAttributeProvider *)this;
-	}
-	else if(IsEqualIID(riid, IID_ITfFunctionProvider))
-	{
-		*ppvObj = (ITfFunctionProvider *)this;
-	}
-	else if(IsEqualIID(riid, IID_ITfFnConfigure))
-	{
-		*ppvObj = (ITfFnConfigure *)this;
-	}
-	else if(IsEqualIID(riid, IID_ITfFnShowHelp))
-	{
-		*ppvObj = (ITfFnShowHelp *)this;
 	}
 
 	if(*ppvObj)
@@ -124,11 +103,6 @@ STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlag
 		goto exit;
 	}
 
-	if(!_InitThreadFocusSink())
-	{
-		goto exit;
-	}
-
 	if(!_InitCompartmentEventSink())
 	{
 		goto exit;
@@ -151,11 +125,6 @@ STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlag
 		goto exit;
 	}
 
-	if(!_InitFunctionProvider())
-	{
-		goto exit;
-	}
-
 	_KeyboardChanged();
 
 	return S_OK;
@@ -167,10 +136,6 @@ exit:
 
 STDAPI CTextService::Deactivate()
 {
-	_SaveUserDic();
-
-	_UninitFunctionProvider();
-
 	_UninitPreservedKey();
 
 	_UninitKeyEventSink();
@@ -178,8 +143,6 @@ STDAPI CTextService::Deactivate()
 	_UninitLanguageBar();
 
 	_UninitCompartmentEventSink();
-
-	_UninitThreadFocusSink();
 
 	_UninitThreadMgrEventSink();
 
