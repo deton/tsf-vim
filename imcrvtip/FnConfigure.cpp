@@ -1,8 +1,6 @@
 ﻿
-#include "configxml.h"
 #include "imcrvtip.h"
 #include "TextService.h"
-#include "convtype.h"
 
 static const TF_PRESERVEDKEY c_PreservedKey[] =
 {
@@ -21,8 +19,8 @@ void CTextService::_LoadPreservedKey()
 {
 	TF_PRESERVEDKEY on[MAX_PRESERVEDKEY];
 	TF_PRESERVEDKEY off[MAX_PRESERVEDKEY];
-	_LoadPreservedKeySub(SectionPreservedKeyOn, on);
-	_LoadPreservedKeySub(SectionPreservedKeyOff, off);
+	_LoadPreservedKeySub(NULL, on);
+	_LoadPreservedKeySub(NULL, off);
 
 	ZeroMemory(preservedkeyon, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
 	ZeroMemory(preservedkeyoff, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);

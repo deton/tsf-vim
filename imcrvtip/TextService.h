@@ -3,7 +3,6 @@
 #define TEXTSERVICE_H
 
 #include "imcrvtip.h"
-#include "convtype.h"
 #include "ViKeyHandler.h"
 
 class CLangBarItemButton;
@@ -110,17 +109,6 @@ private:
 
 	CLangBarItemButton *_pLangBarItem;
 	CLangBarItemButton *_pLangBarItemI;
-
-private:
-	//ファイルパス
-	WCHAR pathconfigxml[MAX_PATH];	//設定
-
-	//imcrvmgr.exe との名前付きパイプ
-	WCHAR mgrpipename[MAX_KRNLOBJNAME];
-	HANDLE hPipe;
-	//ミューテックス
-	WCHAR mgrmutexname[MAX_KRNLOBJNAME];
-	WCHAR cnfmutexname[MAX_KRNLOBJNAME];
 
 public:
 	DWORD _dwActiveFlags;	//ITfThreadMgrEx::GetActiveFlags()

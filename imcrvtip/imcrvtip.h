@@ -7,15 +7,6 @@
 //for resource
 #define RC_FILE				"imcrvtip"
 
-//入力モード
-enum
-{
-    im_default = 0,		//デフォルト
-	im_normal			//Vi Normal mode
-};
-
-#define KEYMAPNUM		0x80
-
 extern LPCWSTR TextServiceDesc;
 extern LPCWSTR LangbarItemDesc;
 extern LPCWSTR LangbarFuncDesc;

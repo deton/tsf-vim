@@ -15,8 +15,6 @@ CTextService::CTextService()
 
 	_dwActiveFlags = 0;
 
-	hPipe = INVALID_HANDLE_VALUE;
-
 	_ResetStatus();
 }
 

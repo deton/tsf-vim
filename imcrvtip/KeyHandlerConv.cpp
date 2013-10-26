@@ -1,7 +1,6 @@
 ﻿
 #include "imcrvtip.h"
 #include "TextService.h"
-#include "convtype.h"
 
 WCHAR CTextService::_GetCh(BYTE vk, BYTE vkoff)
 {

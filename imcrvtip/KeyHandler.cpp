@@ -1,5 +1,4 @@
 ﻿
-#include "configxml.h"
 #include "imcrvtip.h"
 #include "EditSession.h"
 #include "TextService.h"
