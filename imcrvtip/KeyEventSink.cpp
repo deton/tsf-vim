@@ -80,7 +80,7 @@ STDAPI CTextService::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam, BO
 
 	if(*pfEaten)
 	{
-		_InvokeKeyHandler(pic, wParam, lParam, SKK_NULL);
+		_InvokeKeyHandler(pic, wParam, lParam, 0);
 	}
 	return S_OK;
 }
@@ -114,21 +114,13 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 	if(IsEqualGUID(rguid, c_guidPreservedKeyOnOff))
 	{
 		BOOL fOpen = _IsKeyboardOpen();
-		if(!fOpen)
-		{
-			exinputmode = im_default;	// -> OnChange() -> _KeyboardChanged()
-		}
 		_SetKeyboardOpen(fOpen ? FALSE : TRUE);
 		*pfEaten = TRUE;
 	}
 	else if(IsEqualGUID(rguid, c_guidPreservedKeyOn))
 	{
 		BOOL fOpen = _IsKeyboardOpen();
-		if(!fOpen)
-		{
-			exinputmode = im_default;	// -> OnChange() -> _KeyboardChanged()
-		}
-		else
+		if(fOpen)
 		{
 			vihandler.Reset();
 		}
@@ -137,11 +129,6 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 	}
 	else if(IsEqualGUID(rguid, c_guidPreservedKeyOff))
 	{
-		BOOL fOpen = _IsKeyboardOpen();
-		if(!fOpen)
-		{
-			exinputmode = im_default;	// -> OnChange() -> _KeyboardChanged()
-		}
 		_SetKeyboardOpen(FALSE);
 		*pfEaten = TRUE;
 	}

@@ -17,9 +17,6 @@ CTextService::CTextService()
 
 	hPipe = INVALID_HANDLE_VALUE;
 
-	inputmode = im_default;
-	exinputmode = im_default;
-
 	_ResetStatus();
 }
 
@@ -92,8 +89,6 @@ STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlag
 {
 	//_wsetlocale(LC_ALL, L"JPN");
 	
-	_CreateConfigPath();
-
 	_pThreadMgr = ptim;
 	_pThreadMgr->AddRef();
 	_ClientId = tid;

@@ -291,33 +291,8 @@ STDAPI CLangBarItemButton::_Update()
 	}
 	else
 	{
-		switch(_pTextService->inputmode)
-		{
-		case im_hiragana:
-			var.lVal = TF_CONVERSIONMODE_NATIVE | TF_CONVERSIONMODE_FULLSHAPE;
-			_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
-			break;
-		case im_katakana:
-			var.lVal = TF_CONVERSIONMODE_NATIVE | TF_CONVERSIONMODE_KATAKANA | TF_CONVERSIONMODE_FULLSHAPE;
-			_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
-			break;
-		case im_katakana_ank:
-			var.lVal = TF_CONVERSIONMODE_NATIVE | TF_CONVERSIONMODE_KATAKANA;
-			_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
-			break;
-		case im_jlatin:
-			var.lVal = TF_CONVERSIONMODE_ALPHANUMERIC | TF_CONVERSIONMODE_FULLSHAPE;
-			_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
-			break;
-		case im_ascii:
-			var.lVal = TF_CONVERSIONMODE_ALPHANUMERIC;
-			_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
-			break;
-		default:
-			var.lVal = TF_CONVERSIONMODE_ALPHANUMERIC;
-			_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
-			break;
-		}
+		var.lVal = TF_CONVERSIONMODE_ALPHANUMERIC;
+		_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
 	}
 
 	if(_pLangBarItemSink == NULL)

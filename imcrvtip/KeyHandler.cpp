@@ -97,38 +97,14 @@ void CTextService::_KeyboardChanged()
 	BOOL fOpen = _IsKeyboardOpen();
 	if(fOpen)
 	{
-		//OnPreservedKey()経由ならひらがなモード
-		//OnChange()経由なら前回のモード
-		switch(exinputmode)
-		{
-		case im_default:
-			inputmode = im_hiragana;
-			break;
-		default:
-			inputmode = exinputmode;
-			break;
-		}
-
 		_ResetStatus();
-
-		_LoadBehavior();
-		_LoadSelKey();
 
 		_UninitPreservedKey();
 		_LoadPreservedKey();
 		_InitPreservedKey();
-
-		_LoadKeyMap(SectionKeyMap, ckeymap);
-		_LoadKeyMap(SectionVKeyMap, vkeymap);
-		_LoadConvPoint();
-		_LoadKana();
-		_LoadJLatin();
 	}
 	else
 	{
-		exinputmode = inputmode;
-		inputmode = im_default;
-
 		_UninitPreservedKey();
 		_LoadPreservedKey();
 		_InitPreservedKey();
@@ -139,43 +115,7 @@ void CTextService::_KeyboardChanged()
 	_UpdateLanguageBar();
 }
 
-BOOL CTextService::_IsKeyVoid(WCHAR ch, BYTE vk)
-{
-	if(ch < KEYMAPNUM)
-	{
-		if(ckeymap.keyvoid[ch] == SKK_VOID)
-		{
-			return TRUE;
-		}
-	}
-	if(vk < KEYMAPNUM)
-	{
-		if(vkeymap.keyvoid[vk] == SKK_VOID)
-		{
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
 void CTextService::_ResetStatus()
 {
-	inputkey = FALSE;
-	abbrevmode = FALSE;
-	showentry = FALSE;
-	showcandlist = FALSE;
-	complement = FALSE;
-
-	searchkey.clear();
-	searchkeyorg.clear();
-
-	candidates.clear();
-	candidates.shrink_to_fit();
-	candidx = 0;
-
-	roman.clear();
-	kana.clear();
-	accompidx = 0;
-
-	cursoridx = 0;
+	vihandler.Reset();
 }
