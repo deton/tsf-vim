@@ -79,7 +79,6 @@ public:
 
 	// FnConfigure
 	void _LoadPreservedKey();
-	void _LoadPreservedKeySub(LPCWSTR SectionPreservedKey, TF_PRESERVEDKEY preservedkey[]);
 
 private:
 	LONG _cRef;

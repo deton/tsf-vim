@@ -15,12 +15,27 @@ static bool operator ==(const TF_PRESERVEDKEY &a, const TF_PRESERVEDKEY &b)
 	return a.uVKey == b.uVKey && a.uModifiers == b.uModifiers;
 }
 
+static void _LoadPreservedKeySub(TF_PRESERVEDKEY preservedkey[])
+{
+	int i = 0;
+
+	ZeroMemory(preservedkey, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
+
+	for(i=0; i<_countof(c_PreservedKey); i++)
+	{
+		preservedkey[i] = c_PreservedKey[i];
+	}
+}
+
 void CTextService::_LoadPreservedKey()
 {
 	TF_PRESERVEDKEY on[MAX_PRESERVEDKEY];
 	TF_PRESERVEDKEY off[MAX_PRESERVEDKEY];
-	_LoadPreservedKeySub(NULL, on);
-	_LoadPreservedKeySub(NULL, off);
+	_LoadPreservedKeySub(on);
+	//半/全キー等は、トグルでなくNormal mode移行にのみ使用。
+	//Insert mode移行は、'a','i'等いろんなキーがあるので
+	ZeroMemory(off, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
+	//_LoadPreservedKeySub(off);
 
 	ZeroMemory(preservedkeyon, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
 	ZeroMemory(preservedkeyoff, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
@@ -46,6 +61,7 @@ void CTextService::_LoadPreservedKey()
 			idxon++;
 		}
 	}
+	//EscapeキーをNormal mode移行用に登録
 	preservedkeyon[idxon].uVKey = VK_ESCAPE;
 	preservedkeyon[idxon].uModifiers = TF_MOD_IGNORE_ALL_MODIFIER;
 	idxon++;
@@ -62,17 +78,5 @@ void CTextService::_LoadPreservedKey()
 			preservedkeyoff[idxoff] = off[j];
 			idxoff++;
 		}
-	}
-}
-
-void CTextService::_LoadPreservedKeySub(LPCWSTR SectionPreservedKey, TF_PRESERVEDKEY preservedkey[])
-{
-	int i = 0;
-
-	ZeroMemory(preservedkey, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
-
-	for(i=0; i<_countof(c_PreservedKey); i++)
-	{
-		preservedkey[i] = c_PreservedKey[i];
 	}
 }
