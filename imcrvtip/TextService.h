@@ -7,17 +7,13 @@
 #include "ViKeyHandler.h"
 
 class CLangBarItemButton;
-class CCandidateList;
 
 class CTextService :
 	public ITfTextInputProcessorEx,
 	public ITfThreadMgrEventSink,
 	public ITfThreadFocusSink,
 	public ITfCompartmentEventSink,
-	public ITfTextEditSink,
 	public ITfKeyEventSink,
-	public ITfCompositionSink,
-	public ITfDisplayAttributeProvider,
 	public ITfFunctionProvider,
 	public ITfFnConfigure,
 	public ITfFnShowHelp
@@ -45,9 +41,6 @@ public:
 	STDMETHODIMP OnPushContext(ITfContext *pic);
 	STDMETHODIMP OnPopContext(ITfContext *pic);
 
-	// ITfTextEditSink
-	STDMETHODIMP OnEndEdit(ITfContext *pic, TfEditCookie ecReadOnly, ITfEditRecord *pEditRecord);
-
 	// ITfThreadFocusSink
 	STDMETHODIMP OnSetThreadFocus();
 	STDMETHODIMP OnKillThreadFocus();
@@ -65,10 +58,6 @@ public:
 
 	// ITfCompositionSink
 	STDMETHODIMP OnCompositionTerminated(TfEditCookie ecWrite, ITfComposition *pComposition);
-
-	// ITfDisplayAttributeProvider
-	STDMETHODIMP EnumDisplayAttributeInfo(IEnumTfDisplayAttributeInfo **ppEnum);
-	STDMETHODIMP GetDisplayAttributeInfo(REFGUID guid, ITfDisplayAttributeInfo **ppInfo);
 
 	// ITfFunctionProvider
     STDMETHODIMP GetType(GUID *pguid);
@@ -92,14 +81,6 @@ public:
 	{
 		return _ClientId;
 	}
-	ITfComposition *_GetComposition()
-	{
-		return _pComposition;
-	}
-	CCandidateList *_GetCandidateList()
-	{
-		return _pCandidateList;
-	}
 
 	// Compartment
 	HRESULT _SetCompartment(REFGUID rguid, const VARIANT *pvar);
@@ -107,35 +88,15 @@ public:
 	BOOL _IsKeyboardOpen();
 	HRESULT _SetKeyboardOpen(BOOL fOpen);
 
-	// Composition
-	BOOL _IsComposing();
-	void _SetComposition(ITfComposition *pComposition);
-	BOOL _IsRangeCovered(TfEditCookie ec, ITfRange *pRangeTest, ITfRange *pRangeCover);
-	void _StartComposition(ITfContext *pContext);
-	void _TerminateComposition(TfEditCookie ec, ITfContext *pContext);
-	void _EndComposition(ITfContext *pContext);
-	void _CancelComposition(TfEditCookie ec, ITfContext *pContext);
-	void _ClearComposition();
-
 	// LanguageBar
 	void _UpdateLanguageBar();
 	
-	// DisplayAttribureProvider
-	void _ClearCompositionDisplayAttributes(TfEditCookie ec, ITfContext *pContext);
-	BOOL _SetCompositionDisplayAttributes(TfEditCookie ec, ITfContext *pContext, ITfRange *pRange, TfGuidAtom gaDisplayAttribute);
-
 	// KeyHandler
 	HRESULT _InvokeKeyHandler(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BYTE bSf);
 	HRESULT _HandleKey(TfEditCookie ec, ITfContext *pContext, WPARAM wParam, BYTE bSf);
 	void _KeyboardChanged();
 	BOOL _IsKeyVoid(WCHAR ch, BYTE vk);
 	void _ResetStatus();
-
-	// KeyHandlerCompostion
-	HRESULT _Update(TfEditCookie ec, ITfContext *pContext, BOOL fixed = FALSE, BOOL back = FALSE);
-	HRESULT _Update(TfEditCookie ec, ITfContext *pContext, std::wstring &composition, BOOL fixed = FALSE, BOOL back = FALSE);
-	HRESULT _SetText(TfEditCookie ec, ITfContext *pContext, const std::wstring &text, LONG cchReq, BOOL fixed);
-	HRESULT _ShowCandidateList(TfEditCookie ec, ITfContext *pContext, BOOL reg);
 
 	// KeyHandlerConv
 	WCHAR _GetCh(BYTE vk, BYTE vkoff = 0);
@@ -189,8 +150,6 @@ private:
 	BOOL _InitCompartmentEventSink();
 	void _UninitCompartmentEventSink();
 
-	BOOL _InitTextEditSink(ITfDocumentMgr *pDocumentMgr);
-
 	BOOL _InitKeyEventSink();
 	void _UninitKeyEventSink();
 
@@ -199,8 +158,6 @@ private:
 
 	BOOL _InitLanguageBar();
 	void _UninitLanguageBar();
-
-	BOOL _InitDisplayAttributeGuidAtom();
 
 	BOOL _InitFunctionProvider();
 	void _UninitFunctionProvider();
@@ -214,19 +171,8 @@ private:
 	DWORD _dwThreadFocusSinkCookie;
 	DWORD _dwCompartmentEventSinkCookie;
 
-	ITfContext *_pTextEditSinkContext;
-	DWORD _dwTextEditSinkCookie;
-
-	ITfComposition *_pComposition;
-
 	CLangBarItemButton *_pLangBarItem;
 	CLangBarItemButton *_pLangBarItemI;
-
-	CCandidateList *_pCandidateList;
-
-	TfGuidAtom _gaDisplayAttributeInput;
-	TfGuidAtom _gaDisplayAttributeCandidate;
-	TfGuidAtom _gaDisplayAttributeAnnotation;
 
 private:
 	//ファイルパス

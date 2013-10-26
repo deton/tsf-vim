@@ -1,26 +1,15 @@
 ﻿
 #include "imcrvtip.h"
 #include "TextService.h"
-#include "CandidateList.h"
 
 STDAPI CTextService::OnSetThreadFocus()
 {
-	if(_pCandidateList)
-	{
-		_pCandidateList->_Show(TRUE);
-	}
-
 	return S_OK;
 }
 
 STDAPI CTextService::OnKillThreadFocus()
 {
 	_SaveUserDic();
-
-	if(_pCandidateList)
-	{
-		_pCandidateList->_Show(FALSE);
-	}
 
 	return S_OK;
 }

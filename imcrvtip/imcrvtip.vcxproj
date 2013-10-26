@@ -183,8 +183,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CandidateList.h" />
-    <ClInclude Include="CandidateWindow.h" />
     <ClInclude Include="DisplayAttributeInfo.h" />
     <ClInclude Include="EditSession.h" />
     <ClInclude Include="EnumDisplayAttributeInfo.h" />
@@ -196,13 +194,8 @@
     <ClInclude Include="TextService.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CandidateList.cpp" />
-    <ClCompile Include="CandidateUIElement.cpp" />
-    <ClCompile Include="CandidateWindow.cpp" />
     <ClCompile Include="Compartment.cpp" />
     <ClCompile Include="CompartmentEventSink.cpp" />
-    <ClCompile Include="Composition.cpp" />
-    <ClCompile Include="DisplayAttributeProvider.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="FnConfigure.cpp" />
     <ClCompile Include="FunctionProvider.cpp" />
@@ -210,7 +203,6 @@
     <ClCompile Include="KeyEventSink.cpp" />
     <ClCompile Include="KeyHandler.cpp" />
     <ClCompile Include="ViKeyHandler.cpp" />
-    <ClCompile Include="KeyHandlerComposition.cpp" />
     <ClCompile Include="KeyHandlerConv.cpp" />
     <ClCompile Include="KeyHandlerDictionary.cpp" />
     <ClCompile Include="LanguageBar.cpp" />
@@ -230,7 +222,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TextEditSink.cpp" />
     <ClCompile Include="TextService.cpp" />
     <ClCompile Include="ThreadFocusSink.cpp" />
     <ClCompile Include="ThreadMgrEventSink.cpp" />

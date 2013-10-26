@@ -1,7 +1,6 @@
 ﻿
 #include "imcrvtip.h"
 #include "TextService.h"
-#include "CandidateList.h"
 #include "LanguageBar.h"
 #include "mozc/win32/base/keyboard.h"
 
@@ -21,7 +20,7 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 		return FALSE;
 	}
 
-	if(_IsComposing() || vihandler.IsWaitingNextKey())
+	if(vihandler.IsWaitingNextKey())
 	{
 		return TRUE;
 	}
@@ -66,24 +65,6 @@ STDAPI CTextService::OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam
 		return S_OK;
 	}
 	*pfEaten = (eaten == TRUE);
-
-	if(_pCandidateList == NULL || !_pCandidateList->_IsShowCandidateWindow())
-	{
-		//ASCIIモード
-		if(inputmode == im_ascii)
-		{
-			WCHAR ch = _GetCh((BYTE)wParam);
-			//無効
-			if(_IsKeyVoid(ch, (BYTE)wParam))
-			{
-				_UpdateLanguageBar();
-			}
-			else if(ch != L'\0')
-			{
-				_ClearComposition();
-			}
-		}
-	}
 	return S_OK;
 }
 
@@ -137,11 +118,6 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 		{
 			exinputmode = im_default;	// -> OnChange() -> _KeyboardChanged()
 		}
-		else
-		{
-			_ClearComposition();
-			postbuf.clear();
-		}
 		_SetKeyboardOpen(fOpen ? FALSE : TRUE);
 		*pfEaten = TRUE;
 	}
@@ -154,7 +130,6 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 		}
 		else
 		{
-			_ClearComposition();
 			vihandler.Reset();
 		}
 		_SetKeyboardOpen(TRUE);
@@ -166,11 +141,6 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 		if(!fOpen)
 		{
 			exinputmode = im_default;	// -> OnChange() -> _KeyboardChanged()
-		}
-		else
-		{
-			_ClearComposition();
-			postbuf.clear();
 		}
 		_SetKeyboardOpen(FALSE);
 		*pfEaten = TRUE;

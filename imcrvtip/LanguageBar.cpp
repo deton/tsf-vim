@@ -2,7 +2,6 @@
 #include "imcrvtip.h"
 #include "TextService.h"
 #include "EditSession.h"
-#include "CandidateList.h"
 #include "LanguageBar.h"
 #include "resource.h"
 
@@ -408,29 +407,6 @@ void CTextService::_UninitLanguageBar()
 	}
 }
 
-class CImmersiveInputModeEditSession : public CEditSessionBase
-{
-public:
-	CImmersiveInputModeEditSession(CTextService *pTextService, ITfContext *pContext, const std::wstring &mode) : CEditSessionBase(pTextService, pContext)
-	{
-		_pTextService = pTextService;
-		_pContext = pContext;
-		_mode = mode;
-	}
-
-	// ITfEditSession
-	STDMETHODIMP DoEditSession(TfEditCookie ec)
-	{
-		_pTextService->_SetText(ec, _pContext, _mode, -(LONG)_mode.size(), FALSE);
-		return S_OK;
-	}
-
-private:
-	CTextService *_pTextService;
-	ITfContext *_pContext;
-	std::wstring _mode;
-};
-
 void CTextService::_UpdateLanguageBar()
 {
 	if(_pLangBarItem != NULL)
@@ -440,68 +416,5 @@ void CTextService::_UpdateLanguageBar()
 	if(_pLangBarItemI != NULL)
 	{
 		_pLangBarItemI->_Update();
-	}
-
-	if(c_showmodeimm && _ImmersiveMode && !_UILessMode)
-	{
-		std::wstring mode;
-		switch(inputmode)
-		{
-		case im_hiragana:
-			mode = L" [かな]";
-			break;
-		case im_katakana:
-			mode = L" [カナ]";
-			break;
-		case im_katakana_ank:
-			mode = L" [ｶﾅ]";
-			break;
-		case im_jlatin:
-			mode = L" [全英]";
-			break;
-		case im_ascii:
-			mode = L" [SKK]";
-			break;
-		default:
-			break;
-		}
-
-		if(_pCandidateList && _pCandidateList->_IsShowCandidateWindow())
-		{
-			_pCandidateList->_SetText(mode, FALSE, FALSE, FALSE);
-		}
-		else if(!_IsComposing())
-		{
-			ITfDocumentMgr *pDocumentMgrFocus;
-			CImmersiveInputModeEditSession *pEditSession;
-			HRESULT hr;
-
-			switch(inputmode)
-			{
-			case im_hiragana:
-			case im_katakana:
-			case im_katakana_ank:
-			case im_jlatin:
-			case im_ascii:
-				if(_pThreadMgr->GetFocus(&pDocumentMgrFocus) == S_OK && pDocumentMgrFocus != NULL)
-				{
-					ITfContext *pContext;
-					if(pDocumentMgrFocus->GetTop(&pContext) == S_OK && pContext != NULL)
-					{
-						pEditSession = new CImmersiveInputModeEditSession(this, pContext, mode);
-						if(pEditSession != NULL)
-						{
-							pContext->RequestEditSession(_ClientId, pEditSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
-							pEditSession->Release();
-						}
-						pContext->Release();
-					}
-					pDocumentMgrFocus->Release();
-				}
-				break;
-			default:
-				break;
-			}
-		}
 	}
 }

@@ -4,7 +4,6 @@
 #include "EditSession.h"
 #include "TextService.h"
 #include "LanguageBar.h"
-#include "CandidateList.h"
 
 class CKeyHandlerEditSession : public CEditSessionBase
 {
@@ -28,7 +27,6 @@ public:
 		__except(EXCEPTION_EXECUTE_HANDLER)
 		{
 			_pTextService->_ResetStatus();
-			_pTextService->_ClearComposition();
 		}
 
 #endif
@@ -144,7 +142,6 @@ void CTextService::_KeyboardChanged()
 
 		_ResetStatus();
 
-		_ClearComposition();
 		postbuf.clear();
 	}
 

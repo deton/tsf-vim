@@ -1,7 +1,6 @@
 ﻿
 #include "imcrvtip.h"
 #include "TextService.h"
-#include "CandidateList.h"
 
 CTextService::CTextService()
 	: vihandler(this)
@@ -14,10 +13,6 @@ CTextService::CTextService()
 	_dwThreadMgrEventSinkCookie = TF_INVALID_COOKIE;
 	_dwThreadFocusSinkCookie = TF_INVALID_COOKIE;
 	_dwCompartmentEventSinkCookie = TF_INVALID_COOKIE;
-	_pTextEditSinkContext = NULL;
-	_dwTextEditSinkCookie = TF_INVALID_COOKIE;
-	_pComposition = NULL;
-	_pCandidateList = NULL;
 
 	_dwActiveFlags = 0;
 
@@ -63,15 +58,7 @@ STDAPI CTextService::QueryInterface(REFIID riid, void **ppvObj)
 	{
 		*ppvObj = (ITfCompartmentEventSink *)this;
 	}
-	else if(IsEqualIID(riid, IID_ITfTextEditSink))
-	{
-		*ppvObj = (ITfTextEditSink *)this;
-	}
 	else if(IsEqualIID(riid, IID_ITfKeyEventSink))
-	{
-		*ppvObj = (ITfKeyEventSink *)this;
-	}
-	else if(IsEqualIID(riid, IID_ITfCompositionSink))
 	{
 		*ppvObj = (ITfKeyEventSink *)this;
 	}
@@ -147,13 +134,6 @@ STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlag
 		goto exit;
 	}
 
-	ITfDocumentMgr *pDocumentMgrFocus;
-	if((_pThreadMgr->GetFocus(&pDocumentMgrFocus) == S_OK) && (pDocumentMgrFocus != NULL))
-	{
-		_InitTextEditSink(pDocumentMgrFocus);
-		pDocumentMgrFocus->Release();
-	}
-
 	if(!_InitLanguageBar())
 	{
 		goto exit;
@@ -171,11 +151,6 @@ STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlag
 		goto exit;
 	}
 
-	if(!_InitDisplayAttributeGuidAtom())
-	{
-		goto exit;
-	}
-	
 	if(!_InitFunctionProvider())
 	{
 		goto exit;
@@ -194,12 +169,6 @@ STDAPI CTextService::Deactivate()
 {
 	_SaveUserDic();
 
-	if(_pCandidateList != NULL)
-	{
-		delete _pCandidateList;
-		_pCandidateList = NULL;
-	}
-
 	_UninitFunctionProvider();
 
 	_UninitPreservedKey();
@@ -207,8 +176,6 @@ STDAPI CTextService::Deactivate()
 	_UninitKeyEventSink();
 
 	_UninitLanguageBar();
-
-	_InitTextEditSink(NULL);
 
 	_UninitCompartmentEventSink();
 
