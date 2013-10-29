@@ -255,7 +255,7 @@ void ViKeyHandler::_QueueKeyForSelection(vector<INPUT> *inputs)
 	inputs->push_back(keyup);
 }
 
-void ViKeyHandler::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up)
+void ViKeyHandler::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up, BOOL front)
 {
 	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
@@ -267,11 +267,25 @@ void ViKeyHandler::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up)
 		INPUT keyup = keydown;
 		keyup.type = INPUT_KEYBOARD;
 		keyup.ki.dwFlags = KEYEVENTF_KEYUP;
-		inputs->push_back(keyup);
+		if(front)
+		{
+			inputs->insert(inputs->begin(), keyup);
+		}
+		else
+		{
+			inputs->push_back(keyup);
+		}
 	}
 	else
 	{
-		inputs->push_back(keydown);
+		if(front)
+		{
+			inputs->insert(inputs->begin(), keydown);
+		}
+		else
+		{
+			inputs->push_back(keydown);
+		}
 	}
 }
 
@@ -286,14 +300,18 @@ void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
 {
 	//cf. deleter.UnsetModifiers()
 	mozc::win32::KeyboardStatus keyboard_state;
+	bool shiftPressed = false;
+	bool controlPressed = false;
 	if(keyboard_->GetKeyboardState(&keyboard_state))
 	{
 		const BYTE kUnsetState = 0;
 		bool to_be_updated = false;
 		if(keyboard_state.IsPressed(VK_SHIFT))
 		{
+			shiftPressed = true;
 			to_be_updated = true;
 			keyboard_state.SetState(VK_SHIFT, kUnsetState);
+			_QueueKeyForModifier(inputs, VK_SHIFT, TRUE, TRUE);
 			//restore modifier
 			//XXX:SendInput()直後にdeleter.EndDeletion()を呼んでも、
 			//CTRL-F押下時にVK_NEXT送り付けても動かない
@@ -302,8 +320,10 @@ void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
 		}
 		if(keyboard_state.IsPressed(VK_CONTROL))
 		{
+			controlPressed = true;
 			to_be_updated = true;
 			keyboard_state.SetState(VK_CONTROL, kUnsetState);
+			_QueueKeyForModifier(inputs, VK_CONTROL, TRUE, TRUE);
 			_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
 		}
 		if(to_be_updated)
