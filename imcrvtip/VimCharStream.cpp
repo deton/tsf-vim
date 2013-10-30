@@ -12,11 +12,18 @@ VimCharStream::VimCharStream(CTextService *textService, ITfContext *tfContext)
 	mozc::win32::tsf::TipSurroundingTextInfo info;
 	if (mozc::win32::tsf::TipSurroundingText::Get(_textService, _tfContext, &info))
 	{
-		remove_copy(info.preceding_text.begin(), info.preceding_text.end(), back_inserter(_buf), L'\r');
+		std::wstring tmp;
+		ViUtil::NormalizeNewline(info.preceding_text, &tmp);
+		_buf.append(tmp);
 		_orig = _index = _buf.size();
-		remove_copy(info.following_text.begin(), info.following_text.end(), back_inserter(_buf), L'\r');
+		ViUtil::NormalizeNewline(info.following_text, &tmp);
+		_buf.append(tmp);
 		_preceding_count = info.preceding_text.size();
 		_following_count = info.following_text.size();
+#if DEBUGLOG
+		std::wofstream log("c:\\tsfvim\\log");
+		log << _buf << std::endl;
+#endif
 	}
 }
 
@@ -43,16 +50,13 @@ int VimCharStream::_GetMore(bool backward)
 			return -1;
 		}
 		size_t oldsize = _buf.size();
-		remove_copy(info.preceding_text.begin(), info.preceding_text.end(),
-				inserter(_buf, _buf.begin()), L'\r');
+		std::wstring tmp;
+		ViUtil::NormalizeNewline(info.preceding_text, &tmp);
+		_buf.insert(0, tmp);
 		size_t addsize = _buf.size() - oldsize;
 		_orig += addsize;
 		_index += addsize;
 		_preceding_count += info.preceding_text.size();
-#if DEBUGLOG
-		std::wofstream log("\\tsfvim.log");
-		log << _buf.c_str() << std::endl;
-#endif
 	}
 	else
 	{
@@ -60,8 +64,9 @@ int VimCharStream::_GetMore(bool backward)
 		{
 			return -1;
 		}
-		remove_copy(info.following_text.begin(), info.following_text.end(),
-				back_inserter(_buf), L'\r');
+		std::wstring tmp;
+		ViUtil::NormalizeNewline(info.following_text, &tmp);
+		_buf.append(tmp);
 		_following_count += info.following_text.size();
 	}
 	return 0;

@@ -1407,9 +1407,10 @@ int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 	{
 		return -1;
 	}
-	std::wstring text(info.following_text);
+	std::wstring text;
+	ViUtil::NormalizeNewline(info.following_text, &text);
 	// erase chars after newline to search in current line.
-	size_t nl = text.find_first_of(L"\r\n");
+	size_t nl = text.find_first_of(L'\n');
 	if(nl != std::wstring::npos)
 	{
 		text.erase(nl);
@@ -1475,9 +1476,10 @@ int ViKeyHandler::_Vi_F_sub(ITfContext *pContext, WCHAR ch)
 	{
 		return -1;
 	}
-	std::wstring text(info.preceding_text);
+	std::wstring text;
+	ViUtil::NormalizeNewline(info.preceding_text, &text);
 	// erase chars before newline to search in current line.
-	size_t nl = text.find_last_of(L"\r\n");
+	size_t nl = text.find_last_of(L'\n');
 	if(nl != std::wstring::npos)
 	{
 		text.erase(0, nl);

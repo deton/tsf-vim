@@ -137,6 +137,9 @@
     <ClCompile Include="ViMulti.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ViUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="VimCharStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

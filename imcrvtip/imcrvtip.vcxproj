@@ -230,6 +230,7 @@
     <ClCompile Include="ViCharStream.cpp" />
     <ClCompile Include="ViCmd.cpp" />
     <ClCompile Include="ViMulti.cpp" />
+    <ClCompile Include="ViUtil.cpp" />
     <ClCompile Include="VimCharStream.cpp" />
     <ClCompile Include="VimMByte.cpp" />
   </ItemGroup>

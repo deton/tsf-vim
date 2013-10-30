@@ -3,9 +3,12 @@
 
 ViCharStream::ViCharStream(const std::wstring &preceding, const std::wstring &following)
 {
-	remove_copy(preceding.begin(), preceding.end(), back_inserter(_buf), L'\r');
+	std::wstring tmp;
+	ViUtil::NormalizeNewline(preceding, &tmp);
+	_buf.append(tmp);
 	_orig = _index = _buf.size();
-	remove_copy(following.begin(), following.end(), back_inserter(_buf), L'\r');
+	ViUtil::NormalizeNewline(following, &tmp);
+	_buf.append(tmp);
 
 	_update_sol();
 	_update_eol();
