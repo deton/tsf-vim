@@ -387,15 +387,20 @@ void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 void ViKeyHandler::_ViOpLines(int count)
 {
 	vector<INPUT> inputs;
-	_QueueKey(&inputs, VK_HOME);
-	_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
-	_QueueKey(&inputs, VK_END);
-	while(count-- > 0)
+	for(int i = 0; i < count; ++i)
 	{
 		_QueueKey(&inputs, VK_DOWN);
-		_QueueKey(&inputs, VK_END);
 	}
-	_QueueKey(&inputs, VK_RIGHT); // to include last '\n'
+	//same as _Vi_k()
+	//Wordの場合、選択中に既に行末にいる際にVK_ENDを送ると、
+	//次の行末まで移動するので
+	_QueueKey(&inputs, VK_END);
+	_QueueKey(&inputs, VK_RIGHT); // to include '\n'
+	_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
+	for(int i = count + 1; i > 0; --i)
+	{
+		_QueueKey(&inputs, VK_UP);
+	}
 	_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
 	_ViOp(&inputs);
 }
