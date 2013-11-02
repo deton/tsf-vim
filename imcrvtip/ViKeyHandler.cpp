@@ -552,9 +552,9 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	 *	counts as a single word move.  If it's a motion command,
 	 *	don't move off the end of the line.
 	 */
-	if(cs.flags() == CS_EMP || cs.flags() == CS_NONE && iswblank(cs.ch()))
+	if(cs.flags() == cs.CS_EMP || cs.flags() == cs.CS_NONE && iswblank(cs.ch()))
 	{
-		if(vicmd.GetOperatorPending() && cs.flags() != CS_EMP && cnt == 1)
+		if(vicmd.GetOperatorPending() && cs.flags() != cs.CS_EMP && cnt == 1)
 		{
 			if(vicmd.GetOperatorPending() == L'c')
 			{
@@ -580,7 +580,7 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	{
 		while(cnt--)
 		{
-			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto Singlebyte;
 			}
@@ -588,11 +588,11 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 			for(;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto Taileater;
 				}
@@ -607,11 +607,11 @@ Singlebyte:
 			for(;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
@@ -637,15 +637,15 @@ Taileater:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
 			}
-			if(cs.flags() == CS_EOF)
+			if(cs.flags() == cs.CS_EOF)
 			{
 				goto ret;
 			}
@@ -655,7 +655,7 @@ Taileater:
 	{
 		while(cnt--)
 		{
-			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto singlebyte;
 			}
@@ -663,11 +663,11 @@ Taileater:
 			for(;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto taileater;
 				}
@@ -680,15 +680,15 @@ Taileater:
 			}
 singlebyte:
 			enum { INWORD, NOTWORD } state;
-			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
+			state = cs.flags() == cs.CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
@@ -723,14 +723,14 @@ taileater:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
@@ -773,10 +773,10 @@ void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
 	 * it.  (This doesn't count as a word move.)  Stay at the character
 	 * past the current one, it sets word "state" for the 'e' command.
 	 */
-	if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
+	if(cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
 	{
 		CS_NEXT();
-		if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
+		if(cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
 		{
 			goto start;
 		}
@@ -794,7 +794,7 @@ start:
 	{
 		while(cnt--)
 		{
-			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto Singlebyte;
 			}
@@ -802,11 +802,11 @@ start:
 			for(;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto Taileater;
 				}
@@ -821,11 +821,11 @@ Singlebyte:
 			for(;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
@@ -842,7 +842,7 @@ Taileater:
 			 */
 			if(cnt == 0)
 			{
-				if(cs.flags() == CS_NONE)
+				if(cs.flags() == cs.CS_NONE)
 				{
 					CS_PREV();
 				}
@@ -850,15 +850,15 @@ Taileater:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
 			}
-			if(cs.flags() == CS_EOF)
+			if(cs.flags() == cs.CS_EOF)
 			{
 				goto ret;
 			}
@@ -868,7 +868,7 @@ Taileater:
 	{
 		while(cnt--)
 		{
-			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto singlebyte;
 			}
@@ -876,11 +876,11 @@ Taileater:
 			for(;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto taileater;
 				}
@@ -893,15 +893,15 @@ Taileater:
 			}
 singlebyte:
 			enum { INWORD, NOTWORD } state;
-			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
+			state = cs.flags() == cs.CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == CS_EOF)
+				if(cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
@@ -928,7 +928,7 @@ taileater:
 			/* See comment above. */
 			if(cnt==0)
 			{
-				if(cs.flags() == CS_NONE)
+				if(cs.flags() == cs.CS_NONE)
 				{
 					CS_PREV();
 				}
@@ -936,15 +936,15 @@ taileater:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
 			}
-			if(cs.flags() == CS_EOF)
+			if(cs.flags() == cs.CS_EOF)
 			{
 				goto ret;
 			}
@@ -964,7 +964,7 @@ ret:
 		return;
 	}
 
-	if(vicmd.GetOperatorPending() && cs.flags() == CS_NONE)
+	if(vicmd.GetOperatorPending() && cs.flags() == cs.CS_NONE)
 	{
 		movecnt++;
 	}
@@ -991,10 +991,10 @@ void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
 	 * character before the current one, it sets word "state" for the
 	 * 'b' command.
 	 */
-	if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
+	if(cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
 	{
 		CS_PREV();
-		if(cs.flags() == CS_NONE && !iswblank(cs.ch()))
+		if(cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
 		{
 			goto start;
 		}
@@ -1012,7 +1012,7 @@ start:
 	{
 		while(cnt--)
 		{
-			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto Singlebyte;
 			}
@@ -1020,11 +1020,11 @@ start:
 			for(;;)
 			{
 				CS_PREV();
-				if(cs.flags() == CS_SOF)
+				if(cs.flags() == cs.CS_SOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto Cntmodify;
 				}
@@ -1039,11 +1039,11 @@ Singlebyte:
 			for(;;)
 			{
 				CS_PREV();
-				if(cs.flags() == CS_SOF)
+				if(cs.flags() == cs.CS_SOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
@@ -1060,7 +1060,7 @@ Cntmodify:
 			 */
 			if(cnt == 0)
 			{
-				if(cs.flags() == CS_NONE)
+				if(cs.flags() == cs.CS_NONE)
 				{
 					CS_NEXT();
 				}
@@ -1068,13 +1068,13 @@ Cntmodify:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == CS_NONE
+			if(cs.flags() == cs.CS_NONE
 					&& (ViMulti::ismulti(cs.ch()) || !iswblank(cs.ch())))
 			{
 				continue;
 			}
 			CS_BBLANK();
-			if(cs.flags() == CS_SOF)
+			if(cs.flags() == cs.CS_SOF)
 			{
 				goto ret;
 			}
@@ -1084,7 +1084,7 @@ Cntmodify:
 	{
 		while(cnt--)
 		{
-			if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto singlebyte;
 			}
@@ -1092,11 +1092,11 @@ Cntmodify:
 			for(;;)
 			{
 				CS_PREV();
-				if(cs.flags() == CS_SOF)
+				if(cs.flags() == cs.CS_SOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto cntmodify;
 				}
@@ -1109,15 +1109,15 @@ Cntmodify:
 			}
 singlebyte:
 			enum { INWORD, NOTWORD } state;
-			state = cs.flags() == CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
+			state = cs.flags() == cs.CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
 			for(;;)
 			{
 				CS_PREV();
-				if(cs.flags() == CS_SOF)
+				if(cs.flags() == cs.CS_SOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
@@ -1144,7 +1144,7 @@ cntmodify:
 			/* See comment above. */
 			if(cnt==0)
 			{
-				if(cs.flags() == CS_NONE)
+				if(cs.flags() == cs.CS_NONE)
 				{
 					CS_NEXT();
 				}
@@ -1152,15 +1152,15 @@ cntmodify:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == CS_NONE && ViMulti::ismulti(cs.ch()))
+			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != CS_NONE || iswblank(cs.ch()))
+			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_BBLANK();
 			}
-			if(cs.flags() == CS_SOF)
+			if(cs.flags() == cs.CS_SOF)
 			{
 				goto ret;
 			}

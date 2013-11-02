@@ -61,7 +61,7 @@ wchar_t ViCharStream::ch()
 	return _buf[_index];
 }
 
-cs_flags ViCharStream::flags()
+ViCharStream::cs_flags ViCharStream::flags()
 {
 	return _flags;
 }

@@ -1,19 +1,19 @@
 #ifndef VICHARSTREAM_H
 #define VICHARSTREAM_H
 
-enum cs_flags
-{
-	CS_NONE = 0,
-	CS_EMP,                       /* Empty line. */
-	CS_EOF,                       /* End-of-file. */
-	CS_EOL,                       /* End-of-line. */
-	CS_SOF,                       /* Start-of-file. */
-};
-
 /* Character stream structure, prototypes. */
 class ViCharStream
 {
 public:
+	enum cs_flags
+	{
+		CS_NONE = 0,
+		CS_EMP,                       /* Empty line. */
+		CS_EOF,                       /* End-of-file. */
+		CS_EOL,                       /* End-of-line. */
+		CS_SOF,                       /* Start-of-file. */
+	};
+
 	ViCharStream(const std::wstring &preceding, const std::wstring &following);
 	~ViCharStream();
 
