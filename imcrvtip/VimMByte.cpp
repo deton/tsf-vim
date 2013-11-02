@@ -1,4 +1,4 @@
-#include "VimMByte.h"
+Ôªø#include "VimMByte.h"
 #include "ViUtil.h"
 
 VimMByte::ChClass VimMByte::chclass(wchar_t c)
@@ -16,7 +16,7 @@ VimMByte::ChClass VimMByte::chclass(wchar_t c)
 		return VimMByte::OTHER;
 	}
 
-	if (c == L'ÅA' || c == L'ÅB' || c == L'ÅC' || c == L'ÅD')
+	if (c == L'„ÄÅ' || c == L'„ÄÇ' || c == L'Ôºå' || c == L'Ôºé')
 	{
 		return VimMByte::PUNCT;
 	}

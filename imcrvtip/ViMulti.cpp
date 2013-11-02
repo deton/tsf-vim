@@ -1,10 +1,10 @@
-#include "ViMulti.h"
+Ôªø#include "ViMulti.h"
 
 ViMulti::ChClass ViMulti::chclass(wchar_t c, ViMulti::ChClass curchclass)
 {
 	// cf. jis0208_chclass() in multi_chclass.c of nvi-m17n.
-	const static std::wstring ch_kanji(L"ÅVÅWÅXÅY");
-	const static std::wstring ch_kana(L"ÅRÅSÅTÅUÅ[Å`");
+	const static std::wstring ch_kanji(L"„ÄÉ‰ªù„ÄÖ„ÄÜ");
+	const static std::wstring ch_kana(L"„ÉΩ„Éæ„Çù„Çû„ÉºÔΩû");
 	if (ch_kanji.find(c) != std::wstring::npos)
 	{
 		return KANJI;
