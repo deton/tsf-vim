@@ -1,20 +1,6 @@
 ﻿
 #include "common.h"
 
-BOOL IsVersion6AndOver()
-{
-	OSVERSIONINFOEXW osvi;
-	DWORDLONG mask = 0;
-
-	ZeroMemory(&osvi, sizeof(osvi));
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	osvi.dwMajorVersion = 6;
-
-	VER_SET_CONDITION(mask, VER_MAJORVERSION, VER_GREATER_EQUAL);
-
-	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION, mask);
-}
-
 BOOL IsVersion62AndOver()
 {
 	OSVERSIONINFOEXW osvi;

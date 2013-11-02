@@ -7,7 +7,11 @@ STDAPI CTextService::OnChange(REFGUID rguid)
 {
 	if(IsEqualGUID(rguid, GUID_COMPARTMENT_KEYBOARD_OPENCLOSE))
 	{
-		_KeyboardChanged();
+		_KeyboardOpenCloseChanged();
+	}
+	else if(IsEqualGUID(rguid, GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION))
+	{
+		_KeyboardInputConversionChanged();
 	}
 
 	return S_OK;
@@ -18,7 +22,6 @@ BOOL CTextService::_InitCompartmentEventSink()
 	ITfCompartmentMgr *pCompartmentMgr;
 	ITfCompartment *pCompartment;
 	ITfSource *pSource;
-	HRESULT hr = E_FAIL;
 
 	if(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pCompartmentMgr)) == S_OK)
 	{
@@ -26,20 +29,33 @@ BOOL CTextService::_InitCompartmentEventSink()
 		{
 			if(pCompartment->QueryInterface(IID_PPV_ARGS(&pSource)) == S_OK)
 			{
-				hr = pSource->AdviseSink(IID_IUNK_ARGS((ITfCompartmentEventSink *)this), &_dwCompartmentEventSinkCookie);
+				if(pSource->AdviseSink(IID_IUNK_ARGS((ITfCompartmentEventSink *)this),
+					&_dwCompartmentEventSinkOpenCloseCookie) != S_OK)
+				{
+					_dwCompartmentEventSinkOpenCloseCookie = TF_INVALID_COOKIE;
+				}
 				pSource->Release();
 			}
 			pCompartment->Release();
-
-			if(hr != S_OK)
+		}
+		if(pCompartmentMgr->GetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &pCompartment) == S_OK)
+		{
+			if(pCompartment->QueryInterface(IID_PPV_ARGS(&pSource)) == S_OK)
 			{
-				_dwCompartmentEventSinkCookie = TF_INVALID_COOKIE;
+				if(pSource->AdviseSink(IID_IUNK_ARGS((ITfCompartmentEventSink *)this),
+					&_dwCompartmentEventSinkInputmodeConversionCookie) != S_OK)
+				{
+					_dwCompartmentEventSinkInputmodeConversionCookie = TF_INVALID_COOKIE;
+				}
+				pSource->Release();
 			}
+			pCompartment->Release();
 		}
 		pCompartmentMgr->Release();
 	}
 
-	return (hr == S_OK);
+	return (_dwCompartmentEventSinkOpenCloseCookie != TF_INVALID_COOKIE &&
+		_dwCompartmentEventSinkInputmodeConversionCookie != TF_INVALID_COOKIE);
 }
 
 void CTextService::_UninitCompartmentEventSink()
@@ -54,7 +70,15 @@ void CTextService::_UninitCompartmentEventSink()
 		{
 			if(pCompartment->QueryInterface(IID_PPV_ARGS(&pSource)) == S_OK)
 			{
-				pSource->UnadviseSink(_dwCompartmentEventSinkCookie);
+				pSource->UnadviseSink(_dwCompartmentEventSinkOpenCloseCookie);
+			}
+			pCompartment->Release();
+		}
+		if(pCompartmentMgr->GetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &pCompartment) == S_OK)
+		{
+			if(pCompartment->QueryInterface(IID_PPV_ARGS(&pSource)) == S_OK)
+			{
+				pSource->UnadviseSink(_dwCompartmentEventSinkInputmodeConversionCookie);
 			}
 			pCompartment->Release();
 		}

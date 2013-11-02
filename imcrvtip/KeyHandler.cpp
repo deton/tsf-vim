@@ -65,7 +65,7 @@ HRESULT CTextService::_HandleKey(TfEditCookie ec, ITfContext *pContext, WPARAM w
 	return S_OK;
 }
 
-void CTextService::_KeyboardChanged()
+void CTextService::_KeyboardOpenCloseChanged()
 {
 	if(_pThreadMgr == NULL)
 	{
@@ -73,24 +73,12 @@ void CTextService::_KeyboardChanged()
 	}
 
 	_dwActiveFlags = 0;
-	_ImmersiveMode = FALSE;
-	_UILessMode = FALSE;
 
 	ITfThreadMgrEx *pThreadMgrEx;
 	if(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pThreadMgrEx)) == S_OK)
 	{
 		pThreadMgrEx->GetActiveFlags(&_dwActiveFlags);
 		pThreadMgrEx->Release();
-	}
-
-	if((_dwActiveFlags & TF_TMF_IMMERSIVEMODE) != 0)
-	{
-		_ImmersiveMode = TRUE;
-	}
-
-	if((_dwActiveFlags & TF_TMF_UIELEMENTENABLEDONLY) != 0)
-	{
-		_UILessMode = TRUE;
 	}
 
 	BOOL fOpen = _IsKeyboardOpen();
@@ -112,6 +100,18 @@ void CTextService::_KeyboardChanged()
 	}
 
 	_UpdateLanguageBar();
+}
+
+void CTextService::_KeyboardInputConversionChanged()
+{
+	VARIANT var;
+
+	if(_GetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var) != S_OK)
+	{
+		var.vt = VT_I4;
+		var.lVal = TF_CONVERSIONMODE_NATIVE | TF_CONVERSIONMODE_FULLSHAPE;
+		_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
+	}
 }
 
 void CTextService::_ResetStatus()

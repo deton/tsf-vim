@@ -7,6 +7,16 @@
 
 #define TEXTSERVICE_LANGBARITEMSINK_COOKIE 0x54ab516b
 
+// langbar menu items
+static const struct {
+	UINT id;
+	DWORD flag;
+	LPCWSTR text;
+} menuItems[] = {
+	{IDM_NORMAL,		0, L"［－－］"},
+	{IDM_INSERT,		0, L"［INS］"},
+};
+
 // monochrome icons
 static const WORD iconIDX[] =
 {
@@ -27,8 +37,9 @@ CLangBarItemButton::CLangBarItemButton(CTextService *pTextService, REFGUID guid)
 	//TF_LBI_STYLE_TEXTCOLORICON
 	// Any black pixel within the icon will be converted to the text color of the selected theme.
 	// The icon must be monochrome.
-	_LangBarItemInfo.dwStyle = TF_LBI_STYLE_BTN_MENU | TF_LBI_STYLE_SHOWNINTRAY |
-		(IsVersion62AndOver() ? 0 : TF_LBI_STYLE_TEXTCOLORICON);
+	_LangBarItemInfo.dwStyle = TF_LBI_STYLE_SHOWNINTRAY |
+		(IsEqualGUID(_LangBarItemInfo.guidItem, GUID_LBI_INPUTMODE) ? TF_LBI_STYLE_BTN_BUTTON : TF_LBI_STYLE_BTN_MENU) |
+		(IsVersion62AndOver() ? 0 : TF_LBI_STYLE_TEXTCOLORICON);	//monochrome icon used under Windows 8
 	_LangBarItemInfo.ulSort = 1;
 	wcsncpy_s(_LangBarItemInfo.szDescription, LangbarItemDesc, _TRUNCATE);
 
@@ -57,8 +68,8 @@ STDAPI CLangBarItemButton::QueryInterface(REFIID riid, void **ppvObj)
 	*ppvObj = NULL;
 
 	if(IsEqualIID(riid, IID_IUnknown) ||
-	        IsEqualIID(riid, IID_ITfLangBarItem) ||
-	        IsEqualIID(riid, IID_ITfLangBarItemButton))
+		IsEqualIID(riid, IID_ITfLangBarItem) ||
+		IsEqualIID(riid, IID_ITfLangBarItemButton))
 	{
 		*ppvObj = (ITfLangBarItemButton *)this;
 	}
@@ -125,7 +136,12 @@ STDAPI CLangBarItemButton::GetStatus(DWORD *pdwStatus)
 
 STDAPI CLangBarItemButton::Show(BOOL fShow)
 {
-	return E_NOTIMPL;
+	if(_pLangBarItemSink == NULL)
+	{
+		return E_FAIL;
+	}
+
+	return _pLangBarItemSink->OnUpdate(TF_LBI_STATUS);
 }
 
 STDAPI CLangBarItemButton::GetTooltipString(BSTR *pbstrToolTip)
@@ -153,6 +169,23 @@ STDAPI CLangBarItemButton::GetTooltipString(BSTR *pbstrToolTip)
 
 STDAPI CLangBarItemButton::OnClick(TfLBIClick click, POINT pt, const RECT *prcArea)
 {
+	if(IsEqualGUID(_LangBarItemInfo.guidItem, GUID_LBI_INPUTMODE))
+	{
+		switch(click)
+		{
+		case TF_LBI_CLK_RIGHT:
+			break;
+		case TF_LBI_CLK_LEFT:
+			{
+				BOOL fOpen = _pTextService->_IsKeyboardOpen();
+				_pTextService->_SetKeyboardOpen(fOpen ? FALSE : TRUE);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
 	return S_OK;
 }
 
@@ -163,11 +196,42 @@ STDAPI CLangBarItemButton::InitMenu(ITfMenu *pMenu)
 		return E_INVALIDARG;
 	}
 
+	BOOL fOpen = _pTextService->_IsKeyboardOpen();
+#define ADDMENUITEM(checked) \
+	pMenu->AddMenuItem(menuItems[i].id, menuItems[i].flag | \
+		((checked) ? TF_LBMENUF_RADIOCHECKED : 0), \
+		NULL, NULL, menuItems[i].text, (ULONG)wcslen(menuItems[i].text), NULL)
+
+	int i = 0;
+	ADDMENUITEM(fOpen && menuItems[i].id == IDM_NORMAL);
+	++i;
+	ADDMENUITEM(!fOpen && menuItems[i].id == IDM_INSERT);
+#undef ADDMENUITEM
+
 	return S_OK;
 }
 
 STDAPI CLangBarItemButton::OnMenuSelect(UINT wID)
 {
+	BOOL fOpen = _pTextService->_IsKeyboardOpen();
+	switch(wID)
+	{
+	case IDM_NORMAL:
+		if(!fOpen)
+		{
+			_pTextService->_SetKeyboardOpen(TRUE);
+		}
+		break;
+	case IDM_INSERT:
+		if(fOpen)
+		{
+			_pTextService->_SetKeyboardOpen(FALSE);
+		}
+		break;
+	default:
+		break;
+	}
+
 	return S_OK;
 }
 
@@ -175,7 +239,6 @@ STDAPI CLangBarItemButton::GetIcon(HICON *phIcon)
 {
 	size_t iconindex = 0;
 	WORD iconid = 0;
-	int size = 16;
 
 	if(!_pTextService->_IsKeyboardDisabled() && _pTextService->_IsKeyboardOpen())
 	{
@@ -197,14 +260,11 @@ STDAPI CLangBarItemButton::GetIcon(HICON *phIcon)
 		}
 	}
 
-	//XPは16で固定、Vista以降はDPIを考慮
-	if(IsVersion6AndOver())
-	{
-		HDC hdc = GetDC(NULL);
-		int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-		ReleaseDC(NULL, hdc);
-		size = MulDiv(16, dpiX, 96);
-	}
+	//DPIを考慮
+	HDC hdc = GetDC(NULL);
+	int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+	ReleaseDC(NULL, hdc);
+	int size = MulDiv(16, dpiX, 96);
 
 	*phIcon = (HICON)LoadImageW(g_hInst, MAKEINTRESOURCEW(iconid), IMAGE_ICON, size, size, LR_SHARED);
 
@@ -280,20 +340,9 @@ STDAPI CLangBarItemButton::_Update()
 	VARIANT var;
 
 	var.vt = VT_I4;
-	
-	var.lVal = TF_SENTENCEMODE_PHRASEPREDICT;
-	_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_SENTENCE, &var);	
 
-	if(_pTextService->_IsKeyboardDisabled() || !_pTextService->_IsKeyboardOpen())
-	{
-		var.lVal = TF_CONVERSIONMODE_ALPHANUMERIC;
-		_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
-	}
-	else
-	{
-		var.lVal = TF_CONVERSIONMODE_ALPHANUMERIC;
-		_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, &var);
-	}
+	var.lVal = TF_SENTENCEMODE_PHRASEPREDICT;
+	_pTextService->_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_SENTENCE, &var);
 
 	if(_pLangBarItemSink == NULL)
 	{

@@ -11,7 +11,8 @@ CTextService::CTextService()
 
 	_pThreadMgr = NULL;
 	_dwThreadMgrEventSinkCookie = TF_INVALID_COOKIE;
-	_dwCompartmentEventSinkCookie = TF_INVALID_COOKIE;
+	_dwCompartmentEventSinkOpenCloseCookie = TF_INVALID_COOKIE;
+	_dwCompartmentEventSinkInputmodeConversionCookie = TF_INVALID_COOKIE;
 
 	_dwActiveFlags = 0;
 
@@ -118,7 +119,7 @@ STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlag
 		goto exit;
 	}
 
-	_KeyboardChanged();
+	_KeyboardOpenCloseChanged();
 
 	return S_OK;
 

@@ -61,6 +61,7 @@ public:
 
 	// Compartment
 	HRESULT _SetCompartment(REFGUID rguid, const VARIANT *pvar);
+	HRESULT _GetCompartment(REFGUID rguid, VARIANT *pvar);
 	BOOL _IsKeyboardDisabled();
 	BOOL _IsKeyboardOpen();
 	HRESULT _SetKeyboardOpen(BOOL fOpen);
@@ -71,7 +72,8 @@ public:
 	// KeyHandler
 	HRESULT _InvokeKeyHandler(ITfContext *pContext, WPARAM wParam, LPARAM lParam, BYTE bSf);
 	HRESULT _HandleKey(TfEditCookie ec, ITfContext *pContext, WPARAM wParam, BYTE bSf);
-	void _KeyboardChanged();
+	void _KeyboardOpenCloseChanged();
+	void _KeyboardInputConversionChanged();
 	void _ResetStatus();
 
 	// KeyHandlerConv
@@ -104,19 +106,19 @@ private:
 	TfClientId _ClientId;
 
 	DWORD _dwThreadMgrEventSinkCookie;
-	DWORD _dwCompartmentEventSinkCookie;
+	DWORD _dwCompartmentEventSinkOpenCloseCookie;
+	DWORD _dwCompartmentEventSinkInputmodeConversionCookie;
 
 	CLangBarItemButton *_pLangBarItem;
 	CLangBarItemButton *_pLangBarItemI;
 
 public:
 	DWORD _dwActiveFlags;	//ITfThreadMgrEx::GetActiveFlags()
-	BOOL _ImmersiveMode;
-	BOOL _UILessMode;
 
 	//状態
 	ViKeyHandler vihandler;			//Viキー処理
 
+	//preserved key
 	TF_PRESERVEDKEY preservedkeyon[MAX_PRESERVEDKEY];
 	TF_PRESERVEDKEY preservedkeyoff[MAX_PRESERVEDKEY];
 	TF_PRESERVEDKEY preservedkeyonoff[MAX_PRESERVEDKEY];

@@ -22,7 +22,7 @@ VimCharStream::VimCharStream(CTextService *textService, ITfContext *tfContext)
 		_following_count = info.following_text.size();
 #if DEBUGLOG
 		std::wofstream log("c:\\tsfvim\\log");
-		log << _buf << std::endl;
+		log << info.preceding_text << '|' << info.following_text << std::endl;
 #endif
 	}
 }

@@ -4,12 +4,8 @@
 
 #include "common.h"
 
-//for resource
-#define RC_FILE				"imcrvtip"
-
 extern LPCWSTR TextServiceDesc;
 extern LPCWSTR LangbarItemDesc;
-extern LPCWSTR LangbarFuncDesc;
 
 extern HINSTANCE g_hInst;
 

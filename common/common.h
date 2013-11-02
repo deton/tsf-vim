@@ -19,7 +19,6 @@
 
 #define MAX_PRESERVEDKEY	8
 
-BOOL IsVersion6AndOver();
 BOOL IsVersion62AndOver();
 
 #endif //COMMON_H
