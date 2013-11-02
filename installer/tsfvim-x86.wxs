@@ -20,7 +20,7 @@
         </Feature>
         <UI />
         <WixVariable Id="WixUILicenseRtf" Value="ms-pl.rtf" />
-        <Icon Id="tsfvim.ico" SourceFile="..\imcrvtip\Icon\CorvusSKK.ico" />
+        <Icon Id="tsfvim.ico" SourceFile="..\imcrvtip\Icon\vim.ico" />
         <Property Id="ARPPRODUCTICON" Value="tsfvim.ico" />
         <Property Id="WIX_MINIMAL" Value="tsf-vim" />
         <UIRef Id="WixUI_Minimal" />
