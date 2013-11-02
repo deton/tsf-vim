@@ -19,7 +19,7 @@ ViCharStream::ViCharStream(const std::wstring &preceding, const std::wstring &fo
 void ViCharStream::_update_sol()
 {
 	_sol = _buf.rfind(L'\n', _index);
-	if(_sol == std::wstring::npos)
+	if (_sol == std::wstring::npos)
 	{
 		_sol = 0;
 	}
@@ -33,7 +33,7 @@ void ViCharStream::_update_sol()
 void ViCharStream::_update_eol()
 {
 	_eol = _buf.find(L'\n', _index);
-	if(_eol == std::wstring::npos)
+	if (_eol == std::wstring::npos)
 	{
 		_eol = _buf.size();
 	}
@@ -41,7 +41,7 @@ void ViCharStream::_update_eol()
 
 void ViCharStream::_update_flags()
 {
-	if(_buf.find_first_not_of(L" \t", _sol) >= _eol)
+	if (_buf.find_first_not_of(L" \t", _sol) >= _eol)
 	{
 		_index = _eol;
 		_flags = CS_EMP;
@@ -87,16 +87,16 @@ void ViCharStream::restore_state()
 	_flags = _flags_save;
 }
 
-//Eat backward to the next non-whitespace character.
+// Eat backward to the next non-whitespace character.
 int ViCharStream::bblank()
 {
-	for(;;)
+	for (;;)
 	{
-		if(prev())
+		if (prev())
 		{
 			return 1;
 		}
-		if(flags() == CS_EOL || flags() == CS_EMP ||
+		if (flags() == CS_EOL || flags() == CS_EMP ||
 				flags() == CS_NONE && iswblank(ch()))
 		{
 			continue;
@@ -106,16 +106,16 @@ int ViCharStream::bblank()
 	return 0;
 }
 
-//Eat forward to the next non-whitespace character.
+// Eat forward to the next non-whitespace character.
 int ViCharStream::fblank()
 {
-	for(;;)
+	for (;;)
 	{
-		if(next())
+		if (next())
 		{
 			return 1;
 		}
-		if(flags() == CS_EOL || flags() == CS_EMP ||
+		if (flags() == CS_EOL || flags() == CS_EMP ||
 				flags() == CS_NONE && iswblank(ch()))
 		{
 			continue;
@@ -131,17 +131,17 @@ int ViCharStream::fblank()
  */
 int ViCharStream::fspace()
 {
-	if(flags() != CS_NONE || !iswblank(ch()))
+	if (flags() != CS_NONE || !iswblank(ch()))
 	{
 		return 0;
 	}
-	for(;;)
+	for (;;)
 	{
-		if(next())
+		if (next())
 		{
 			return 1;
 		}
-		if(flags() != CS_NONE || !iswblank(ch()))
+		if (flags() != CS_NONE || !iswblank(ch()))
 		{
 			break;
 		}
@@ -149,17 +149,17 @@ int ViCharStream::fspace()
 	return 0;
 }
 
-//set current position to the next character.
+// set current position to the next character.
 int ViCharStream::next()
 {
-	switch(flags())
+	switch (flags())
 	{
-	case CS_EMP: //EMP; get next line.
-	case CS_EOL: //EOL; get next line.
+	case CS_EMP: // EMP; get next line.
+	case CS_EOL: // EOL; get next line.
 		_index++;
-		if(_index >= _buf.size())
+		if (_index >= _buf.size())
 		{
-			//TODO: acquire following text after moving cursor
+			// TODO: acquire following text after moving cursor
 			_flags = CS_EOF;
 		}
 		else
@@ -171,7 +171,7 @@ int ViCharStream::next()
 		break;
 	case CS_NONE:
 		_index++;
-		if(_index == _eol)
+		if (_index == _eol)
 		{
 			_flags = CS_EOL;
 		}
@@ -184,10 +184,10 @@ int ViCharStream::next()
 	return 0;
 }
 
-//set current position to the previous character.
+// set current position to the previous character.
 int ViCharStream::prev()
 {
-	switch(flags())
+	switch (flags())
 	{
 	case CS_EMP:				/* EMP; get previous line. */
 		_index = _sol;
@@ -195,9 +195,9 @@ int ViCharStream::prev()
 		--_index;
 		_eol = _index;
 		--_index;
-		if(_index <= 0)		/* SOF. */
+		if (_index <= 0)		/* SOF. */
 		{
-			//TODO: acquire preceding text after moving cursor
+			// TODO: acquire preceding text after moving cursor
 			_index = 0;
 			_flags = CS_SOF;
 			break;
@@ -207,11 +207,11 @@ int ViCharStream::prev()
 		break;
 	case CS_EOF:				/* EOF: get previous char. */
 	case CS_NONE:
-		if(_index == _sol)
+		if (_index == _sol)
 		{
-			if(_index == 0)
+			if (_index == 0)
 			{
-				//TODO: acquire preceding text after moving cursor
+				// TODO: acquire preceding text after moving cursor
 				_flags = CS_SOF;
 			}
 			else

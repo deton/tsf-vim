@@ -37,9 +37,9 @@ BOOL ViKeyHandler::IsWaitingNextKey()
 
 HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 {
-	if(vicmd.GetCharWaiting())
+	if (vicmd.GetCharWaiting())
 	{
-		switch(vicmd.GetCharWaiting())
+		switch (vicmd.GetCharWaiting())
 		{
 		case L'f':
 			_Vi_f(pContext, ch);
@@ -67,10 +67,10 @@ HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 
 void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 {
-	switch(ch)
+	switch (ch)
 	{
 	case L'0':
-		if(!vicmd.HasCount())
+		if (!vicmd.HasCount())
 		{
 			_ViOpOrMove(VK_HOME, 1);
 		}
@@ -93,9 +93,9 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'c':
 	case L'd':
 	case L'y':
-		if(vicmd.GetOperatorPending())
+		if (vicmd.GetOperatorPending())
 		{
-			if(vicmd.GetOperatorPending() == ch) //'cc','dd','yy'
+			if (vicmd.GetOperatorPending() == ch) // 'cc','dd','yy'
 			{
 				_ViOpLines(vicmd.GetCount() - 1);
 			}
@@ -166,7 +166,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'p':
 		_Vi_p(pContext);
 		return;
-	case L'P': //paste at caret
+	case L'P': // paste at caret
 		_Vi_P();
 		return;
 	case L'u':
@@ -174,11 +174,11 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_SendKeyWithControl('Z');
 		return;
 	case L'x':
-		vicmd.SetOperatorPending('d'); //cut to clipboard
+		vicmd.SetOperatorPending('d'); // cut to clipboard
 		_ViOpOrMove(VK_RIGHT, vicmd.GetCount());
 		return;
 	case L'X':
-		vicmd.SetOperatorPending('d'); //cut to clipboard
+		vicmd.SetOperatorPending('d'); // cut to clipboard
 		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
 		return;
 	case L'w':
@@ -227,13 +227,13 @@ void ViKeyHandler::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 	keyup.type = INPUT_KEYBOARD;
 	keyup.ki.dwFlags = KEYEVENTF_KEYUP;
 
-	if(isextendedkey(vk))
+	if (isextendedkey(vk))
 	{
 		keydown.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
 		keyup.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
 	}
 
-	for(int i = 0; i < count; ++i)
+	for (int i = 0; i < count; ++i)
 	{
 		inputs->push_back(keydown);
 		inputs->push_back(keyup);
@@ -262,12 +262,12 @@ void ViKeyHandler::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up,
 	keydown.type = INPUT_KEYBOARD;
 	keydown.ki = keyboard_input;
 
-	if(up)
+	if (up)
 	{
 		INPUT keyup = keydown;
 		keyup.type = INPUT_KEYBOARD;
 		keyup.ki.dwFlags = KEYEVENTF_KEYUP;
-		if(front)
+		if (front)
 		{
 			inputs->insert(inputs->begin(), keyup);
 		}
@@ -278,7 +278,7 @@ void ViKeyHandler::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up,
 	}
 	else
 	{
-		if(front)
+		if (front)
 		{
 			inputs->insert(inputs->begin(), keydown);
 		}
@@ -298,27 +298,27 @@ void ViKeyHandler::_QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
 
 void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
 {
-	//cf. deleter.UnsetModifiers()
+	// cf. deleter.UnsetModifiers()
 	mozc::win32::KeyboardStatus keyboard_state;
 	bool shiftPressed = false;
 	bool controlPressed = false;
-	if(keyboard_->GetKeyboardState(&keyboard_state))
+	if (keyboard_->GetKeyboardState(&keyboard_state))
 	{
 		const BYTE kUnsetState = 0;
 		bool to_be_updated = false;
-		if(keyboard_state.IsPressed(VK_SHIFT))
+		if (keyboard_state.IsPressed(VK_SHIFT))
 		{
 			shiftPressed = true;
 			to_be_updated = true;
 			keyboard_state.SetState(VK_SHIFT, kUnsetState);
 			_QueueKeyForModifier(inputs, VK_SHIFT, TRUE, TRUE);
-			//restore modifier
-			//XXX:SendInput()直後にdeleter.EndDeletion()を呼んでも、
-			//CTRL-F押下時にVK_NEXT送り付けても動かない
-			//(おそらくCTRL押下状態になってCTRL-NEXTになるため)
+			// restore modifier
+			// XXX:SendInput()直後にdeleter.EndDeletion()を呼んでも、
+			// CTRL-F押下時にVK_NEXT送り付けても動かない
+			// (おそらくCTRL押下状態になってCTRL-NEXTになるため)
 			_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
 		}
-		if(keyboard_state.IsPressed(VK_CONTROL))
+		if (keyboard_state.IsPressed(VK_CONTROL))
 		{
 			controlPressed = true;
 			to_be_updated = true;
@@ -326,7 +326,7 @@ void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
 			_QueueKeyForModifier(inputs, VK_CONTROL, TRUE, TRUE);
 			_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
 		}
-		if(to_be_updated)
+		if (to_be_updated)
 		{
 			keyboard_->SetKeyboardState(keyboard_state);
 		}
@@ -351,7 +351,7 @@ void ViKeyHandler::_SendKeyWithControl(UINT vk)
 
 void ViKeyHandler::_ViOp(vector<INPUT> *inputs)
 {
-	switch(vicmd.GetOperatorPending())
+	switch (vicmd.GetOperatorPending())
 	{
 	case L'c':
 		_QueueKeyWithControl(inputs, 'X');
@@ -377,7 +377,7 @@ void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 {
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, vk, count);
-	if(vicmd.GetOperatorPending())
+	if (vicmd.GetOperatorPending())
 	{
 		_QueueKeyForSelection(&inputs);
 	}
@@ -387,17 +387,17 @@ void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 void ViKeyHandler::_ViOpLines(int count)
 {
 	vector<INPUT> inputs;
-	for(int i = 0; i < count; ++i)
+	for (int i = 0; i < count; ++i)
 	{
 		_QueueKey(&inputs, VK_DOWN);
 	}
-	//same as _Vi_k()
-	//Wordの場合、選択中に既に行末にいる際にVK_ENDを送ると、
-	//次の行末まで移動するので
+	// same as _Vi_k()
+	// Wordの場合、選択中に既に行末にいる際にVK_ENDを送ると、
+	// 次の行末まで移動するので
 	_QueueKey(&inputs, VK_END);
 	_QueueKey(&inputs, VK_RIGHT); // to include '\n'
 	_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
-	for(int i = count + 1; i > 0; --i)
+	for (int i = count + 1; i > 0; --i)
 	{
 		_QueueKey(&inputs, VK_UP);
 	}
@@ -407,7 +407,7 @@ void ViKeyHandler::_ViOpLines(int count)
 
 void ViKeyHandler::_Vi_j()
 {
-	if(vicmd.GetOperatorPending()) // linewise operator
+	if (vicmd.GetOperatorPending()) // linewise operator
 	{
 		_ViOpLines(vicmd.GetCount());
 	}
@@ -419,13 +419,13 @@ void ViKeyHandler::_Vi_j()
 
 void ViKeyHandler::_Vi_k()
 {
-	if(vicmd.GetOperatorPending()) // linewise operator
+	if (vicmd.GetOperatorPending()) // linewise operator
 	{
 		vector<INPUT> inputs;
 		_QueueKey(&inputs, VK_END);
 		_QueueKey(&inputs, VK_RIGHT); // to include '\n'
 		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
-		for(int count = vicmd.GetCount() + 1; count > 0; --count)
+		for (int count = vicmd.GetCount() + 1; count > 0; --count)
 		{
 			_QueueKey(&inputs, VK_UP);
 		}
@@ -441,7 +441,7 @@ void ViKeyHandler::_Vi_k()
 void ViKeyHandler::_Vi_I()
 {
 	_SendKey(VK_HOME);
-	//TODO: 非空白文字の前に移動
+	// TODO: 非空白文字の前に移動
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
@@ -449,9 +449,9 @@ void ViKeyHandler::_Vi_I()
 BOOL ViKeyHandler::_AtEndOfLine(ITfContext *pContext)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	if (mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
-		if(info.following_text.size() == 0
+		if (info.following_text.size() == 0
 				|| info.following_text[0] == L'\r'
 				|| info.following_text[0] == L'\n')
 		{
@@ -463,8 +463,8 @@ BOOL ViKeyHandler::_AtEndOfLine(ITfContext *pContext)
 
 void ViKeyHandler::_Vi_a(ITfContext *pContext)
 {
-	//行末にいる場合にVK_RIGHTを送り付けると次行に移動するので
-	if(!_AtEndOfLine(pContext))
+	// 行末にいる場合にVK_RIGHTを送り付けると次行に移動するので
+	if (!_AtEndOfLine(pContext))
 	{
 		_SendKey(VK_RIGHT);
 	}
@@ -502,9 +502,9 @@ void ViKeyHandler::_Vi_O()
 
 void ViKeyHandler::_Vi_p(ITfContext *pContext)
 {
-	//TODO: 行指向の場合は、次行にペースト
+	// TODO: 行指向の場合は、次行にペースト
 	vector<INPUT> inputs;
-	if(!_AtEndOfLine(pContext))
+	if (!_AtEndOfLine(pContext))
 	{
 		_QueueKey(&inputs, VK_RIGHT);
 	}
@@ -525,7 +525,7 @@ void ViKeyHandler::_Vi_P()
 	vicmd.Reset();
 }
 
-#define RETURN_IF_FAIL(movefunc) if(movefunc()) return
+#define RETURN_IF_FAIL(movefunc) if (movefunc()) return
 #define CS_PREV() RETURN_IF_FAIL(cs.prev)
 #define CS_NEXT() RETURN_IF_FAIL(cs.next)
 #define CS_FSPACE() RETURN_IF_FAIL(cs.fspace)
@@ -535,16 +535,16 @@ void ViKeyHandler::_Vi_P()
 void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		return;
 	}
 	ViCharStream cs(info.preceding_text, info.following_text);
-	//TODO:取得した文字列に単語末が含まれていなかったら、
-	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	// TODO:取得した文字列に単語末が含まれていなかったら、
+	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
-	//cf. fword() in v_word.c of nvi-1.79
+	// cf. fword() in v_word.c of nvi-1.79
 	/*
 	 * If in white-space:
 	 *	If the count is 1, and it's a change command, we're done.
@@ -552,15 +552,15 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	 *	counts as a single word move.  If it's a motion command,
 	 *	don't move off the end of the line.
 	 */
-	if(cs.flags() == cs.CS_EMP || cs.flags() == cs.CS_NONE && iswblank(cs.ch()))
+	if (cs.flags() == cs.CS_EMP || cs.flags() == cs.CS_NONE && iswblank(cs.ch()))
 	{
-		if(vicmd.GetOperatorPending() && cs.flags() != cs.CS_EMP && cnt == 1)
+		if (vicmd.GetOperatorPending() && cs.flags() != cs.CS_EMP && cnt == 1)
 		{
-			if(vicmd.GetOperatorPending() == L'c')
+			if (vicmd.GetOperatorPending() == L'c')
 			{
 				return;
 			}
-			if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
+			if (vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
 			{
 				CS_FSPACE();
 				goto ret;
@@ -576,46 +576,46 @@ void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 	 * Note, for the 'w' command, the definition of a word keeps
 	 * switching.
 	 */
-	if(type == L'W')
+	if (type == L'W')
 	{
-		while(cnt--)
+		while (cnt--)
 		{
-			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto Singlebyte;
 			}
 			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
-			for(;;)
+			for (;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto Taileater;
 				}
 				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
-				if(ViMulti::Wordbound(ochclass, chclass, true))
+				if (ViMulti::Wordbound(ochclass, chclass, true))
 				{
 					goto Taileater;
 				}
 				ochclass = chclass;
 			}
 Singlebyte:
-			for(;;)
+			for (;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
-				if(ViMulti::ismulti(cs.ch()))
+				if (ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
@@ -627,9 +627,9 @@ Taileater:
 			 * trailing blanks, but we don't move off the end
 			 * of the line regardless.
 			 */
-			if(cnt == 0 && vicmd.GetOperatorPending())
+			if (cnt == 0 && vicmd.GetOperatorPending())
 			{
-				if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
+				if (vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
 				{
 					CS_FSPACE();
 					break;
@@ -637,42 +637,42 @@ Taileater:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
+			if (cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
 			}
-			if(cs.flags() == cs.CS_EOF)
+			if (cs.flags() == cs.CS_EOF)
 			{
 				goto ret;
 			}
 		}
 	}
-	else //'w'
+	else // 'w'
 	{
-		while(cnt--)
+		while (cnt--)
 		{
-			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto singlebyte;
 			}
 			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
-			for(;;)
+			for (;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto taileater;
 				}
 				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
-				if(ViMulti::wordbound(ochclass, chclass, true))
+				if (ViMulti::wordbound(ochclass, chclass, true))
 				{
 					goto taileater;
 				}
@@ -681,31 +681,31 @@ Taileater:
 singlebyte:
 			enum { INWORD, NOTWORD } state;
 			state = cs.flags() == cs.CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
-			for(;;)
+			for (;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
-				if(ViMulti::ismulti(cs.ch()))
+				if (ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
-				if(state == INWORD)
+				if (state == INWORD)
 				{
-					if(!inword(cs.ch()))
+					if (!inword(cs.ch()))
 					{
 						break;
 					}
 				}
 				else
 				{
-					if(inword(cs.ch()))
+					if (inword(cs.ch()))
 					{
 						break;
 					}
@@ -713,9 +713,9 @@ singlebyte:
 			}
 taileater:
 			/* See comment above. */
-			if(cnt == 0 && vicmd.GetOperatorPending())
+			if (cnt == 0 && vicmd.GetOperatorPending())
 			{
-				if(vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
+				if (vicmd.GetOperatorPending() == L'd' || vicmd.GetOperatorPending() == L'y')
 				{
 					CS_FSPACE();
 					break;
@@ -723,14 +723,14 @@ taileater:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
+			if (cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
@@ -746,7 +746,7 @@ taileater:
 	 */
 ret:
 	int movecnt = cs.difference();
-	if(!vicmd.GetOperatorPending() && movecnt == 0)
+	if (!vicmd.GetOperatorPending() && movecnt == 0)
 	{
 		return;
 	}
@@ -757,26 +757,26 @@ ret:
 void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		return;
 	}
 	ViCharStream cs(info.preceding_text, info.following_text);
-	//TODO:取得した文字列に単語末が含まれていなかったら、
-	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	// TODO:取得した文字列に単語末が含まれていなかったら、
+	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
-	//cf. eword() in v_word.c of nvi-1.79
+	// cf. eword() in v_word.c of nvi-1.79
 	/*
 	 * !!!
 	 * If in whitespace, or the next character is whitespace, move past
 	 * it.  (This doesn't count as a word move.)  Stay at the character
 	 * past the current one, it sets word "state" for the 'e' command.
 	 */
-	if(cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
+	if (cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
 	{
 		CS_NEXT();
-		if(cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
+		if (cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
 		{
 			goto start;
 		}
@@ -790,46 +790,46 @@ void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
 	 * switching.
 	 */
 start:
-	if(type == 'E')
+	if (type == 'E')
 	{
-		while(cnt--)
+		while (cnt--)
 		{
-			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto Singlebyte;
 			}
 			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
-			for(;;)
+			for (;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto Taileater;
 				}
 				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
-				if(ViMulti::Wordbound(ochclass, chclass, true))
+				if (ViMulti::Wordbound(ochclass, chclass, true))
 				{
 					goto Taileater;
 				}
 				ochclass = chclass;
 			}
 Singlebyte:
-			for(;;)
+			for (;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
-				if(ViMulti::ismulti(cs.ch()))
+				if (ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
@@ -840,9 +840,9 @@ Taileater:
 			 * word, we're done.  If we changed state, back up one
 			 * to the end of the previous word.
 			 */
-			if(cnt == 0)
+			if (cnt == 0)
 			{
-				if(cs.flags() == cs.CS_NONE)
+				if (cs.flags() == cs.CS_NONE)
 				{
 					CS_PREV();
 				}
@@ -850,42 +850,42 @@ Taileater:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
+			if (cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
 			}
-			if(cs.flags() == cs.CS_EOF)
+			if (cs.flags() == cs.CS_EOF)
 			{
 				goto ret;
 			}
 		}
 	}
-	else //'e'
+	else // 'e'
 	{
-		while(cnt--)
+		while (cnt--)
 		{
-			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto singlebyte;
 			}
 			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
-			for(;;)
+			for (;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto taileater;
 				}
 				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
-				if(ViMulti::wordbound(ochclass, chclass, true))
+				if (ViMulti::wordbound(ochclass, chclass, true))
 				{
 					goto taileater;
 				}
@@ -894,31 +894,31 @@ Taileater:
 singlebyte:
 			enum { INWORD, NOTWORD } state;
 			state = cs.flags() == cs.CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
-			for(;;)
+			for (;;)
 			{
 				CS_NEXT();
-				if(cs.flags() == cs.CS_EOF)
+				if (cs.flags() == cs.CS_EOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
-				if(ViMulti::ismulti(cs.ch()))
+				if (ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
-				if(state == INWORD)
+				if (state == INWORD)
 				{
-					if(!inword(cs.ch()))
+					if (!inword(cs.ch()))
 					{
 						break;
 					}
 				}
 				else
 				{
-					if(inword(cs.ch()))
+					if (inword(cs.ch()))
 					{
 						break;
 					}
@@ -926,9 +926,9 @@ singlebyte:
 			}
 taileater:
 			/* See comment above. */
-			if(cnt==0)
+			if (cnt==0)
 			{
-				if(cs.flags() == cs.CS_NONE)
+				if (cs.flags() == cs.CS_NONE)
 				{
 					CS_PREV();
 				}
@@ -936,15 +936,15 @@ taileater:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
+			if (cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_FBLANK();
 			}
-			if(cs.flags() == cs.CS_EOF)
+			if (cs.flags() == cs.CS_EOF)
 			{
 				goto ret;
 			}
@@ -959,12 +959,12 @@ taileater:
 	 */
 ret:
 	int movecnt = cs.difference();
-	if(!vicmd.GetOperatorPending() && movecnt == 0)
+	if (!vicmd.GetOperatorPending() && movecnt == 0)
 	{
 		return;
 	}
 
-	if(vicmd.GetOperatorPending() && cs.flags() == cs.CS_NONE)
+	if (vicmd.GetOperatorPending() && cs.flags() == cs.CS_NONE)
 	{
 		movecnt++;
 	}
@@ -974,16 +974,16 @@ ret:
 void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		return;
 	}
 	ViCharStream cs(info.preceding_text, info.following_text);
-	//TODO:取得した文字列に単語頭が含まれていなかったら、
-	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	// TODO:取得した文字列に単語頭が含まれていなかったら、
+	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
-	//cf. bword() in v_word.c of nvi-1.79
+	// cf. bword() in v_word.c of nvi-1.79
 	/*
 	 * !!!
 	 * If in whitespace, or the previous character is whitespace, move
@@ -991,10 +991,10 @@ void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
 	 * character before the current one, it sets word "state" for the
 	 * 'b' command.
 	 */
-	if(cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
+	if (cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
 	{
 		CS_PREV();
-		if(cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
+		if (cs.flags() == cs.CS_NONE && !iswblank(cs.ch()))
 		{
 			goto start;
 		}
@@ -1008,46 +1008,46 @@ void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
 	 * of a word keeps switching.
 	 */
 start:
-	if(type == 'B')
+	if (type == 'B')
 	{
-		while(cnt--)
+		while (cnt--)
 		{
-			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto Singlebyte;
 			}
 			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
-			for(;;)
+			for (;;)
 			{
 				CS_PREV();
-				if(cs.flags() == cs.CS_SOF)
+				if (cs.flags() == cs.CS_SOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto Cntmodify;
 				}
 				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
-				if(ViMulti::Wordbound(ochclass, chclass, false))
+				if (ViMulti::Wordbound(ochclass, chclass, false))
 				{
 					goto Cntmodify;
 				}
 				ochclass = chclass;
 			}
 Singlebyte:
-			for(;;)
+			for (;;)
 			{
 				CS_PREV();
-				if(cs.flags() == cs.CS_SOF)
+				if (cs.flags() == cs.CS_SOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
-				if(ViMulti::ismulti(cs.ch()))
+				if (ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
@@ -1058,9 +1058,9 @@ Cntmodify:
 			 * word, we're done.  If we changed state, move forward
 			 * one to the end of the next word.
 			 */
-			if(cnt == 0)
+			if (cnt == 0)
 			{
-				if(cs.flags() == cs.CS_NONE)
+				if (cs.flags() == cs.CS_NONE)
 				{
 					CS_NEXT();
 				}
@@ -1068,40 +1068,40 @@ Cntmodify:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == cs.CS_NONE
+			if (cs.flags() == cs.CS_NONE
 					&& (ViMulti::ismulti(cs.ch()) || !iswblank(cs.ch())))
 			{
 				continue;
 			}
 			CS_BBLANK();
-			if(cs.flags() == cs.CS_SOF)
+			if (cs.flags() == cs.CS_SOF)
 			{
 				goto ret;
 			}
 		}
 	}
-	else //'b'
+	else // 'b'
 	{
-		while(cnt--)
+		while (cnt--)
 		{
-			if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 			{
 				goto singlebyte;
 			}
 			ViMulti::ChClass ochclass = ViMulti::chclass(cs.ch(), ViMulti::_INIT);
-			for(;;)
+			for (;;)
 			{
 				CS_PREV();
-				if(cs.flags() == cs.CS_SOF)
+				if (cs.flags() == cs.CS_SOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || !ViMulti::ismulti(cs.ch()))
 				{
 					goto cntmodify;
 				}
 				ViMulti::ChClass chclass = ViMulti::chclass(cs.ch(), ochclass);
-				if(ViMulti::wordbound(ochclass, chclass, false))
+				if (ViMulti::wordbound(ochclass, chclass, false))
 				{
 					goto cntmodify;
 				}
@@ -1110,31 +1110,31 @@ Cntmodify:
 singlebyte:
 			enum { INWORD, NOTWORD } state;
 			state = cs.flags() == cs.CS_NONE && inword(cs.ch()) ? INWORD : NOTWORD;
-			for(;;)
+			for (;;)
 			{
 				CS_PREV();
-				if(cs.flags() == cs.CS_SOF)
+				if (cs.flags() == cs.CS_SOF)
 				{
 					goto ret;
 				}
-				if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+				if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 				{
 					break;
 				}
-				if(ViMulti::ismulti(cs.ch()))
+				if (ViMulti::ismulti(cs.ch()))
 				{
 					break;
 				}
-				if(state == INWORD)
+				if (state == INWORD)
 				{
-					if(!inword(cs.ch()))
+					if (!inword(cs.ch()))
 					{
 						break;
 					}
 				}
 				else
 				{
-					if(inword(cs.ch()))
+					if (inword(cs.ch()))
 					{
 						break;
 					}
@@ -1142,9 +1142,9 @@ singlebyte:
 			}
 cntmodify:
 			/* See comment above. */
-			if(cnt==0)
+			if (cnt==0)
 			{
-				if(cs.flags() == cs.CS_NONE)
+				if (cs.flags() == cs.CS_NONE)
 				{
 					CS_NEXT();
 				}
@@ -1152,15 +1152,15 @@ cntmodify:
 			}
 
 			/* Eat whitespace characters. */
-			if(cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
+			if (cs.flags() == cs.CS_NONE && ViMulti::ismulti(cs.ch()))
 			{
 				continue;
 			}
-			if(cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
+			if (cs.flags() != cs.CS_NONE || iswblank(cs.ch()))
 			{
 				CS_BBLANK();
 			}
-			if(cs.flags() == cs.CS_SOF)
+			if (cs.flags() == cs.CS_SOF)
 			{
 				goto ret;
 			}
@@ -1170,7 +1170,7 @@ cntmodify:
 	/* If we didn't move, we must be at SOF. */
 ret:
 	int movecnt = cs.difference();
-	if(movecnt == 0)
+	if (movecnt == 0)
 	{
 		return;
 	}
@@ -1194,20 +1194,20 @@ static int issentendex(wchar_t c)
 static BOOL endsent(VimCharStream *pos)
 {
 	WCHAR c = pos->gchar();
-	if(c == L'.' || c == L'!' || c == L'?')
+	if (c == L'.' || c == L'!' || c == L'?')
 	{
 		pos->save_index();
 		do {
-			if(pos->inc() == -1)
+			if (pos->inc() == -1)
 			{
 				return TRUE;
 			}
-		} while(issentendex(pos->gchar()));
-		if(iswblank(pos->gchar()))
+		} while (issentendex(pos->gchar()));
+		if (iswblank(pos->gchar()))
 		{
 			return TRUE;
 		}
-		else if(pos->gchar() == L'\n')
+		else if (pos->gchar() == L'\n')
 		{
 			pos->inc();
 			return TRUE;
@@ -1219,18 +1219,18 @@ static BOOL endsent(VimCharStream *pos)
 
 static BOOL endmbsent(VimCharStream *pos)
 {
-	if(VimMByte::chclass(pos->gchar()) == VimMByte::PUNCT)
+	if (VimMByte::chclass(pos->gchar()) == VimMByte::PUNCT)
 	{
-		for(;;)
+		for (;;)
 		{
-			if(pos->inc() == -1)
+			if (pos->inc() == -1)
 			{
 				return TRUE;
 			}
 			WCHAR c = pos->gchar();
-			if(!VimMByte::ismulti(c) || VimMByte::chclass(c) != VimMByte::PUNCT)
+			if (!VimMByte::ismulti(c) || VimMByte::chclass(c) != VimMByte::PUNCT)
 			{
-				if(c == L'\n')
+				if (c == L'\n')
 				{
 					pos->inc();
 				}
@@ -1248,55 +1248,55 @@ void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
     BOOL noskip = FALSE;
 	int count = vicmd.GetCount();
 	// cf. findsent() in search.c of vim.
-	while(count--)
+	while (count--)
 	{
 		/*
 		 * if on an empty line, skip upto a non-empty line
 		 */
-		if(pos.gchar() == L'\n')
+		if (pos.gchar() == L'\n')
 		{
 			do {
-				if(pos.incl() == -1)
+				if (pos.incl() == -1)
 				{
 					break;
 				}
-			} while(pos.gchar() == L'\n');
+			} while (pos.gchar() == L'\n');
 			goto found;
 		}
 
 		/* go back to the previous non-blank char */
-		while(iswblank(pos.gchar()))
+		while (iswblank(pos.gchar()))
 		{
 			int r = pos.decl();
-			if(r == -1)
+			if (r == -1)
 			{
 				break;
 			}
 			/* Stop in front of empty line */
-			if(r == 2)
+			if (r == 2)
 			{
 				pos.incl();
 				goto found;
 			}
 		}
 
-		for(;;)		/* find end of sentence */
+		for (;;)		/* find end of sentence */
 		{
-			if(pos.gchar() == L'\n')
+			if (pos.gchar() == L'\n')
 			{
 				break;
 			}
-			if(endsent(&pos))
+			if (endsent(&pos))
 			{
 				break;
 			}
-			if(endmbsent(&pos))
+			if (endmbsent(&pos))
 			{
 				break;
 			}
-			if(pos.incl() == -1)
+			if (pos.incl() == -1)
 			{
-				if(count)
+				if (count)
 				{
 					return;
 				}
@@ -1306,7 +1306,7 @@ void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 		}
 found:
 		/* skip white space */
-		if(!noskip)
+		if (!noskip)
 		{
 			pos.fblank();
 		}
@@ -1323,19 +1323,19 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
     BOOL noskip = FALSE;
 	int count = vicmd.GetCount();
 	// cf. findsent() in search.c of vim.
-	while(count--)
+	while (count--)
 	{
 		/*
 		 * if on an empty line, skip upto a non-empty line
 		 */
-		if(pos.gchar() == L'\n')
+		if (pos.gchar() == L'\n')
 		{
 			do {
-				if(pos.decl() == -1)
+				if (pos.decl() == -1)
 				{
 					break;
 				}
-			} while(pos.gchar() == L'\n');
+			} while (pos.gchar() == L'\n');
 		}
 		else
 		{
@@ -1344,19 +1344,19 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 
 		/* go back to the previous non-blank char */
 		BOOL found_dot = FALSE;
-		while(iswblank(pos.gchar()) || issentend(pos.gchar()))
+		while (iswblank(pos.gchar()) || issentend(pos.gchar()))
 		{
 			WCHAR c = pos.gchar();
-			if(c == L'.' || c == L'!' || c == L'?')
+			if (c == L'.' || c == L'!' || c == L'?')
 			{
 				/* Only skip over a '.', '!' and '?' once. */
-				if(found_dot)
+				if (found_dot)
 				{
 					break;
 				}
 				found_dot = TRUE;
 			}
-			if(pos.decl() == -1)
+			if (pos.decl() == -1)
 			{
 				break;
 			}
@@ -1365,27 +1365,27 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 		/* remember the index where the search started */
 		size_t startindex = pos.index();
 
-		for(;;)		/* find end of sentence */
+		for (;;)		/* find end of sentence */
 		{
-			if(pos.gchar() == L'\n')
+			if (pos.gchar() == L'\n')
 			{
-				if(pos.index() != startindex)
+				if (pos.index() != startindex)
 				{
 					pos.inc();
 				}
 				break;
 			}
-			if(endsent(&pos))
+			if (endsent(&pos))
 			{
 				break;
 			}
-			if(endmbsent(&pos))
+			if (endmbsent(&pos))
 			{
 				break;
 			}
-			if(pos.decl() == -1)
+			if (pos.decl() == -1)
 			{
-				if(count)
+				if (count)
 				{
 					return;
 				}
@@ -1395,7 +1395,7 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 		}
 //found:
 		/* skip white space */
-		if(!noskip)
+		if (!noskip)
 		{
 			pos.fblank();
 		}
@@ -1408,7 +1408,7 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		return -1;
 	}
@@ -1416,24 +1416,24 @@ int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 	ViUtil::NormalizeNewline(info.following_text, &text);
 	// erase chars after newline to search in current line.
 	size_t nl = text.find_first_of(L'\n');
-	if(nl != std::wstring::npos)
+	if (nl != std::wstring::npos)
 	{
 		text.erase(nl);
 	}
-	//TODO:取得した文字列にchが含まれていなかったら、
-	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	// TODO:取得した文字列にchが含まれていなかったら、
+	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
 	int offset = 0;
-	while(cnt--)
+	while (cnt--)
 	{
 		offset++;
-		if(offset >= text.size())
+		if (offset >= text.size())
 		{
 			return 0;
 		}
 		size_t i = text.find(ch, offset);
-		if(i == std::wstring::npos)
+		if (i == std::wstring::npos)
 		{
 			return 0;
 		}
@@ -1447,11 +1447,11 @@ int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 void ViKeyHandler::_Vi_f(ITfContext *pContext, WCHAR ch)
 {
 	int movecnt = _Vi_f_sub(pContext, ch);
-	if(movecnt <= 0)
+	if (movecnt <= 0)
 	{
 		return;
 	}
-	if(vicmd.GetOperatorPending())
+	if (vicmd.GetOperatorPending())
 	{
 		movecnt++;
 	}
@@ -1463,11 +1463,11 @@ void ViKeyHandler::_Vi_f(ITfContext *pContext, WCHAR ch)
 void ViKeyHandler::_Vi_t(ITfContext *pContext, WCHAR ch)
 {
 	int movecnt = _Vi_f_sub(pContext, ch);
-	if(movecnt <= 0)
+	if (movecnt <= 0)
 	{
 		return;
 	}
-	if(!vicmd.GetOperatorPending())
+	if (!vicmd.GetOperatorPending())
 	{
 		movecnt--;
 	}
@@ -1477,7 +1477,7 @@ void ViKeyHandler::_Vi_t(ITfContext *pContext, WCHAR ch)
 int ViKeyHandler::_Vi_F_sub(ITfContext *pContext, WCHAR ch)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if(!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
 	{
 		return -1;
 	}
@@ -1485,24 +1485,24 @@ int ViKeyHandler::_Vi_F_sub(ITfContext *pContext, WCHAR ch)
 	ViUtil::NormalizeNewline(info.preceding_text, &text);
 	// erase chars before newline to search in current line.
 	size_t nl = text.find_last_of(L'\n');
-	if(nl != std::wstring::npos)
+	if (nl != std::wstring::npos)
 	{
 		text.erase(0, nl);
 	}
-	//TODO:取得した文字列にchが含まれていなかったら、
-	//カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	// TODO:取得した文字列にchが含まれていなかったら、
+	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
 	int offset = text.size();
-	while(cnt--)
+	while (cnt--)
 	{
 		offset--;
-		if(offset < 0)
+		if (offset < 0)
 		{
 			return 0;
 		}
 		size_t i = text.rfind(ch, offset);
-		if(i == std::wstring::npos)
+		if (i == std::wstring::npos)
 		{
 			return 0;
 		}
@@ -1516,7 +1516,7 @@ int ViKeyHandler::_Vi_F_sub(ITfContext *pContext, WCHAR ch)
 void ViKeyHandler::_Vi_F(ITfContext *pContext, WCHAR ch)
 {
 	int movecnt = _Vi_F_sub(pContext, ch);
-	if(movecnt <= 0)
+	if (movecnt <= 0)
 	{
 		return;
 	}
@@ -1528,7 +1528,7 @@ void ViKeyHandler::_Vi_F(ITfContext *pContext, WCHAR ch)
 void ViKeyHandler::_Vi_T(ITfContext *pContext, WCHAR ch)
 {
 	int movecnt = _Vi_F_sub(pContext, ch);
-	if(movecnt <= 1)
+	if (movecnt <= 1)
 	{
 		return;
 	}

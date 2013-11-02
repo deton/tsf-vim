@@ -20,9 +20,9 @@ public:
 	BOOL IsEmpty();
 
 private:
-	WCHAR _operator_pending;		//operator-pending mode(c,d,y)
-	WCHAR _char_waiting;		//waiting character(f,t)
-	int _count1; //first count for operator or motion
-	int _count2; //second count for motion
+	WCHAR _operator_pending;		// operator-pending mode(c,d,y)
+	WCHAR _char_waiting;		// waiting character(f,t)
+	int _count1; // first count for operator or motion
+	int _count2; // second count for motion
 };
 #endif //VICMD_H
