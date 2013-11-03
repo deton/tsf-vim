@@ -132,6 +132,9 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'g':
 		vicmd.SetCharWaiting(ch);
 		return;
+	case L'G':
+		_Vi_G();
+		return;
 	case CTRL('F'):
 		_SendKey(VK_NEXT);
 		vicmd.Reset();
@@ -228,7 +231,7 @@ static bool isextendedkey(UINT vk)
 	return vk >= VK_PRIOR && vk <= VK_DELETE || vk >= VK_LWIN && vk <= VK_APPS;
 }
 
-void ViKeyHandler::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
+static void _QueueKey(vector<INPUT> *inputs, UINT vk, int count = 1)
 {
 	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
@@ -252,7 +255,7 @@ void ViKeyHandler::_QueueKey(vector<INPUT> *inputs, UINT vk, int count)
 	}
 }
 
-void ViKeyHandler::_QueueKeyForSelection(vector<INPUT> *inputs)
+static void _QueueKeyForSelection(vector<INPUT> *inputs)
 {
 	const KEYBDINPUT keyboard_input = {VK_SHIFT, 0, 0, 0, 0};
 	INPUT keydown = {};
@@ -267,7 +270,7 @@ void ViKeyHandler::_QueueKeyForSelection(vector<INPUT> *inputs)
 	inputs->push_back(keyup);
 }
 
-void ViKeyHandler::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up, BOOL front)
+static void _QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up, BOOL front = FALSE)
 {
 	const KEYBDINPUT keyboard_input = {vk, 0, 0, 0, 0};
 	INPUT keydown = {};
@@ -301,7 +304,7 @@ void ViKeyHandler::_QueueKeyForModifier(vector<INPUT> *inputs, UINT vk, BOOL up,
 	}
 }
 
-void ViKeyHandler::_QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
+static void _QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
 {
 	_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
 	_QueueKey(inputs, vk);
@@ -1573,6 +1576,15 @@ void ViKeyHandler::_Vi_T(ITfContext *pContext, WCHAR ch)
 	_ViOpOrMove(VK_LEFT, movecnt);
 }
 
+static void _QueueKeyToLine(vector<INPUT> *inputs, int lnum)
+{
+	_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
+	_QueueKey(inputs, VK_HOME);
+	_QueueKeyForModifier(inputs, VK_CONTROL, TRUE);
+	// lnum - 1 lines DOWN
+	_QueueKey(inputs, VK_DOWN, lnum - 1);
+}
+
 void ViKeyHandler::_Vi_gg()
 {
 	vector<INPUT> inputs;
@@ -1583,15 +1595,42 @@ void ViKeyHandler::_Vi_gg()
 		_QueueKey(&inputs, VK_RIGHT); // to include '\n'
 		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
 	}
-	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
-	_QueueKey(&inputs, VK_HOME);
-	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
-	// count - 1 lines DOWN
-	_QueueKey(&inputs, VK_DOWN, vicmd.GetCount() - 1);
-	// TODO: goto first non-blank character (!OperatorPending)
+	_QueueKeyToLine(&inputs, vicmd.GetCount());
 	if (vicmd.GetOperatorPending())
 	{
 		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
+	}
+	// TODO: goto first non-blank character (!OperatorPending)
+	_ViOp(&inputs);
+}
+
+void ViKeyHandler::_Vi_G()
+{
+	vector<INPUT> inputs;
+	if (vicmd.GetOperatorPending()) // linewise
+	{
+		// TODO: 移動先が現在行以前の場合、現在行を対象にするにはVK_END
+		_QueueKey(&inputs, VK_HOME);
+		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
+	}
+	if (vicmd.HasCount())
+	{
+		_QueueKeyToLine(&inputs, vicmd.GetCount());
+	}
+	else
+	{
+		_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
+		_QueueKey(&inputs, VK_END);
+		_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
+	}
+	if (vicmd.GetOperatorPending())
+	{
+		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
+	}
+	else
+	{
+		// TODO: goto first non-blank character
+		_QueueKey(&inputs, VK_HOME);
 	}
 	_ViOp(&inputs);
 }

@@ -18,10 +18,6 @@ public:
 
 private:
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
-	static void _QueueKey(std::vector<INPUT> *inputs, UINT vk, int count = 1);
-	static void _QueueKeyForSelection(std::vector<INPUT> *inputs);
-	static void _QueueKeyForModifier(std::vector<INPUT> *inputs, UINT vk, BOOL up, BOOL front = FALSE);
-	static void _QueueKeyWithControl(std::vector<INPUT> *inputs, UINT vk);
 	void _SendInputs(std::vector<INPUT> *inputs);
 	void _SendKey(UINT vk, int count = 1);
 	void _SendKeyWithControl(UINT vk);
@@ -50,6 +46,7 @@ private:
 	void _Vi_F(ITfContext *pContext, WCHAR ch);
 	void _Vi_T(ITfContext *pContext, WCHAR ch);
 	void _Vi_gg();
+	void _Vi_G();
 
 	CTextService *_textService;
 	ViCmd vicmd;
