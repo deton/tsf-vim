@@ -1578,6 +1578,7 @@ void ViKeyHandler::_Vi_gg()
 	vector<INPUT> inputs;
 	if (vicmd.GetOperatorPending()) // linewise
 	{
+		// TODO: 移動先が現在行以降の場合、現在行を対象にするにはVK_HOME
 		_QueueKey(&inputs, VK_END);
 		_QueueKey(&inputs, VK_RIGHT); // to include '\n'
 		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
@@ -1585,6 +1586,9 @@ void ViKeyHandler::_Vi_gg()
 	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
 	_QueueKey(&inputs, VK_HOME);
 	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
+	// count - 1 lines DOWN
+	_QueueKey(&inputs, VK_DOWN, vicmd.GetCount() - 1);
+	// TODO: goto first non-blank character (!OperatorPending)
 	if (vicmd.GetOperatorPending())
 	{
 		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
