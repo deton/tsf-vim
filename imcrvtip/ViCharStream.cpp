@@ -1,15 +1,22 @@
 #include "ViCharStream.h"
 #include "ViUtil.h"
+#include "mozc/win32/tip/tip_surrounding_text.h"
 
-ViCharStream::ViCharStream(const std::wstring &preceding, const std::wstring &following)
+ViCharStream::ViCharStream(CTextService *textService, ITfContext *tfContext)
+	: _textService(textService), _tfContext(tfContext)
 {
-	std::wstring tmp;
-	ViUtil::NormalizeNewline(preceding, &tmp);
-	_buf.append(tmp);
-	_orig = _index = _buf.size();
-	ViUtil::NormalizeNewline(following, &tmp);
-	_buf.append(tmp);
-
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if (mozc::win32::tsf::TipSurroundingText::Get(_textService, _tfContext, &info))
+	{
+		std::wstring tmp;
+		ViUtil::NormalizeNewline(info.preceding_text, &tmp);
+		_buf.append(tmp);
+		_orig = _index = _buf.size();
+		ViUtil::NormalizeNewline(info.following_text, &tmp);
+		_buf.append(tmp);
+		_preceding_count = info.preceding_text.size();
+		_following_count = info.following_text.size();
+	}
 	_update_sol();
 	_update_eol();
 	_update_flags();
@@ -55,6 +62,51 @@ void ViCharStream::_update_flags()
 ViCharStream::~ViCharStream()
 {
 }
+
+int ViCharStream::_GetMore(bool backward)
+{
+	int offset = _following_count; // includes '\r'
+	if (backward)
+	{
+		offset = 0 - _preceding_count;
+	}
+	mozc::win32::tsf::TipSurroundingTextInfo info;
+	if (!mozc::win32::tsf::TipSurroundingText::GetMore(_textService, _tfContext, offset, &info))
+	{
+		return -1;
+	}
+	if (offset < 0)
+	{
+		if (info.preceding_text.size() == 0)
+		{
+			return -1;
+		}
+		size_t oldsize = _buf.size();
+		std::wstring tmp;
+		ViUtil::NormalizeNewline(info.preceding_text, &tmp);
+		_buf.insert(0, tmp);
+		size_t addsize = _buf.size() - oldsize;
+		_orig += addsize;
+		_index += addsize;
+		_update_sol();
+		_eol += addsize;
+		_preceding_count += info.preceding_text.size();
+	}
+	else
+	{
+		if (info.following_text.size() == 0)
+		{
+			return -1;
+		}
+		std::wstring tmp;
+		ViUtil::NormalizeNewline(info.following_text, &tmp);
+		_buf.append(tmp);
+		_update_eol();
+		_following_count += info.following_text.size();
+	}
+	return 0;
+}
+
 
 wchar_t ViCharStream::ch()
 {
@@ -152,24 +204,48 @@ int ViCharStream::fspace()
 // set current position to the next character.
 int ViCharStream::next()
 {
+// acquire more following text
+#define GETMORE_FOLLOWING(failflag) \
+	do { \
+		if (_GetMore(false) == -1 || _index >= _buf.size() - 1) \
+		{ \
+			/* cannot get more text || get more text but emtpy */ \
+			_index++; \
+			_flags = (failflag); \
+			return 0; \
+		} \
+	} while (0)
+
 	switch (flags())
 	{
 	case CS_EMP: // EMP; get next line.
-	case CS_EOL: // EOL; get next line.
-		_index++;
-		if (_index >= _buf.size())
+		while (_index >= _buf.size() - 1)
 		{
-			// TODO: acquire following text after moving cursor
-			_flags = CS_EOF;
-		}
-		else
-		{
-			_sol = _index;
-			_update_eol();
+			// here _index == _eol == _buf.size()
+			GETMORE_FOLLOWING(CS_EOF);
+			// yet EMP line or become non-EMP line
 			_update_flags();
+			if (flags() != CS_EMP)
+			{
+				return 0;
+			}
 		}
+		//FALLTHRU
+	case CS_EOL: // EOL; get next line.
+		if (_index >= _buf.size() - 1)
+		{
+			GETMORE_FOLLOWING(CS_EOF);
+		}
+		_index++;
+		_sol = _index;
+		_update_eol();
+		_update_flags();
 		break;
 	case CS_NONE:
+		if (_index >= _buf.size() - 1)
+		{
+			GETMORE_FOLLOWING(CS_EOL);
+		}
 		_index++;
 		if (_index == _eol)
 		{
@@ -187,21 +263,44 @@ int ViCharStream::next()
 // set current position to the previous character.
 int ViCharStream::prev()
 {
+#define GETMORE_PRECEDING() \
+	do { \
+		/* acquire more preceding text */ \
+		if (_GetMore(true) == -1 || _index == 0) \
+		{ \
+			/* cannot get more text || get more text but emtpy */ \
+			_index = 0; \
+			_flags = CS_SOF; \
+			return 0; \
+		} \
+	} while (0)
+
 	switch (flags())
 	{
 	case CS_EMP:				/* EMP; get previous line. */
 		_index = _sol;
+		while (_index == 0)
+		{
+			GETMORE_PRECEDING();
+			// yet EMP line or become non-EMP line
+			_update_flags();
+			if (flags() != CS_EMP)
+			{
+				--_index;
+				_flags = CS_NONE;
+				return 0;
+			}
+			_index = _sol;
+		}
+		//FALLTHRU
 	case CS_EOL:				/* EOL; get previous line. */
 		--_index;
-		_eol = _index;
-		--_index;
-		if (_index <= 0)		/* SOF. */
+		_eol = _index; // '\n'
+		if (_index == 0)		/* SOF. */
 		{
-			// TODO: acquire preceding text after moving cursor
-			_index = 0;
-			_flags = CS_SOF;
-			break;
+			GETMORE_PRECEDING();
 		}
+		--_index;
 		_update_sol();
 		_update_flags();
 		break;
@@ -211,8 +310,9 @@ int ViCharStream::prev()
 		{
 			if (_index == 0)
 			{
-				// TODO: acquire preceding text after moving cursor
-				_flags = CS_SOF;
+				GETMORE_PRECEDING();
+				--_index;
+				_flags = CS_NONE;
 			}
 			else
 			{

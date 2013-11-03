@@ -534,14 +534,7 @@ void ViKeyHandler::_Vi_P()
 
 void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 {
-	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
-	{
-		return;
-	}
-	ViCharStream cs(info.preceding_text, info.following_text);
-	// TODO:取得した文字列に単語末が含まれていなかったら、
-	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	ViCharStream cs(_textService, pContext);
 
 	int cnt = vicmd.GetCount();
 	// cf. fword() in v_word.c of nvi-1.79
@@ -756,14 +749,7 @@ ret:
 
 void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
 {
-	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
-	{
-		return;
-	}
-	ViCharStream cs(info.preceding_text, info.following_text);
-	// TODO:取得した文字列に単語末が含まれていなかったら、
-	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	ViCharStream cs(_textService, pContext);
 
 	int cnt = vicmd.GetCount();
 	// cf. eword() in v_word.c of nvi-1.79
@@ -973,14 +959,7 @@ ret:
 
 void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
 {
-	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
-	{
-		return;
-	}
-	ViCharStream cs(info.preceding_text, info.following_text);
-	// TODO:取得した文字列に単語頭が含まれていなかったら、
-	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	ViCharStream cs(_textService, pContext);
 
 	int cnt = vicmd.GetCount();
 	// cf. bword() in v_word.c of nvi-1.79
