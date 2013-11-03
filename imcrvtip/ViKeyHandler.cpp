@@ -500,13 +500,55 @@ void ViKeyHandler::_Vi_O()
 	vicmd.Reset();
 }
 
+static BOOL IsLinewiseClipboard()
+{
+	if (!::OpenClipboard(NULL))
+	{
+		return FALSE;
+	}
+	BOOL ret = FALSE;
+#define CHECKNEWLINE(fmt, type, pred) \
+	do { \
+		HGLOBAL hMem; \
+		if ((hMem = ::GetClipboardData(fmt)) != NULL) \
+		{ \
+			type *hMemStr = (type *)GlobalLock(hMem); \
+			if (pred) \
+			{ \
+				ret = TRUE; \
+			} \
+			GlobalUnlock(hMem); \
+		} \
+	} while (0)
+
+	if (::IsClipboardFormatAvailable(CF_UNICODETEXT))
+	{
+		CHECKNEWLINE(CF_UNICODETEXT, WCHAR, wcschr(hMemStr, L'\n') != NULL);
+	}
+	else if (::IsClipboardFormatAvailable(CF_TEXT))
+	{
+		CHECKNEWLINE(CF_TEXT, char, strchr(hMemStr, '\n') != NULL);
+	}
+	::CloseClipboard();
+	return ret;
+}
+
 void ViKeyHandler::_Vi_p(ITfContext *pContext)
 {
-	// TODO: 行指向の場合は、次行にペースト
 	vector<INPUT> inputs;
-	if (!_AtEndOfLine(pContext))
+	// 行指向の場合は、次行にペースト
+	if (IsLinewiseClipboard())
 	{
+		// TODO: 既に最終行にいる場合、新しい行を作成してペースト
+		_QueueKey(&inputs, VK_END);
 		_QueueKey(&inputs, VK_RIGHT);
+	}
+	else
+	{
+		if (!_AtEndOfLine(pContext))
+		{
+			_QueueKey(&inputs, VK_RIGHT);
+		}
 	}
 	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
 	_QueueKey(&inputs, 'V', vicmd.GetCount());
@@ -518,6 +560,10 @@ void ViKeyHandler::_Vi_p(ITfContext *pContext)
 void ViKeyHandler::_Vi_P()
 {
 	vector<INPUT> inputs;
+	if (IsLinewiseClipboard())
+	{
+		_QueueKey(&inputs, VK_HOME);
+	}
 	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
 	_QueueKey(&inputs, 'V', vicmd.GetCount());
 	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
