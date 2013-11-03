@@ -37,9 +37,10 @@ BOOL ViKeyHandler::IsWaitingNextKey()
 
 HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 {
-	if (vicmd.GetCharWaiting())
+	WCHAR waiting = vicmd.GetCharWaiting();
+	if (waiting)
 	{
-		switch (vicmd.GetCharWaiting())
+		switch (waiting)
 		{
 		case L'f':
 			_Vi_f(pContext, ch);
@@ -52,6 +53,16 @@ HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 			break;
 		case L'T':
 			_Vi_T(pContext, ch);
+			break;
+		case L'g':
+			switch (ch)
+			{
+			case L'g': // gg
+				_Vi_gg();
+				break;
+			default:
+				break;
+			}
 			break;
 		default:
 			break;
@@ -118,6 +129,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L't':
 	case L'F':
 	case L'T':
+	case L'g':
 		vicmd.SetCharWaiting(ch);
 		return;
 	case CTRL('F'):
@@ -1559,4 +1571,23 @@ void ViKeyHandler::_Vi_T(ITfContext *pContext, WCHAR ch)
 	}
 	movecnt--;
 	_ViOpOrMove(VK_LEFT, movecnt);
+}
+
+void ViKeyHandler::_Vi_gg()
+{
+	vector<INPUT> inputs;
+	if (vicmd.GetOperatorPending()) // linewise
+	{
+		_QueueKey(&inputs, VK_END);
+		_QueueKey(&inputs, VK_RIGHT); // to include '\n'
+		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
+	}
+	_QueueKeyForModifier(&inputs, VK_CONTROL, FALSE);
+	_QueueKey(&inputs, VK_HOME);
+	_QueueKeyForModifier(&inputs, VK_CONTROL, TRUE);
+	if (vicmd.GetOperatorPending())
+	{
+		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
+	}
+	_ViOp(&inputs);
 }
