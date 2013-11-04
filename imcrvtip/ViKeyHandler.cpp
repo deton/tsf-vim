@@ -144,7 +144,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.Reset();
 		return;
 	case L'$':
-		_ViOpOrMove(VK_END, 1);
+		_ViOpOrMove(VK_END, 1); // TODO: support count
 		return;
 	case L'h':
 		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
@@ -1445,41 +1445,26 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 	_ViOpOrMove(VK_LEFT, movecnt);
 }
 
+// return -1: not found
 int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 {
-	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
+	VimCharStream pos(_textService, pContext);
+	if (pos.gchar() == L'\n')
 	{
-		return -1;
+		return -1; // empty line
 	}
-	std::wstring text;
-	ViUtil::NormalizeNewline(info.following_text, &text);
-	// erase chars after newline to search in current line.
-	size_t nl = text.find_first_of(L'\n');
-	if (nl != std::wstring::npos)
-	{
-		text.erase(nl);
-	}
-	// TODO:取得した文字列にchが含まれていなかったら、
-	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
 
 	int cnt = vicmd.GetCount();
-	int offset = 0;
 	while (cnt--)
 	{
-		offset++;
-		if (offset >= text.size())
-		{
-			return 0;
-		}
-		size_t i = text.find(ch, offset);
-		if (i == std::wstring::npos)
-		{
-			return 0;
-		}
-		offset = i;
+		do {
+			if (pos.inc() != 0)
+			{
+				return -1;
+			}
+		} while (pos.gchar() != ch);
 	}
-	return offset;
+	return pos.difference();
 }
 
 //	Search forward in the line for the next occurrence of the
@@ -1516,39 +1501,19 @@ void ViKeyHandler::_Vi_t(ITfContext *pContext, WCHAR ch)
 
 int ViKeyHandler::_Vi_F_sub(ITfContext *pContext, WCHAR ch)
 {
-	mozc::win32::tsf::TipSurroundingTextInfo info;
-	if (!mozc::win32::tsf::TipSurroundingText::Get(_textService, pContext, &info))
-	{
-		return -1;
-	}
-	std::wstring text;
-	ViUtil::NormalizeNewline(info.preceding_text, &text);
-	// erase chars before newline to search in current line.
-	size_t nl = text.find_last_of(L'\n');
-	if (nl != std::wstring::npos)
-	{
-		text.erase(0, nl);
-	}
-	// TODO:取得した文字列にchが含まれていなかったら、
-	// カーソルを移動して、さらに文字列を取得する処理を繰り返す
+	VimCharStream pos(_textService, pContext);
 
 	int cnt = vicmd.GetCount();
-	int offset = text.size();
 	while (cnt--)
 	{
-		offset--;
-		if (offset < 0)
-		{
-			return 0;
-		}
-		size_t i = text.rfind(ch, offset);
-		if (i == std::wstring::npos)
-		{
-			return 0;
-		}
-		offset = i;
+		do {
+			if (pos.dec() != 0)
+			{
+				return -1;
+			}
+		} while (pos.gchar() != ch);
 	}
-	return text.size() - offset;
+	return -pos.difference();
 }
 
 //	Search backward in the line for the next occurrence of the
