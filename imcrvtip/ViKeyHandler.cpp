@@ -139,11 +139,11 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_Vi_G();
 		return;
 	case CTRL('F'):
-		_SendKey(VK_NEXT);
+		_SendKey(VK_NEXT, vicmd.GetCount());
 		vicmd.Reset();
 		return;
 	case CTRL('B'):
-		_SendKey(VK_PRIOR);
+		_SendKey(VK_PRIOR, vicmd.GetCount());
 		vicmd.Reset();
 		return;
 	case L'$':
