@@ -1593,14 +1593,20 @@ void ViKeyHandler::_ViEndOfLine(ITfContext *pContext)
 		return;
 	}
 
+	bool eof = false;
 	for (int r = pos.inc(); r != 2; r = pos.inc())
 	{
 		if (r == -1) // end of file
 		{
-			return;
+			eof = true;
+			break;
 		}
 	}
 	int movecnt = pos.difference();
+	if (eof)
+	{
+		++movecnt;
+	}
 	if (movecnt <= 0)
 	{
 		return;
