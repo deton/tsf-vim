@@ -27,7 +27,7 @@ private:
 	void _Vi_j();
 	void _ViDownFNB(ITfContext *pContext);
 	void _Vi_k();
-	void _Vi_I();
+	void _Vi_I(ITfContext *pContext);
 	BOOL _AtEndOfLine(ITfContext *pContext);
 	void _Vi_a(ITfContext *pContext);
 	void _Vi_A();

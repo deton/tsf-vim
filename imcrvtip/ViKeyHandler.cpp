@@ -171,7 +171,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.Reset();
 		return;
 	case L'I':
-		_Vi_I();
+		_Vi_I(pContext);
 		return;
 	case L'a':
 		_Vi_a(pContext);
@@ -496,10 +496,28 @@ void ViKeyHandler::_Vi_k()
 	}
 }
 
-void ViKeyHandler::_Vi_I()
+void ViKeyHandler::_Vi_I(ITfContext *pContext)
 {
-	_SendKey(VK_HOME);
-	// TODO: 非空白文字の前に移動
+	VimCharStream pos(_textService, pContext);
+	// go to start of line
+	for (int r = pos.dec(); r != -1; r = pos.dec())
+	{
+		if (pos.gchar() == L'\n')
+		{
+			pos.inc();
+			break;
+		}
+	}
+	pos.fblank();
+	int diff = pos.difference();
+	if (diff < 0)
+	{
+		_SendKey(VK_LEFT, -diff);
+	}
+	else if (diff > 0)
+	{
+		_SendKey(VK_RIGHT, diff);
+	}
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
