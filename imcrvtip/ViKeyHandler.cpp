@@ -60,6 +60,9 @@ HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 			case L'g': // gg
 				_Vi_gg();
 				break;
+			case L'$':
+				_ViOpOrMove(VK_END, 1); // TODO: support count
+				break;
 			default:
 				break;
 			}
@@ -144,7 +147,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.Reset();
 		return;
 	case L'$':
-		_ViOpOrMove(VK_END, 1); // TODO: support count
+		_ViEndOfLine(pContext);
 		return;
 	case L'h':
 		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
@@ -1539,6 +1542,34 @@ void ViKeyHandler::_Vi_T(ITfContext *pContext, WCHAR ch)
 	}
 	movecnt--;
 	_ViOpOrMove(VK_LEFT, movecnt);
+}
+
+void ViKeyHandler::_ViEndOfLine(ITfContext *pContext)
+{
+	// TODO: support count
+	VimCharStream pos(_textService, pContext);
+	if (pos.gchar() == L'\n')
+	{
+		return;
+	}
+
+	for (int r = pos.inc(); r != 2; r = pos.inc())
+	{
+		if (r == -1) // end of file
+		{
+			return;
+		}
+	}
+	int movecnt = pos.difference();
+	if (movecnt <= 0)
+	{
+		return;
+	}
+	if (!vicmd.GetOperatorPending())
+	{
+		--movecnt;
+	}
+	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
 static void _QueueKeyToLine(vector<INPUT> *inputs, int lnum)

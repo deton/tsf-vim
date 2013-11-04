@@ -45,6 +45,7 @@ private:
 	int _Vi_F_sub(ITfContext *pContext, WCHAR ch);
 	void _Vi_F(ITfContext *pContext, WCHAR ch);
 	void _Vi_T(ITfContext *pContext, WCHAR ch);
+	void _ViEndOfLine(ITfContext *pContext);
 	void _Vi_gg();
 	void _Vi_G();
 
