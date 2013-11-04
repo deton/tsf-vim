@@ -20,10 +20,15 @@ VimCharStream::VimCharStream(CTextService *textService, ITfContext *tfContext)
 		_buf.append(tmp);
 		_preceding_count = info.preceding_text.size();
 		_following_count = info.following_text.size();
+		_eof = false;
 #if DEBUGLOG
 		std::wofstream log("c:\\tsfvim\\log");
 		log << info.preceding_text << '|' << info.following_text << std::endl;
 #endif
+	}
+	else
+	{
+		_eof = true;
 	}
 }
 
@@ -83,6 +88,10 @@ size_t VimCharStream::index()
 	return _index;
 }
 
+bool VimCharStream::eof()
+{
+	return _eof;
+}
 
 int VimCharStream::difference()
 {
@@ -113,6 +122,7 @@ int VimCharStream::inc()
 		// acquire more following text
 		if (_GetMore(false) == -1 || _index >= _buf.size() - 1)
 		{
+			_eof = true;
 			return -1; // cannot get more text || get more text but emtpy
 		}
 	}
@@ -152,6 +162,7 @@ int VimCharStream::dec()
 			return -1; // cannot get more text || get more text but emtpy
 		}
 	}
+	_eof = false;
 	--_index;
 	if (gchar() == L'\n')
 	{

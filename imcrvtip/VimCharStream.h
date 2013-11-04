@@ -17,6 +17,7 @@ public:
 	int fblank();
 	wchar_t gchar();
 	size_t index();
+	bool eof();
 	int difference();
 	void save_index();
 	void restore_index();
@@ -30,6 +31,7 @@ private:
 	size_t _orig; // original index in buf
 	size_t _index; // current index in buf
 	std::wstring _buf;
+	bool _eof;
 
 	size_t _preceding_count;
 	size_t _following_count;

@@ -1328,7 +1328,7 @@ void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 {
 	VimCharStream pos(_textService, pContext);
 
-    BOOL noskip = FALSE;
+	BOOL noskip = FALSE;
 	int count = vicmd.GetCount();
 	// cf. findsent() in search.c of vim.
 	while (count--)
@@ -1396,6 +1396,10 @@ found:
 	}
 
 	int movecnt = pos.difference();
+	if (pos.eof())
+	{
+		++movecnt;
+	}
 	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
@@ -1403,7 +1407,7 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 {
 	VimCharStream pos(_textService, pContext);
 
-    BOOL noskip = FALSE;
+	BOOL noskip = FALSE;
 	int count = vicmd.GetCount();
 	// cf. findsent() in search.c of vim.
 	while (count--)
