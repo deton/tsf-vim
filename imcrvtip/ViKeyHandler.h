@@ -25,6 +25,7 @@ private:
 	void _ViOpOrMove(UINT vk, int count);
 	void _ViOpLines(int count);
 	void _Vi_j();
+	void _ViDownFNB(ITfContext *pContext);
 	void _Vi_k();
 	void _Vi_I();
 	BOOL _AtEndOfLine(ITfContext *pContext);

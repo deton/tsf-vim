@@ -146,6 +146,10 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_SendKey(VK_PRIOR, vicmd.GetCount());
 		vicmd.Reset();
 		return;
+	case L'+':
+	case CTRL('M'):
+		_ViDownFNB(pContext); // first non-blank
+		return;
 	case L'$':
 		_ViEndOfLine(pContext);
 		return;
@@ -433,6 +437,42 @@ void ViKeyHandler::_Vi_j()
 	{
 		_ViOpOrMove(VK_DOWN, vicmd.GetCount());
 	}
+}
+
+// down and first non-blank
+void ViKeyHandler::_ViDownFNB(ITfContext *pContext)
+{
+	if (vicmd.GetOperatorPending()) // linewise operator
+	{
+		_ViOpLines(vicmd.GetCount());
+		return;
+	}
+
+	VimCharStream pos(_textService, pContext);
+	int cnt = vicmd.GetCount();
+	while (cnt--)
+	{
+		for (int r = pos.inc(); r != 1; r = pos.inc())
+		{
+			if (r == -1) // end of file
+			{
+				pos.restore_index();
+				goto end;
+			}
+		}
+		// pos.fblank() using inc() instead of incl() to stop at '\n'
+		while (iswblank(pos.gchar()))
+		{
+			if (pos.inc() == -1)
+			{
+				goto end;
+			}
+		}
+		pos.save_index();
+	}
+end:
+	int movecnt = pos.difference();
+	_ViOpOrMove(VK_RIGHT, movecnt);
 }
 
 void ViKeyHandler::_Vi_k()

@@ -30,7 +30,7 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 	WCHAR ch = _GetCh((BYTE)wParam);
 
 	//TODO: 処理するキーを一か所で管理
-	if(ch == CTRL('F') || ch == CTRL('B'))
+	if(ch == CTRL('F') || ch == CTRL('B') || ch == CTRL('M'))
 	{
 		return TRUE;
 	}
