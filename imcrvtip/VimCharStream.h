@@ -15,10 +15,12 @@ public:
 	int dec();
 	int decl();
 	int fblank();
+	int fblankl();
 	wchar_t gchar();
 	size_t index();
 	bool eof();
 	int difference();
+	int forward_eol();
 	void save_index();
 	void restore_index();
 

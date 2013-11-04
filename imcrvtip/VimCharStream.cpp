@@ -190,7 +190,7 @@ int VimCharStream::decl()
 	return r;
 }
 
-int VimCharStream::fblank()
+int VimCharStream::fblankl()
 {
 	while (iswblank(gchar()))
 	{
@@ -201,3 +201,33 @@ int VimCharStream::fblank()
 	}
 	return 0;
 }
+
+int VimCharStream::fblank()
+{
+	while (iswblank(gchar()))
+	{
+		if (inc() == -1)
+		{
+			return -1;
+		}
+	}
+	return 0;
+}
+
+int VimCharStream::forward_eol()
+{
+	if (gchar() == L'\n')
+	{
+		return 0;
+	}
+
+	for (int r = inc(); r != 2; r = inc())
+	{
+		if (r == -1) // end of file
+		{
+			return -1;
+		}
+	}
+	return 0;
+}
+

@@ -49,6 +49,7 @@ private:
 	void _ViEndOfLine(ITfContext *pContext);
 	void _Vi_gg();
 	void _Vi_G();
+	void _Vi_J(ITfContext *pContext);
 
 	CTextService *_textService;
 	ViCmd vicmd;

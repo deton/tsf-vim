@@ -226,6 +226,9 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_VimBackwardSent(pContext);
 		vicmd.Reset();
 		return;
+	case L'J':
+		_Vi_J(pContext);
+		return;
 	default:
 		vicmd.Reset();
 		break;
@@ -409,6 +412,7 @@ void ViKeyHandler::_ViOpOrMove(UINT vk, int count)
 void ViKeyHandler::_ViOpLines(int count)
 {
 	vector<INPUT> inputs;
+	// FIXME: 最終行にいる際に'dd'すると1つ上の行まで削除される
 	for (int i = 0; i < count; ++i)
 	{
 		_QueueKey(&inputs, VK_DOWN);
@@ -460,13 +464,9 @@ void ViKeyHandler::_ViDownFNB(ITfContext *pContext)
 				goto end;
 			}
 		}
-		// pos.fblank() using inc() instead of incl() to stop at '\n'
-		while (iswblank(pos.gchar()))
+		if (pos.fblank() == -1)
 		{
-			if (pos.inc() == -1)
-			{
-				goto end;
-			}
+			goto end;
 		}
 		pos.save_index();
 	}
@@ -1391,7 +1391,7 @@ found:
 		/* skip white space */
 		if (!noskip)
 		{
-			pos.fblank();
+			pos.fblankl();
 		}
 	}
 
@@ -1484,7 +1484,7 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 		/* skip white space */
 		if (!noskip)
 		{
-			pos.fblank();
+			pos.fblankl();
 		}
 	}
 
@@ -1592,22 +1592,9 @@ void ViKeyHandler::_ViEndOfLine(ITfContext *pContext)
 {
 	// TODO: support count
 	VimCharStream pos(_textService, pContext);
-	if (pos.gchar() == L'\n')
-	{
-		return;
-	}
-
-	bool eof = false;
-	for (int r = pos.inc(); r != 2; r = pos.inc())
-	{
-		if (r == -1) // end of file
-		{
-			eof = true;
-			break;
-		}
-	}
+	int r = pos.forward_eol();
 	int movecnt = pos.difference();
-	if (eof)
+	if (r == -1) // end of file
 	{
 		++movecnt;
 	}
@@ -1679,4 +1666,48 @@ void ViKeyHandler::_Vi_G()
 		_QueueKey(&inputs, VK_HOME);
 	}
 	_ViOp(&inputs);
+}
+
+void ViKeyHandler::_Vi_J(ITfContext *pContext)
+{
+	// TODO: support count
+	VimCharStream pos(_textService, pContext);
+	int r = pos.forward_eol();
+	if (r == -1) // end of file
+	{
+		return;
+	}
+	int index_eol = pos.difference();
+	// check last character
+	bool ismulti1 = false;
+	if (pos.dec() == 0)
+	{
+		ismulti1 = VimMByte::ismulti(pos.gchar());
+		pos.inc();
+	}
+
+	// next line
+	if (pos.inc() == -1)
+	{
+		return;
+	}
+	bool ismulti2 = false;
+	if (pos.fblank() != -1)
+	{
+		ismulti2 = VimMByte::ismulti(pos.gchar());
+	}
+	int index_end = pos.difference();
+
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, VK_RIGHT, index_eol);
+	_QueueKey(&inputs, VK_DELETE, index_end - index_eol);
+	if (!ismulti1 && !ismulti2)
+	{
+		// key sequence handled by tsf-vim
+		_QueueKey(&inputs, 'I');
+		_QueueKey(&inputs, VK_SPACE);
+		_QueueKey(&inputs, VK_ESCAPE);
+	}
+	_SendInputs(&inputs);
+	vicmd.Reset();
 }
