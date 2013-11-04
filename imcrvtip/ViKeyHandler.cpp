@@ -126,7 +126,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'C':
 	case L'D':
 		vicmd.SetOperatorPending(towlower(ch));
-		_ViOpOrMove(VK_END, 1);
+		_ViEndOfLine(pContext);
 		return;
 	case L'f':
 	case L't':
