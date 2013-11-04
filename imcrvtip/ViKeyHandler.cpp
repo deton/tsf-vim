@@ -1680,9 +1680,13 @@ void ViKeyHandler::_Vi_J(ITfContext *pContext)
 	int index_eol = pos.difference();
 	// check last character
 	bool ismulti1 = false;
-	if (pos.dec() == 0)
+	r = pos.dec();
+	if (r != -1)
 	{
-		ismulti1 = VimMByte::ismulti(pos.gchar());
+		if (r == 0)
+		{
+			ismulti1 = VimMByte::ismulti(pos.gchar());
+		}
 		pos.inc();
 	}
 
