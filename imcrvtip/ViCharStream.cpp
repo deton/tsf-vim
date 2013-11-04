@@ -3,7 +3,10 @@
 #include "mozc/win32/tip/tip_surrounding_text.h"
 
 ViCharStream::ViCharStream(CTextService *textService, ITfContext *tfContext)
-	: _textService(textService), _tfContext(tfContext)
+	: _textService(textService), _tfContext(tfContext),
+	  _orig(0), _index(0), _sol(0), _eol(0), _flags(CS_NONE),
+	  _preceding_count(0), _following_count(0),
+	  _index_save(0), _sol_save(0), _eol_save(0), _flags_save(CS_NONE)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
 	if (mozc::win32::tsf::TipSurroundingText::Get(_textService, _tfContext, &info))

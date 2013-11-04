@@ -1,6 +1,6 @@
 #include "ViCmd.h"
 
-ViCmd::ViCmd()
+ViCmd::ViCmd(): _operator_pending(0), _char_waiting(0), _count1(0), _count2(0)
 {
 }
 

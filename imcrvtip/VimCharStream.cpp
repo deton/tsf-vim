@@ -7,7 +7,10 @@
 #endif
 
 VimCharStream::VimCharStream(CTextService *textService, ITfContext *tfContext)
-	: _textService(textService), _tfContext(tfContext)
+	: _textService(textService), _tfContext(tfContext),
+	  _orig(0), _index(0), _eof(false),
+	  _preceding_count(0), _following_count(0),
+	  _index_save(0)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
 	if (mozc::win32::tsf::TipSurroundingText::Get(_textService, _tfContext, &info))
