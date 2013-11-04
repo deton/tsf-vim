@@ -15,7 +15,7 @@ VimCharStream::VimCharStream(CTextService *textService, ITfContext *tfContext)
 		std::wstring tmp;
 		ViUtil::NormalizeNewline(info.preceding_text, &tmp);
 		_buf.append(tmp);
-		_orig = _index = _buf.size();
+		_orig = _index = _index_save = _buf.size();
 		ViUtil::NormalizeNewline(info.following_text, &tmp);
 		_buf.append(tmp);
 		_preceding_count = info.preceding_text.size();
@@ -56,6 +56,7 @@ int VimCharStream::_GetMore(bool backward)
 		size_t addsize = _buf.size() - oldsize;
 		_orig += addsize;
 		_index += addsize;
+		_index_save += addsize;
 		_preceding_count += info.preceding_text.size();
 	}
 	else
@@ -107,10 +108,10 @@ void VimCharStream::restore_index()
  */
 int VimCharStream::inc()
 {
-	if (_index == _buf.size() - 1)
+	if (_index >= _buf.size() - 1)
 	{
 		// acquire more following text
-		if (_GetMore(false) == -1 || _index == _buf.size() - 1)
+		if (_GetMore(false) == -1 || _index >= _buf.size() - 1)
 		{
 			return -1; // cannot get more text || get more text but emtpy
 		}

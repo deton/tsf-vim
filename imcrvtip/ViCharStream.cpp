@@ -11,7 +11,7 @@ ViCharStream::ViCharStream(CTextService *textService, ITfContext *tfContext)
 		std::wstring tmp;
 		ViUtil::NormalizeNewline(info.preceding_text, &tmp);
 		_buf.append(tmp);
-		_orig = _index = _buf.size();
+		_orig = _index = _index_save = _buf.size();
 		ViUtil::NormalizeNewline(info.following_text, &tmp);
 		_buf.append(tmp);
 		_preceding_count = info.preceding_text.size();
@@ -20,6 +20,9 @@ ViCharStream::ViCharStream(CTextService *textService, ITfContext *tfContext)
 	_update_sol();
 	_update_eol();
 	_update_flags();
+	_eol_save = _eol;
+	_sol_save = _sol;
+	_flags_save = _flags;
 }
 
 // find start of line
@@ -88,8 +91,11 @@ int ViCharStream::_GetMore(bool backward)
 		size_t addsize = _buf.size() - oldsize;
 		_orig += addsize;
 		_index += addsize;
+		_index_save += addsize;
 		_update_sol();
+		_sol_save += addsize;
 		_eol += addsize;
+		_eol_save += addsize;
 		_preceding_count += info.preceding_text.size();
 	}
 	else
