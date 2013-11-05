@@ -1,6 +1,6 @@
 ﻿
 ================================================================================
-     tsf-vim version 0.0.1 (2013-10-XXX)
+     tsf-vim version 0.0.1 (2013-11-XXX)
 
      https://github.com/deton/tsf-vim
      deton@m1.interq.or.jp
@@ -37,22 +37,6 @@
   （X, Y, Z はバージョン番号）
 
 
-・Windows 8
-
-  Windows Store アプリで使用するには、設定ファイル（config.xml）に Windows Store
-  アプリへのアクセス許可を付加させる必要があります。
-  Windows 8 で動作する設定ダイアログでOKボタンを押して保存を行うとアクセス許可の
-  付加が自動的に行われます。
-
-
-・Adobe Reader XI
-
-  Adobe Reader で使用するには、設定ファイル（config.xml）に Adobe Reader への
-  アクセス許可を付加させる必要があります。
-  設定ダイアログでOKボタンを押して保存を行うとアクセス許可の付加が自動的に
-  行われます。
-
-
 --------------------------------------------------------------------------------
      Vi編集操作
 --------------------------------------------------------------------------------
@@ -66,6 +50,77 @@
   TSFに対応していないアプリの場合は、文字列取得にIMR_DOCUMENTFEEDを使用します。
   IMR_DOCUMENTFEEDにも対応していないアプリの場合は、動作しません。
 
+  現状主に動作を確認しているのは以下のアプリです:
+  + Word 2010
+  + Outlook 2010
+  + (PowerPoint 2010やExcel 2010ではf等は動きません)
+  + WordPad
+  + notepad
+
+コマンド 送り付けるキーシーケンス
+0       HOME
+g$      END (count未対応)
+$       改行まで(*)RIGHT (count未対応)
+c       CTRL-X,IME OFF
+d       CTRL-X
+y       CTRL-C
+cc      [count-1]DOWN,END,RIGHT,選択開始,[count-1]UP,CTRL-X,IME OFF
+cj      [count]DOWN,END,RIGHT,選択開始,[count]UP,CTRL-X,IME OFF
+ck      END,RIGHT,選択開始,[count]UP,CTRL-X,IME OFF
+dd      [count-1]DOWN,END,RIGHT,選択開始,[count-1]UP,CTRL-X
+        (Wordで選択中に既に行末時ENDを送ると次の行末まで移動するので一度DOWN)
+dj      [count]DOWN,END,RIGHT,選択開始,[count]UP,CTRL-X
+dk      END,RIGHT,選択開始,[count]UP,CTRL-X
+yy      [count-1]DOWN,END,RIGHT,選択開始,[count-1]UP,CTRL-C
+yj      [count]DOWN,END,RIGHT,選択開始,[count]UP,CTRL-C
+yk      END,RIGHT,選択開始,[count]UP,CTRL-C
+C       選択開始,END,CTRL-X,IME OFF
+D       選択開始,END,CTRL-X
+f{char} 指定文字まで(*)RIGHT
+t{char} 指定文字の前まで(*)RIGHT
+F{char} 指定文字まで(*)LEFT
+T{char} 指定文字の後まで(*)LEFT
+gg      CTRL-HOME
+G       CTRL-END,HOME (ただしcount指定時はggと同様)
+CTRL-F  PageDown
+CTRL-B  PageUp
+h       LEFT
+l       RIGHT
+<Space> RIGHT
+j       DOWN
+k       UP
++       次行最初の非空白文字まで(*)RIGHT
+CTRL-M  次行最初の非空白文字まで(*)RIGHT
+i       IME OFF
+I       行の先頭の非空白文字まで(*)RIGHTもしくはLEFT,IME OFF
+a       RIGHT,IME OFF
+A       END,IME OFF
+o       END,RETURN,IME OFF
+O       HOME,RETURN,UP,IME OFF
+p       RIGHT,CTRL-V
+P       CTRL-V
+u       CTRL-Z
+x       選択開始,RIGHT,CTRL-X
+X       選択開始,LEFT,CTRL-X
+w       次の単語まで(*)RIGHT
+W       次の単語まで(*)RIGHT
+e       単語末尾まで(*)RIGHT
+E       単語末尾まで(*)RIGHT
+b       前の単語まで(*)LEFT
+B       前の単語まで(*)LEFT
+)       文末まで(*)RIGHT
+(       文頭まで(*)LEFT
+J       文末まで(*)RIGHT,次行の非空白文字まで(*)DELETE
+        文末と次行の非空白文字がともに英字の場合は(*)空白挿入: i,SPACE,ESCAPE
+        (count未対応)
+
+  c,d,yと移動コマンド(h,f{char},w,$等)の組み合わせ可能。
+  一部コマンドはカウント指定も対応。
+  (*)はTSF等で文字列取得しているので、未対応アプリでは動作不可。
+
+  行末移動にVK_END、行頭移動にVK_HOME送り付けを行う場合、
+  行が折り返されて表示されていると、表示されている画面端に移動します
+  (改行までではなく。)
 
 --------------------------------------------------------------------------------
      その他
@@ -83,9 +138,8 @@
 
 ・制限事項、既知の問題
 
+  ・バグ: 最終行でdd等すると、1つ上の行まで対象になる。
   ・未対応のコマンド多数(Visual mode, text-object等も未対応)
-  ・f,t,F,T,w,e,b,W,E,Bでは、カーソル位置前後それぞれ20文字程度以内の移動のみ
-    対応。
   ・サロゲートペアや結合文字、IVSの考慮は未対応。
 
 ・開発環境
