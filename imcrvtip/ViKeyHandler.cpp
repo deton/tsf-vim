@@ -453,6 +453,11 @@ void ViKeyHandler::_ViDownFNB(ITfContext *pContext)
 	}
 
 	VimCharStream pos(_textService, pContext);
+	if (pos.eof())
+	{
+		return;
+	}
+
 	int cnt = vicmd.GetCount();
 	while (cnt--)
 	{
@@ -499,6 +504,11 @@ void ViKeyHandler::_Vi_k()
 void ViKeyHandler::_Vi_I(ITfContext *pContext)
 {
 	VimCharStream pos(_textService, pContext);
+	if (pos.eof())
+	{
+		return;
+	}
+
 	// go to start of line
 	for (int r = pos.dec(); r != -1; r = pos.dec())
 	{
@@ -657,6 +667,10 @@ void ViKeyHandler::_Vi_P()
 void ViKeyHandler::_ViNextWord(ITfContext *pContext, WCHAR type)
 {
 	ViCharStream cs(_textService, pContext);
+	if (cs.flags() == cs.CS_EOF)
+	{
+		return;
+	}
 
 	int cnt = vicmd.GetCount();
 	// cf. fword() in v_word.c of nvi-1.79
@@ -872,6 +886,10 @@ ret:
 void ViKeyHandler::_ViNextWordE(ITfContext *pContext, WCHAR type)
 {
 	ViCharStream cs(_textService, pContext);
+	if (cs.flags() == cs.CS_EOF)
+	{
+		return;
+	}
 
 	int cnt = vicmd.GetCount();
 	// cf. eword() in v_word.c of nvi-1.79
@@ -1082,6 +1100,10 @@ ret:
 void ViKeyHandler::_ViPrevWord(ITfContext *pContext, WCHAR type)
 {
 	ViCharStream cs(_textService, pContext);
+	if (cs.flags() == cs.CS_EOF)
+	{
+		return;
+	}
 
 	int cnt = vicmd.GetCount();
 	// cf. bword() in v_word.c of nvi-1.79
@@ -1345,6 +1367,10 @@ static BOOL endmbsent(VimCharStream *pos)
 void ViKeyHandler::_VimForwardSent(ITfContext *pContext)
 {
 	VimCharStream pos(_textService, pContext);
+	if (pos.eof())
+	{
+		return;
+	}
 
 	BOOL noskip = FALSE;
 	int count = vicmd.GetCount();
@@ -1424,6 +1450,10 @@ found:
 void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 {
 	VimCharStream pos(_textService, pContext);
+	if (pos.eof())
+	{
+		return;
+	}
 
 	BOOL noskip = FALSE;
 	int count = vicmd.GetCount();
@@ -1514,6 +1544,10 @@ void ViKeyHandler::_VimBackwardSent(ITfContext *pContext)
 int ViKeyHandler::_Vi_f_sub(ITfContext *pContext, WCHAR ch)
 {
 	VimCharStream pos(_textService, pContext);
+	if (pos.eof())
+	{
+		return -1;
+	}
 	if (pos.gchar() == L'\n')
 	{
 		return -1; // empty line
@@ -1567,6 +1601,10 @@ void ViKeyHandler::_Vi_t(ITfContext *pContext, WCHAR ch)
 int ViKeyHandler::_Vi_F_sub(ITfContext *pContext, WCHAR ch)
 {
 	VimCharStream pos(_textService, pContext);
+	if (pos.eof())
+	{
+		return -1;
+	}
 
 	int cnt = vicmd.GetCount();
 	while (cnt--)
@@ -1610,6 +1648,11 @@ void ViKeyHandler::_ViEndOfLine(ITfContext *pContext)
 {
 	// TODO: support count
 	VimCharStream pos(_textService, pContext);
+	if (pos.eof())
+	{
+		return;
+	}
+
 	int r = pos.forward_eol();
 	int movecnt = pos.difference();
 	if (r == -1) // end of file
@@ -1690,6 +1733,11 @@ void ViKeyHandler::_Vi_J(ITfContext *pContext)
 {
 	// TODO: support count
 	VimCharStream pos(_textService, pContext);
+	if (pos.eof())
+	{
+		return;
+	}
+
 	int r = pos.forward_eol();
 	if (r == -1) // end of file
 	{

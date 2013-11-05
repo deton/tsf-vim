@@ -4,9 +4,9 @@
 
 ViCharStream::ViCharStream(CTextService *textService, ITfContext *tfContext)
 	: _textService(textService), _tfContext(tfContext),
-	  _orig(0), _index(0), _sol(0), _eol(0), _flags(CS_NONE),
+	  _orig(0), _index(0), _sol(0), _eol(0), _flags(CS_EOF),
 	  _preceding_count(0), _following_count(0),
-	  _index_save(0), _sol_save(0), _eol_save(0), _flags_save(CS_NONE)
+	  _index_save(0), _sol_save(0), _eol_save(0), _flags_save(CS_EOF)
 {
 	mozc::win32::tsf::TipSurroundingTextInfo info;
 	if (mozc::win32::tsf::TipSurroundingText::Get(_textService, _tfContext, &info))
@@ -19,13 +19,13 @@ ViCharStream::ViCharStream(CTextService *textService, ITfContext *tfContext)
 		_buf.append(tmp);
 		_preceding_count = info.preceding_text.size();
 		_following_count = info.following_text.size();
+		_update_sol();
+		_update_eol();
+		_update_flags();
+		_eol_save = _eol;
+		_sol_save = _sol;
+		_flags_save = _flags;
 	}
-	_update_sol();
-	_update_eol();
-	_update_flags();
-	_eol_save = _eol;
-	_sol_save = _sol;
-	_flags_save = _flags;
 }
 
 // find start of line
