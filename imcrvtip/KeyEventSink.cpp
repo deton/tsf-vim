@@ -124,6 +124,7 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 		{
 			vihandler.Reset();
 		}
+		vihandler.ResetHandlingSelfSentKey();
 		_SetKeyboardOpen(TRUE);
 		*pfEaten = TRUE;
 	}

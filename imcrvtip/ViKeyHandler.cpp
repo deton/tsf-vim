@@ -17,7 +17,8 @@ static int inword(WCHAR c)
 
 ViKeyHandler::ViKeyHandler(CTextService *textService)
 	: _textService(textService),
-	keyboard_(mozc::win32::Win32KeyboardInterface::CreateDefault())
+	keyboard_(mozc::win32::Win32KeyboardInterface::CreateDefault()),
+	isHandlingSelfSentKey(FALSE)
 {
 }
 
@@ -28,6 +29,11 @@ ViKeyHandler::~ViKeyHandler()
 void ViKeyHandler::Reset()
 {
 	vicmd.Reset();
+}
+
+void ViKeyHandler::ResetHandlingSelfSentKey()
+{
+	isHandlingSelfSentKey = FALSE;
 }
 
 BOOL ViKeyHandler::IsWaitingNextKey()
@@ -570,9 +576,12 @@ BOOL ViKeyHandler::_AtEndOfLine(ITfContext *pContext)
 
 void ViKeyHandler::_Vi_i()
 {
-	vector<INPUT> inputs;
-	_QueueKeyForOtherIME(&inputs);
-	_SendInputs(&inputs);
+	if (!isHandlingSelfSentKey)
+	{
+		vector<INPUT> inputs;
+		_QueueKeyForOtherIME(&inputs);
+		_SendInputs(&inputs);
+	}
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
@@ -1812,6 +1821,7 @@ void ViKeyHandler::_Vi_J(ITfContext *pContext)
 	if (!ismulti1 && !ismulti2)
 	{
 		// key sequence handled by tsf-vim
+		isHandlingSelfSentKey = TRUE;
 		_QueueKey(&inputs, 'I');
 		_QueueKey(&inputs, VK_SPACE);
 		_QueueKey(&inputs, VK_ESCAPE);
