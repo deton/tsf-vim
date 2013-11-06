@@ -167,8 +167,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_ViOpOrMove(VK_RIGHT, vicmd.GetCount());
 		return;
 	case L'i':
-		_textService->_SetKeyboardOpen(FALSE);
-		vicmd.Reset();
+		_Vi_i();
 		return;
 	case L'I':
 		_Vi_I(pContext);
@@ -374,12 +373,30 @@ void ViKeyHandler::_SendKeyWithControl(UINT vk)
 	_SendInputs(&inputs);
 }
 
+static void _QueueKeyForOtherIME(vector<INPUT> *inputs)
+{
+	// switch to other IME
+	if (IsVersion62AndOver()) // Win+Space for Windows 8
+	{
+		_QueueKeyForModifier(inputs, VK_LWIN, FALSE);
+		_QueueKey(inputs, VK_SPACE);
+		_QueueKeyForModifier(inputs, VK_LWIN, TRUE);
+	}
+	else // Alt+Shift for Windows 7
+	{
+		_QueueKeyForModifier(inputs, VK_MENU, FALSE);
+		_QueueKey(inputs, VK_SHIFT);
+		_QueueKeyForModifier(inputs, VK_MENU, TRUE);
+	}
+}
+
 void ViKeyHandler::_ViOp(vector<INPUT> *inputs)
 {
 	switch (vicmd.GetOperatorPending())
 	{
 	case L'c':
 		_QueueKeyWithControl(inputs, 'X');
+		_QueueKeyForOtherIME(inputs);
 		_SendInputs(inputs);
 		_textService->_SetKeyboardOpen(FALSE);
 		break;
@@ -519,15 +536,19 @@ void ViKeyHandler::_Vi_I(ITfContext *pContext)
 		}
 	}
 	pos.fblank();
+
+	vector<INPUT> inputs;
 	int diff = pos.difference();
 	if (diff < 0)
 	{
-		_SendKey(VK_LEFT, -diff);
+		_QueueKey(&inputs, VK_LEFT, -diff);
 	}
 	else if (diff > 0)
 	{
-		_SendKey(VK_RIGHT, diff);
+		_QueueKey(&inputs, VK_RIGHT, diff);
 	}
+	_QueueKeyForOtherIME(&inputs);
+	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
@@ -547,20 +568,35 @@ BOOL ViKeyHandler::_AtEndOfLine(ITfContext *pContext)
 	return FALSE;
 }
 
+void ViKeyHandler::_Vi_i()
+{
+	vector<INPUT> inputs;
+	_QueueKeyForOtherIME(&inputs);
+	_SendInputs(&inputs);
+	_textService->_SetKeyboardOpen(FALSE);
+	vicmd.Reset();
+}
+
 void ViKeyHandler::_Vi_a(ITfContext *pContext)
 {
+	vector<INPUT> inputs;
 	// 行末にいる場合にVK_RIGHTを送り付けると次行に移動するので
 	if (!_AtEndOfLine(pContext))
 	{
-		_SendKey(VK_RIGHT);
+		_QueueKey(&inputs, VK_RIGHT);
 	}
+	_QueueKeyForOtherIME(&inputs);
+	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
 
 void ViKeyHandler::_Vi_A()
 {
-	_SendKey(VK_END);
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, VK_END);
+	_QueueKeyForOtherIME(&inputs);
+	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
@@ -570,6 +606,7 @@ void ViKeyHandler::_Vi_o()
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, VK_END);
 	_QueueKey(&inputs, VK_RETURN);
+	_QueueKeyForOtherIME(&inputs);
 	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
@@ -581,6 +618,7 @@ void ViKeyHandler::_Vi_O()
 	_QueueKey(&inputs, VK_HOME);
 	_QueueKey(&inputs, VK_RETURN);
 	_QueueKey(&inputs, VK_UP);
+	_QueueKeyForOtherIME(&inputs);
 	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();

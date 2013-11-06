@@ -119,6 +119,7 @@ STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlag
 		goto exit;
 	}
 
+	_SetKeyboardOpen(TRUE);
 	_KeyboardOpenCloseChanged();
 
 	return S_OK;
