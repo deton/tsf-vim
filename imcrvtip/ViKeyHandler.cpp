@@ -212,6 +212,10 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		vicmd.SetOperatorPending('d'); // cut to clipboard
 		_ViOpOrMove(VK_LEFT, vicmd.GetCount());
 		return;
+	case L's': // same as 'cl'
+		vicmd.SetOperatorPending('c');
+		_ViOpOrMove(VK_RIGHT, vicmd.GetCount());
+		return;
 	case L'w':
 	case L'W':
 		_ViNextWord(pContext, ch);
