@@ -59,7 +59,7 @@ HRESULT CTextService::_HandleKey(TfEditCookie ec, ITfContext *pContext, WPARAM w
 	ch = _GetCh((BYTE)wParam);
 	if(ch != L'\0')
 	{
-		vihandler.HandleKey(ec, pContext, ch);
+		vihandler.HandleKey(ec, pContext, ch, (BYTE)wParam);
 	}
 
 	return S_OK;

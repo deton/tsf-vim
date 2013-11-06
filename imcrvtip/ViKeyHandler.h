@@ -15,7 +15,7 @@ public:
 	void Reset();
 	void ResetHandlingSelfSentKey();
 	BOOL IsWaitingNextKey();
-	HRESULT HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
+	HRESULT HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch, BYTE vk);
 
 private:
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
@@ -52,6 +52,7 @@ private:
 	void _Vi_gg();
 	void _Vi_G();
 	void _Vi_J(ITfContext *pContext);
+	void _Vi_r(BYTE vk);
 
 	CTextService *_textService;
 	ViCmd vicmd;

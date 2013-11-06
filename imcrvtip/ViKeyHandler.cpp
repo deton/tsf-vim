@@ -41,7 +41,7 @@ BOOL ViKeyHandler::IsWaitingNextKey()
 	return !vicmd.IsEmpty();
 }
 
-HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
+HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch, BYTE vk)
 {
 	WCHAR waiting = vicmd.GetCharWaiting();
 	if (waiting)
@@ -59,6 +59,9 @@ HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 			break;
 		case L'T':
 			_Vi_T(pContext, ch);
+			break;
+		case L'r':
+			_Vi_r(vk);
 			break;
 		case L'g':
 			switch (ch)
@@ -139,6 +142,7 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'F':
 	case L'T':
 	case L'g':
+	case L'r':
 		vicmd.SetCharWaiting(ch);
 		return;
 	case L'G':
@@ -1826,6 +1830,36 @@ void ViKeyHandler::_Vi_J(ITfContext *pContext)
 		_QueueKey(&inputs, VK_SPACE);
 		_QueueKey(&inputs, VK_ESCAPE);
 	}
+	_SendInputs(&inputs);
+	vicmd.Reset();
+}
+
+void ViKeyHandler::_Vi_r(BYTE vk)
+{
+	vector<INPUT> inputs;
+	_QueueKey(&inputs, VK_DELETE, vicmd.GetCount());
+	isHandlingSelfSentKey = TRUE;
+	_QueueKey(&inputs, 'I');
+
+	mozc::win32::KeyboardStatus keyboard_state;
+	bool shiftPressed = false;
+	if (keyboard_->GetKeyboardState(&keyboard_state))
+	{
+		if (keyboard_state.IsPressed(VK_SHIFT))
+		{
+			shiftPressed = true;
+		}
+	}
+	if (shiftPressed)
+	{
+		_QueueKeyForModifier(&inputs, VK_SHIFT, FALSE);
+	}
+	_QueueKey(&inputs, vk, vicmd.GetCount());
+	if (shiftPressed)
+	{
+		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
+	}
+	_QueueKey(&inputs, VK_ESCAPE);
 	_SendInputs(&inputs);
 	vicmd.Reset();
 }
