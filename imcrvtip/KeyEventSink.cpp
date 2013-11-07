@@ -20,6 +20,11 @@ int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam
 		return FALSE;
 	}
 
+	if(vihandler.IsThroughSelfSentKey())
+	{
+		return FALSE;
+	}
+
 	if(vihandler.IsWaitingNextKey())
 	{
 		return TRUE;
@@ -124,7 +129,7 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 		{
 			vihandler.Reset();
 		}
-		vihandler.ResetHandlingSelfSentKey();
+		vihandler.ResetThroughSelfSentKey();
 		_SetKeyboardOpen(TRUE);
 		*pfEaten = TRUE;
 	}

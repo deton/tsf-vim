@@ -13,7 +13,8 @@ public:
 	~ViKeyHandler();
 
 	void Reset();
-	void ResetHandlingSelfSentKey();
+	void ResetThroughSelfSentKey();
+	BOOL IsThroughSelfSentKey();
 	BOOL IsWaitingNextKey();
 	HRESULT HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch, BYTE vk);
 
@@ -57,6 +58,6 @@ private:
 	CTextService *_textService;
 	ViCmd vicmd;
 	std::unique_ptr<mozc::win32::Win32KeyboardInterface> keyboard_;
-	BOOL isHandlingSelfSentKey;
+	BOOL isThroughSelfSentKey;
 };
 #endif //VIKEYHANDLER_H

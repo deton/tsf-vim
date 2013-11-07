@@ -18,7 +18,7 @@ static int inword(WCHAR c)
 ViKeyHandler::ViKeyHandler(CTextService *textService)
 	: _textService(textService),
 	keyboard_(mozc::win32::Win32KeyboardInterface::CreateDefault()),
-	isHandlingSelfSentKey(FALSE)
+	isThroughSelfSentKey(FALSE)
 {
 }
 
@@ -31,9 +31,14 @@ void ViKeyHandler::Reset()
 	vicmd.Reset();
 }
 
-void ViKeyHandler::ResetHandlingSelfSentKey()
+void ViKeyHandler::ResetThroughSelfSentKey()
 {
-	isHandlingSelfSentKey = FALSE;
+	isThroughSelfSentKey = FALSE;
+}
+
+BOOL ViKeyHandler::IsThroughSelfSentKey()
+{
+	return isThroughSelfSentKey;
 }
 
 BOOL ViKeyHandler::IsWaitingNextKey()
@@ -584,12 +589,9 @@ BOOL ViKeyHandler::_AtEndOfLine(ITfContext *pContext)
 
 void ViKeyHandler::_Vi_i()
 {
-	if (!isHandlingSelfSentKey)
-	{
-		vector<INPUT> inputs;
-		_QueueKeyForOtherIME(&inputs);
-		_SendInputs(&inputs);
-	}
+	vector<INPUT> inputs;
+	_QueueKeyForOtherIME(&inputs);
+	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
@@ -1829,8 +1831,7 @@ void ViKeyHandler::_Vi_J(ITfContext *pContext)
 	if (!ismulti1 && !ismulti2)
 	{
 		// key sequence handled by tsf-vim
-		isHandlingSelfSentKey = TRUE;
-		_QueueKey(&inputs, 'I');
+		isThroughSelfSentKey = TRUE;
 		_QueueKey(&inputs, VK_SPACE);
 		_QueueKey(&inputs, VK_ESCAPE);
 	}
@@ -1842,8 +1843,7 @@ void ViKeyHandler::_Vi_r(BYTE vk)
 {
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, VK_DELETE, vicmd.GetCount());
-	isHandlingSelfSentKey = TRUE;
-	_QueueKey(&inputs, 'I');
+	isThroughSelfSentKey = TRUE;
 
 	mozc::win32::KeyboardStatus keyboard_state;
 	bool shiftPressed = false;
