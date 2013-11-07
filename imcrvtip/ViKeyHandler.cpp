@@ -1806,12 +1806,14 @@ void ViKeyHandler::_Vi_J(ITfContext *pContext)
 	int index_eol = pos.difference();
 	// check last character
 	bool ismulti1 = false;
+	bool islastblank = false;
 	r = pos.dec();
 	if (r != -1)
 	{
 		if (r == 0)
 		{
 			ismulti1 = VimMByte::ismulti(pos.gchar());
+			islastblank = (pos.gchar() == L' ');
 		}
 		pos.inc();
 	}
@@ -1822,16 +1824,18 @@ void ViKeyHandler::_Vi_J(ITfContext *pContext)
 		return;
 	}
 	bool ismulti2 = false;
+	bool isparen = false;
 	if (pos.fblank() != -1)
 	{
 		ismulti2 = VimMByte::ismulti(pos.gchar());
+		isparen = (pos.gchar() == L')');
 	}
 	int index_end = pos.difference();
 
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, VK_RIGHT, index_eol);
 	_QueueKey(&inputs, VK_DELETE, index_end - index_eol);
-	if (!ismulti1 && !ismulti2)
+	if (!islastblank && !isparen && !ismulti1 && !ismulti2)
 	{
 		isThroughSelfSentKey = TRUE;
 		_QueueKey(&inputs, VK_SPACE);
