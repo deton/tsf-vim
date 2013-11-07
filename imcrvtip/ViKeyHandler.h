@@ -54,6 +54,7 @@ private:
 	void _Vi_G();
 	void _Vi_J(ITfContext *pContext);
 	void _Vi_r(BYTE vk);
+	void _Vi_slash();
 
 	CTextService *_textService;
 	ViCmd vicmd;
