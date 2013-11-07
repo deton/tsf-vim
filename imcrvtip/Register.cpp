@@ -26,6 +26,7 @@ static const GUID c_guidCategory[] =
 // for Windows 8 or later
 static const GUID c_guidCategory8[] =
 {
+	GUID_TFCAT_TIPCAP_IMMERSIVESUPPORT,
 	GUID_TFCAT_TIPCAP_SYSTRAYSUPPORT
 };
 

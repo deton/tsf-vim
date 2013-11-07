@@ -72,15 +72,6 @@ void CTextService::_KeyboardOpenCloseChanged()
 		return;
 	}
 
-	_dwActiveFlags = 0;
-
-	ITfThreadMgrEx *pThreadMgrEx;
-	if(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pThreadMgrEx)) == S_OK)
-	{
-		pThreadMgrEx->GetActiveFlags(&_dwActiveFlags);
-		pThreadMgrEx->Release();
-	}
-
 	BOOL fOpen = _IsKeyboardOpen();
 	if(fOpen)
 	{

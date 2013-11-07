@@ -113,8 +113,6 @@ private:
 	CLangBarItemButton *_pLangBarItemI;
 
 public:
-	DWORD _dwActiveFlags;	//ITfThreadMgrEx::GetActiveFlags()
-
 	//状態
 	ViKeyHandler vihandler;			//Viキー処理
 

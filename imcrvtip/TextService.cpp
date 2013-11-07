@@ -14,8 +14,6 @@ CTextService::CTextService()
 	_dwCompartmentEventSinkOpenCloseCookie = TF_INVALID_COOKIE;
 	_dwCompartmentEventSinkInputmodeConversionCookie = TF_INVALID_COOKIE;
 
-	_dwActiveFlags = 0;
-
 	_ResetStatus();
 }
 
