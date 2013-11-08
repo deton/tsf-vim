@@ -157,9 +157,6 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 		_SendKey(VK_NEXT, vicmd.GetCount());
 		vicmd.Reset();
 		return;
-	case L'/':
-		_Vi_slash();
-		return;
 	case CTRL('B'):
 		_SendKey(VK_PRIOR, vicmd.GetCount());
 		vicmd.Reset();
@@ -1870,17 +1867,6 @@ void ViKeyHandler::_Vi_r(BYTE vk)
 		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
 	}
 	_QueueKey(&inputs, VK_ESCAPE); // to reset isThroughSelfSentKey
-	_SendInputs(&inputs);
-	vicmd.Reset();
-}
-
-void ViKeyHandler::_Vi_slash()
-{
-	vector<INPUT> inputs;
-	isThroughSelfSentKey = TRUE;
-	_QueueKeyWithControl(&inputs, 'F');
-	_QueueKey(&inputs, VK_ESCAPE); // to reset isThroughSelfSentKey
-	_QueueKeyForOtherIME(&inputs); // to input search word
 	_SendInputs(&inputs);
 	vicmd.Reset();
 }
