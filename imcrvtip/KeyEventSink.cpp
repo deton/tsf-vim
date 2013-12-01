@@ -4,9 +4,8 @@
 #include "LanguageBar.h"
 #include "mozc/win32/base/keyboard.h"
 
-static LPCWSTR c_PreservedKeyOnOffDesc = L"OnOff";
-static LPCWSTR c_PreservedKeyOnDesc = L"On";
-static LPCWSTR c_PreservedKeyOffDesc = L"Off";
+static LPCWSTR c_PreservedKeyNormalDesc = L"Normal";
+static LPCWSTR c_PreservedKeyOtherImeDesc = L"OtherIme";
 
 int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam, bool isKeyDown, bool isTest)
 {
@@ -116,13 +115,7 @@ STDAPI CTextService::OnKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL
 
 STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten)
 {
-	if(IsEqualGUID(rguid, c_guidPreservedKeyOnOff))
-	{
-		BOOL fOpen = _IsKeyboardOpen();
-		_SetKeyboardOpen(fOpen ? FALSE : TRUE);
-		*pfEaten = TRUE;
-	}
-	else if(IsEqualGUID(rguid, c_guidPreservedKeyOn))
+	if(IsEqualGUID(rguid, c_guidPreservedKeyNormal))
 	{
 		BOOL fOpen = _IsKeyboardOpen();
 		if(fOpen)
@@ -133,8 +126,9 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 		_SetKeyboardOpen(TRUE);
 		*pfEaten = TRUE;
 	}
-	else if(IsEqualGUID(rguid, c_guidPreservedKeyOff))
+	else if(IsEqualGUID(rguid, c_guidPreservedKeyOtherIme))
 	{
+		vihandler.SwitchToOtherIme();
 		_SetKeyboardOpen(FALSE);
 		*pfEaten = TRUE;
 	}
@@ -193,9 +187,8 @@ BOOL CTextService::_InitPreservedKey()
 
 	if(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pKeystrokeMgr)) == S_OK)
 	{
-		_PRESERVE_KEY(preservedkeyon, c_guidPreservedKeyOn, c_PreservedKeyOnDesc);
-		_PRESERVE_KEY(preservedkeyoff, c_guidPreservedKeyOff, c_PreservedKeyOffDesc);
-		_PRESERVE_KEY(preservedkeyonoff, c_guidPreservedKeyOnOff, c_PreservedKeyOnOffDesc);
+		_PRESERVE_KEY(preservedkeynormal, c_guidPreservedKeyNormal, c_PreservedKeyNormalDesc);
+		_PRESERVE_KEY(preservedkeyotherime, c_guidPreservedKeyOtherIme, c_PreservedKeyOtherImeDesc);
 
 		pKeystrokeMgr->Release();
 	}
@@ -223,9 +216,8 @@ void CTextService::_UninitPreservedKey()
 
 	if(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pKeystrokeMgr)) == S_OK)
 	{
-		_UNPRESERVE_KEY(preservedkeyon, c_guidPreservedKeyOn);
-		_UNPRESERVE_KEY(preservedkeyoff, c_guidPreservedKeyOff);
-		_UNPRESERVE_KEY(preservedkeyonoff, c_guidPreservedKeyOnOff);
+		_UNPRESERVE_KEY(preservedkeynormal, c_guidPreservedKeyNormal);
+		_UNPRESERVE_KEY(preservedkeyotherime, c_guidPreservedKeyOtherIme);
 
 		pKeystrokeMgr->Release();
 	}

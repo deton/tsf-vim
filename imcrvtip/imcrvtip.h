@@ -11,9 +11,8 @@ extern HINSTANCE g_hInst;
 
 extern const CLSID c_clsidTextService;
 extern const GUID c_guidProfile;
-extern const GUID c_guidPreservedKeyOn;
-extern const GUID c_guidPreservedKeyOff;
-extern const GUID c_guidPreservedKeyOnOff;
+extern const GUID c_guidPreservedKeyNormal;
+extern const GUID c_guidPreservedKeyOtherIme;
 extern const GUID c_guidLangBarItemButton;
 
 LONG DllAddRef();

@@ -29,54 +29,12 @@ static void _LoadPreservedKeySub(TF_PRESERVEDKEY preservedkey[])
 
 void CTextService::_LoadPreservedKey()
 {
-	TF_PRESERVEDKEY on[MAX_PRESERVEDKEY];
-	TF_PRESERVEDKEY off[MAX_PRESERVEDKEY];
-	_LoadPreservedKeySub(on);
-	//半/全キー等は、トグルでなくNormal mode移行にのみ使用。
-	//Insert mode移行は、'a','i'等いろんなキーがあるので
-	ZeroMemory(off, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
-	//_LoadPreservedKeySub(off);
-
-	ZeroMemory(preservedkeyon, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
-	ZeroMemory(preservedkeyoff, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
-	ZeroMemory(preservedkeyonoff, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
-	//OnとOff両方に同じ定義がある場合は、トグルとして扱う
-	int i, j;
-	int idxonoff = 0;
-	int idxon = 0;
-	for(i=0; i<MAX_PRESERVEDKEY; i++)
-	{
-		if(on[i].uVKey == 0 && on[i].uModifiers == 0)
-		{
-			break;
-		}
-		if(std::find(off, off + MAX_PRESERVEDKEY, on[i]) < off + MAX_PRESERVEDKEY)
-		{
-			preservedkeyonoff[idxonoff] = on[i];
-			idxonoff++;
-		}
-		else
-		{
-			preservedkeyon[idxon] = on[i];
-			idxon++;
-		}
-	}
+	//TODO:設定ファイルからの読込
 	//EscapeキーをNormal mode移行用に登録
-	preservedkeyon[idxon].uVKey = VK_ESCAPE;
-	preservedkeyon[idxon].uModifiers = TF_MOD_IGNORE_ALL_MODIFIER;
-	idxon++;
-	//Onに無くOffだけにある定義
-	int idxoff = 0;
-	for(j=0; j<MAX_PRESERVEDKEY; j++)
-	{
-		if(off[j].uVKey == 0 && off[j].uModifiers == 0)
-		{
-			break;
-		}
-		if(std::find(on, on + MAX_PRESERVEDKEY, off[j]) == on + MAX_PRESERVEDKEY)
-		{
-			preservedkeyoff[idxoff] = off[j];
-			idxoff++;
-		}
-	}
+	ZeroMemory(preservedkeynormal, sizeof(TF_PRESERVEDKEY) * MAX_PRESERVEDKEY);
+	preservedkeynormal[0].uVKey = VK_ESCAPE;
+	preservedkeynormal[0].uModifiers = TF_MOD_IGNORE_ALL_MODIFIER;
+
+	//半/全キー等は、他IME切替に使用
+	_LoadPreservedKeySub(preservedkeyotherime);
 }

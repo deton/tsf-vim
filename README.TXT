@@ -1,6 +1,6 @@
 ﻿
 ================================================================================
-     tsf-vim version 0.0.1 (2013-11-10)
+     tsf-vim version 0.1.0 (2013-12-XXX)
 
      https://github.com/deton/tsf-vim
      deton@m1.interq.or.jp
@@ -36,11 +36,11 @@
 
 ・IME設定 (Windows 7の場合)
 
-  Insert modeへの切替時には、日本語入力ができるように、他IMEに切り替えます。
-  他IMEへの切替は、Win+SPACE(Windows 8)かAlt+SHIFT(それ以外)の
-  送り付けで行います。
+  半/全キーや漢字キー等が押された時は、他IMEに切り替えます。
+  具体的には、Win+SPACE(Windows 8)かAlt+SHIFT(それ以外)を送り付けた後、
+  切り替え後のIMEをONにするため、漢字キーを送り付けます。
 
-  つまり、tsf-vimからAlt+SHIFTによって切り替えられるIMEに、
+  tsf-vimからAlt+SHIFTによって切り替えられるIMEに、
   メインで使う日本語入力IMEを設定しておくことを想定しています。
 
   コントロールパネル→「地域と言語」「キーボードと言語」タブ
@@ -54,8 +54,6 @@
   「全般」タブ:
   「既定の言語」にメインで使うIMEを設定(例: Microsoft IME)
   「インストールされているサービス」で、tsf-vimの下にメインIMEを配置。
-
-  設定例: https://gist.github.com/deton/7393058#ime
 
 --------------------------------------------------------------------------------
      Vi編集操作
@@ -81,12 +79,12 @@
 0       HOME
 g$      END (count未対応)
 $       改行まで(*)RIGHT (count未対応)
-c       CTRL-X,他IMEに切替
+c       CTRL-X,tsf-vim OFF
 d       CTRL-X
 y       CTRL-C
-cc      [count-1]DOWN,END,RIGHT,選択開始,[count-1]UP,CTRL-X,他IMEに切替
-cj      [count]DOWN,END,RIGHT,選択開始,[count]UP,CTRL-X,他IMEに切替
-ck      END,RIGHT,選択開始,[count]UP,CTRL-X,他IMEに切替
+cc      [count-1]DOWN,END,RIGHT,選択開始,[count-1]UP,CTRL-X,tsf-vim OFF
+cj      [count]DOWN,END,RIGHT,選択開始,[count]UP,CTRL-X,tsf-vim OFF
+ck      END,RIGHT,選択開始,[count]UP,CTRL-X,tsf-vim OFF
 dd      [count-1]DOWN,END,RIGHT,選択開始,[count-1]UP,CTRL-X
         (Wordで選択中に既に行末時ENDを送ると次の行末まで移動するので一度DOWN)
 dj      [count]DOWN,END,RIGHT,選択開始,[count]UP,CTRL-X
@@ -94,14 +92,14 @@ dk      END,RIGHT,選択開始,[count]UP,CTRL-X
 yy      [count-1]DOWN,END,RIGHT,選択開始,[count-1]UP,CTRL-C
 yj      [count]DOWN,END,RIGHT,選択開始,[count]UP,CTRL-C
 yk      END,RIGHT,選択開始,[count]UP,CTRL-C
-C       選択開始,END,CTRL-X,他IMEに切替
+C       選択開始,END,CTRL-X,tsf-vim OFF
 D       選択開始,END,CTRL-X
 f{char} 指定文字まで(*)RIGHT
 t{char} 指定文字の前まで(*)RIGHT
 F{char} 指定文字まで(*)LEFT
 T{char} 指定文字の後まで(*)LEFT
 r{char} DELETE,{char}
-s       選択開始,RIGHT,CTRL-X,他IMEに切替
+s       選択開始,RIGHT,CTRL-X,tsf-vim OFF
 gg      CTRL-HOME
 G       CTRL-END,HOME (ただしcount指定時はggと同様)
 CTRL-F  PageDown
@@ -113,12 +111,12 @@ j       DOWN
 k       UP
 +       次行最初の非空白文字まで(*)RIGHT
 CTRL-M  次行最初の非空白文字まで(*)RIGHT
-i       他IMEに切替
-I       行の先頭の非空白文字まで(*)RIGHTもしくはLEFT,他IMEに切替
-a       RIGHT,他IMEに切替
-A       END,他IMEに切替
-o       END,RETURN,他IMEに切替
-O       HOME,RETURN,UP,他IMEに切替
+i       tsf-vim OFF
+I       行の先頭の非空白文字まで(*)RIGHTもしくはLEFT,tsf-vim OFF
+a       RIGHT,tsf-vim OFF
+A       END,tsf-vim OFF
+o       END,RETURN,tsf-vim OFF
+O       HOME,RETURN,UP,tsf-vim OFF
 p       RIGHT,CTRL-V
 P       CTRL-V
 u       CTRL-Z
@@ -140,9 +138,9 @@ J       文末まで(*)RIGHT,次行の非空白文字まで(*)DELETE
   一部コマンドはカウント指定も対応。
   (*)はTSF等で文字列取得しているので、未対応アプリでは動作不可。
 
-  Insert modeへの切替時には、日本語入力ができるように、他IMEに切り替えます。
-  他IMEへの切替は、Win+SPACE(Windows 8)かAlt+SHIFT(それ以外)の
-  送り付けで行います。
+  半/全キーや漢字キー等が押された時は、他IMEに切り替えます。
+  具体的には、Win+SPACE(Windows 8)かAlt+SHIFT(それ以外)を送り付けた後、
+  切り替え後のIMEをONにするため、KANJIキーを送り付けます。
 
   注: 行末移動にVK_END、行頭移動にVK_HOME送り付けを行う場合、
   行が折り返されて表示されていると、表示されている画面端に移動します
@@ -176,3 +174,12 @@ J       文末まで(*)RIGHT,次行の非空白文字まで(*)DELETE
   Windows SDK 7.1
   Windows Driver Kit 7.1.0 (Mozcで使用されているATLのため)
   WiX 3.7
+
+・履歴
+
+  ・v0.1.0 (2013-12-XXX)
+    ・Insert modeへの切替時に、他IMEに切り替えるのをやめた。
+      ESCキーでInsert modeを抜けられるように。
+      「半/全」等のキーが押された時に、他IMEに切り替えるようにした。
+  ・v0.0.1 (2013-11-10)
+    ・最初のリリース

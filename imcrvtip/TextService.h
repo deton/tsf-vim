@@ -117,9 +117,8 @@ public:
 	ViKeyHandler vihandler;			//Viキー処理
 
 	//preserved key
-	TF_PRESERVEDKEY preservedkeyon[MAX_PRESERVEDKEY];
-	TF_PRESERVEDKEY preservedkeyoff[MAX_PRESERVEDKEY];
-	TF_PRESERVEDKEY preservedkeyonoff[MAX_PRESERVEDKEY];
+	TF_PRESERVEDKEY preservedkeynormal[MAX_PRESERVEDKEY];
+	TF_PRESERVEDKEY preservedkeyotherime[MAX_PRESERVEDKEY];
 };
 
 #endif //TEXTSERVICE_H

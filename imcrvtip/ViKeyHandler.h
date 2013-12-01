@@ -14,6 +14,7 @@ public:
 
 	void Reset();
 	void ResetThroughSelfSentKey();
+	void SwitchToOtherIme();
 	BOOL IsThroughSelfSentKey();
 	BOOL IsWaitingNextKey();
 	HRESULT HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch, BYTE vk);

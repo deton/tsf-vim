@@ -392,7 +392,7 @@ void ViKeyHandler::_SendKeyWithControl(UINT vk)
 	_SendInputs(&inputs);
 }
 
-static void _QueueKeyForOtherIME(vector<INPUT> *inputs)
+static void _QueueKeyForOtherIme(vector<INPUT> *inputs)
 {
 	// switch to other IME
 	if (IsVersion62AndOver()) // Win+Space for Windows 8
@@ -409,13 +409,22 @@ static void _QueueKeyForOtherIME(vector<INPUT> *inputs)
 	}
 }
 
+void ViKeyHandler::SwitchToOtherIme()
+{
+	vector<INPUT> inputs;
+	_QueueKeyForOtherIme(&inputs);
+	// 切り替えた後のIMEをONにする。
+	// IMEがVK_KANJIでONになることを想定。(ON/OFFトグルでなく)
+	_QueueKey(&inputs, VK_KANJI);
+	_SendInputs(&inputs);
+}
+
 void ViKeyHandler::_ViOp(vector<INPUT> *inputs)
 {
 	switch (vicmd.GetOperatorPending())
 	{
 	case L'c':
 		_QueueKeyWithControl(inputs, 'X');
-		_QueueKeyForOtherIME(inputs);
 		_SendInputs(inputs);
 		_textService->_SetKeyboardOpen(FALSE);
 		break;
@@ -566,7 +575,6 @@ void ViKeyHandler::_Vi_I(ITfContext *pContext)
 	{
 		_QueueKey(&inputs, VK_RIGHT, diff);
 	}
-	_QueueKeyForOtherIME(&inputs);
 	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
@@ -589,33 +597,24 @@ BOOL ViKeyHandler::_AtEndOfLine(ITfContext *pContext)
 
 void ViKeyHandler::_Vi_i()
 {
-	vector<INPUT> inputs;
-	_QueueKeyForOtherIME(&inputs);
-	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
 
 void ViKeyHandler::_Vi_a(ITfContext *pContext)
 {
-	vector<INPUT> inputs;
 	// 行末にいる場合にVK_RIGHTを送り付けると次行に移動するので
 	if (!_AtEndOfLine(pContext))
 	{
-		_QueueKey(&inputs, VK_RIGHT);
+		_SendKey(VK_RIGHT);
 	}
-	_QueueKeyForOtherIME(&inputs);
-	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
 
 void ViKeyHandler::_Vi_A()
 {
-	vector<INPUT> inputs;
-	_QueueKey(&inputs, VK_END);
-	_QueueKeyForOtherIME(&inputs);
-	_SendInputs(&inputs);
+	_SendKey(VK_END);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
 }
@@ -625,7 +624,6 @@ void ViKeyHandler::_Vi_o()
 	vector<INPUT> inputs;
 	_QueueKey(&inputs, VK_END);
 	_QueueKey(&inputs, VK_RETURN);
-	_QueueKeyForOtherIME(&inputs);
 	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
@@ -637,7 +635,6 @@ void ViKeyHandler::_Vi_O()
 	_QueueKey(&inputs, VK_HOME);
 	_QueueKey(&inputs, VK_RETURN);
 	_QueueKey(&inputs, VK_UP);
-	_QueueKeyForOtherIME(&inputs);
 	_SendInputs(&inputs);
 	_textService->_SetKeyboardOpen(FALSE);
 	vicmd.Reset();
