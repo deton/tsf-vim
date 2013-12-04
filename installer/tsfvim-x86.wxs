@@ -8,6 +8,9 @@
             <Directory Id="SystemFolder" Name="SystemFolder">
                 <Directory Id="ime_x86" Name="IME">
                     <Directory Id="tsfvim_x86" Name="IMTSFVIM">
+                        <Component Guid="*" Id="CNF_X86">
+                            <File Id="cnf_x86" Name="imvimcnf.exe" Source="..\Win32\Release\imvimcnf.exe" />
+                        </Component>
                         <Component Guid="*" Id="TIP_X86">
                             <File Id="tip_x86" Name="imvimtip.dll" Source="..\Win32\Release\imvimtip.dll" SelfRegCost="1" />
                         </Component>
@@ -16,6 +19,7 @@
             </Directory>
         </Directory>
         <Feature Id="DefaultFeature" Title="Main Feature" Level="1">
+            <ComponentRef Id="CNF_X86" />
             <ComponentRef Id="TIP_X86" />
         </Feature>
         <UI />

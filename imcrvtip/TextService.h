@@ -11,7 +11,10 @@ class CTextService :
 	public ITfTextInputProcessorEx,
 	public ITfThreadMgrEventSink,
 	public ITfCompartmentEventSink,
-	public ITfKeyEventSink
+	public ITfKeyEventSink,
+	public ITfFunctionProvider,
+	public ITfFnConfigure,
+	public ITfFnShowHelp
 {
 public:
 	CTextService();
@@ -50,6 +53,20 @@ public:
 	// ITfCompositionSink
 	STDMETHODIMP OnCompositionTerminated(TfEditCookie ecWrite, ITfComposition *pComposition);
 
+	// ITfFunctionProvider
+	STDMETHODIMP GetType(GUID *pguid);
+	STDMETHODIMP GetDescription(BSTR *pbstrDesc);
+	STDMETHODIMP GetFunction(REFGUID rguid, REFIID riid, IUnknown **ppunk);
+
+	// ITfFunction
+	STDMETHODIMP GetDisplayName(BSTR *pbstrName);
+
+	// ITfFnConfigure
+	STDMETHODIMP Show(HWND hwndParent, LANGID langid, REFGUID rguidProfile);
+
+	// ITfFnShowHelp
+	STDMETHODIMP Show(HWND hwndParent);
+
 	ITfThreadMgr *_GetThreadMgr()
 	{
 		return _pThreadMgr;
@@ -79,8 +96,14 @@ public:
 	// KeyHandlerConv
 	WCHAR _GetCh(BYTE vk, BYTE vkoff = 0);
 
+	// KeyHandlerDictionary
+	void _StartConfigure();
+	void _StartProcess(LPCWSTR fname);
+
 	// FnConfigure
+	void _CreateConfigPath();
 	void _LoadPreservedKey();
+	void _LoadPreservedKeySub(LPCWSTR SectionPreservedKey, TF_PRESERVEDKEY preservedkey[], const TF_PRESERVEDKEY configpreservedkey[]);
 
 private:
 	LONG _cRef;
@@ -100,6 +123,9 @@ private:
 	BOOL _InitLanguageBar();
 	void _UninitLanguageBar();
 
+	BOOL _InitFunctionProvider();
+	void _UninitFunctionProvider();
+
 	int _IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam, bool isKeyDown, bool isTest);
 
 	ITfThreadMgr *_pThreadMgr;
@@ -111,6 +137,13 @@ private:
 
 	CLangBarItemButton *_pLangBarItem;
 	CLangBarItemButton *_pLangBarItemI;
+
+private:
+	//ファイルパス
+	WCHAR pathconfigxml[MAX_PATH];	//設定
+
+	//ミューテックス
+	WCHAR cnfmutexname[MAX_KRNLOBJNAME];
 
 public:
 	//状態

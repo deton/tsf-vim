@@ -74,6 +74,9 @@
     <ClCompile Include="FnConfigure.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FunctionProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KeyHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyHandlerDictionary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ViKeyHandler.cpp">

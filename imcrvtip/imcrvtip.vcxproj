@@ -203,9 +203,11 @@
     <ClCompile Include="CompartmentEventSink.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="FnConfigure.cpp" />
+    <ClCompile Include="FunctionProvider.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="KeyEventSink.cpp" />
     <ClCompile Include="KeyHandler.cpp" />
+    <ClCompile Include="KeyHandlerDictionary.cpp" />
     <ClCompile Include="ViKeyHandler.cpp" />
     <ClCompile Include="KeyHandlerConv.cpp" />
     <ClCompile Include="LanguageBar.cpp" />

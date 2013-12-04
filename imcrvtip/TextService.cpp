@@ -51,6 +51,18 @@ STDAPI CTextService::QueryInterface(REFIID riid, void **ppvObj)
 	{
 		*ppvObj = (ITfKeyEventSink *)this;
 	}
+	else if(IsEqualIID(riid, IID_ITfFunctionProvider))
+	{
+		*ppvObj = (ITfFunctionProvider *)this;
+	}
+	else if(IsEqualIID(riid, IID_ITfFnConfigure))
+	{
+		*ppvObj = (ITfFnConfigure *)this;
+	}
+	else if(IsEqualIID(riid, IID_ITfFnShowHelp))
+	{
+		*ppvObj = (ITfFnShowHelp *)this;
+	}
 
 	if(*ppvObj)
 	{
@@ -85,6 +97,8 @@ STDAPI CTextService::Activate(ITfThreadMgr *ptim, TfClientId tid)
 STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlags)
 {
 	//_wsetlocale(LC_ALL, L"JPN");
+
+	_CreateConfigPath();
 	
 	_pThreadMgr = ptim;
 	_pThreadMgr->AddRef();
@@ -117,6 +131,11 @@ STDAPI CTextService::ActivateEx(ITfThreadMgr *ptim, TfClientId tid, DWORD dwFlag
 		goto exit;
 	}
 
+	if(!_InitFunctionProvider())
+	{
+		goto exit;
+	}
+
 	_SetKeyboardOpen(TRUE);
 	_KeyboardOpenCloseChanged();
 
@@ -129,6 +148,8 @@ exit:
 
 STDAPI CTextService::Deactivate()
 {
+	_UninitFunctionProvider();
+
 	_UninitPreservedKey();
 
 	_UninitKeyEventSink();
