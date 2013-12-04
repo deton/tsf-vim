@@ -15,6 +15,10 @@ static const struct {
 } menuItems[] = {
 	{IDM_NORMAL,		0, L"［－－］"},
 	{IDM_INSERT,		0, L"［INS］"},
+	{IDM_NONE,			TF_LBMENUF_SEPARATOR, L""},
+	{IDM_CONFIG,		0, L"設定"},
+	{IDM_NONE,			TF_LBMENUF_SEPARATOR, L""},
+	{IDM_NONE,			0, L"キャンセル"}
 };
 
 // monochrome icons
@@ -174,6 +178,36 @@ STDAPI CLangBarItemButton::OnClick(TfLBIClick click, POINT pt, const RECT *prcAr
 		switch(click)
 		{
 		case TF_LBI_CLK_RIGHT:
+			{
+				HMENU hMenu = LoadMenuW(g_hInst, MAKEINTRESOURCE(IDR_SYSTRAY_MENU));
+				if(hMenu)
+				{
+					UINT check = IDM_NORMAL;
+					BOOL fOpen = _pTextService->_IsKeyboardOpen();
+					if(!fOpen)
+					{
+						check = IDM_INSERT;
+					}
+					CheckMenuRadioItem(hMenu, IDM_NORMAL, IDM_INSERT, check, MF_BYCOMMAND);
+					HMENU hSubMenu = GetSubMenu(hMenu, 0);
+					if(hSubMenu)
+					{
+						TPMPARAMS tpm;
+						TPMPARAMS *ptpm = NULL;
+						if(prcArea != NULL)
+						{
+							tpm.cbSize = sizeof(tpm);
+							tpm.rcExclude = *prcArea;
+							ptpm = &tpm;
+						}
+						BOOL bRet = TrackPopupMenuEx(hSubMenu,
+							TPM_LEFTALIGN | TPM_TOPALIGN | TPM_NONOTIFY | TPM_RETURNCMD | TPM_LEFTBUTTON | TPM_VERTICAL,
+							pt.x, pt.y, GetFocus(), ptpm);
+						this->OnMenuSelect(bRet);
+					}
+					DestroyMenu(hMenu);
+				}
+			}
 			break;
 		case TF_LBI_CLK_LEFT:
 			{
@@ -202,10 +236,21 @@ STDAPI CLangBarItemButton::InitMenu(ITfMenu *pMenu)
 		((checked) ? TF_LBMENUF_RADIOCHECKED : 0), \
 		NULL, NULL, menuItems[i].text, (ULONG)wcslen(menuItems[i].text), NULL)
 
-	int i = 0;
-	ADDMENUITEM(fOpen && menuItems[i].id == IDM_NORMAL);
-	++i;
-	ADDMENUITEM(!fOpen && menuItems[i].id == IDM_INSERT);
+	for(int i = 0; i < _countof(menuItems); i++)
+	{
+		if(menuItems[i].id == IDM_NORMAL)
+		{
+			ADDMENUITEM(fOpen);
+		}
+		else if(menuItems[i].id == IDM_INSERT)
+		{
+			ADDMENUITEM(!fOpen);
+		}
+		else
+		{
+			ADDMENUITEM(FALSE);
+		}
+	}
 #undef ADDMENUITEM
 
 	return S_OK;
@@ -216,6 +261,9 @@ STDAPI CLangBarItemButton::OnMenuSelect(UINT wID)
 	BOOL fOpen = _pTextService->_IsKeyboardOpen();
 	switch(wID)
 	{
+	case IDM_CONFIG:
+		_pTextService->_StartConfigure();
+		break;
 	case IDM_NORMAL:
 		if(!fOpen)
 		{

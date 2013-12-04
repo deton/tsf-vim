@@ -11,7 +11,9 @@
 #define IDI_Z_NORMAL     301
 
 #define IDR_SYSTRAY_MENU   1000
+#define IDM_NONE           1001
 #define IDM_NORMAL         1010
 #define IDM_INSERT         1020
+#define IDM_CONFIG         1021
 
 #endif //RESOURCE_H
