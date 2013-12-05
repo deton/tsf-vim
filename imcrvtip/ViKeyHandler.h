@@ -50,6 +50,7 @@ private:
 	int _Vi_F_sub(ITfContext *pContext, WCHAR ch);
 	void _Vi_F(ITfContext *pContext, WCHAR ch);
 	void _Vi_T(ITfContext *pContext, WCHAR ch);
+	void _Vi_ft_repeat(ITfContext *pContext, BOOL samedir);
 	void _ViEndOfLine(ITfContext *pContext);
 	void _Vi_gg();
 	void _Vi_G();
@@ -60,5 +61,7 @@ private:
 	ViCmd vicmd;
 	std::unique_ptr<mozc::win32::Win32KeyboardInterface> keyboard_;
 	BOOL isThroughSelfSentKey;
+	WCHAR last_ft;
+	WCHAR last_ft_ch;
 };
 #endif //VIKEYHANDLER_H

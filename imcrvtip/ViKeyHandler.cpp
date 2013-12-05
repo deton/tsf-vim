@@ -18,7 +18,7 @@ static int inword(WCHAR c)
 ViKeyHandler::ViKeyHandler(CTextService *textService)
 	: _textService(textService),
 	keyboard_(mozc::win32::Win32KeyboardInterface::CreateDefault()),
-	isThroughSelfSentKey(FALSE)
+	isThroughSelfSentKey(FALSE), last_ft(L'\0'), last_ft_ch(L'\0')
 {
 }
 
@@ -54,15 +54,23 @@ HRESULT ViKeyHandler::HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch,
 		switch (waiting)
 		{
 		case L'f':
+			last_ft = waiting;
+			last_ft_ch = ch;
 			_Vi_f(pContext, ch);
 			break;
 		case L't':
+			last_ft = waiting;
+			last_ft_ch = ch;
 			_Vi_t(pContext, ch);
 			break;
 		case L'F':
+			last_ft = waiting;
+			last_ft_ch = ch;
 			_Vi_F(pContext, ch);
 			break;
 		case L'T':
+			last_ft = waiting;
+			last_ft_ch = ch;
 			_Vi_T(pContext, ch);
 			break;
 		case L'r':
@@ -149,6 +157,12 @@ void ViKeyHandler::_HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch)
 	case L'g':
 	case L'r':
 		vicmd.SetCharWaiting(ch);
+		return;
+	case L';':
+		_Vi_ft_repeat(pContext, TRUE);
+		return;
+	case L',':
+		_Vi_ft_repeat(pContext, FALSE);
 		return;
 	case L'G':
 		_Vi_G();
@@ -1696,6 +1710,55 @@ void ViKeyHandler::_Vi_T(ITfContext *pContext, WCHAR ch)
 	}
 	movecnt--;
 	_ViOpOrMove(VK_LEFT, movecnt);
+}
+
+void ViKeyHandler::_Vi_ft_repeat(ITfContext *pContext, BOOL samedir)
+{
+	switch (last_ft)
+	{
+	case L'f':
+		if (samedir)
+		{
+			_Vi_f(pContext, last_ft_ch);
+		}
+		else
+		{
+			_Vi_F(pContext, last_ft_ch);
+		}
+		break;
+	case L't':
+		if (samedir)
+		{
+			_Vi_t(pContext, last_ft_ch);
+		}
+		else
+		{
+			_Vi_T(pContext, last_ft_ch);
+		}
+		break;
+	case L'F':
+		if (samedir)
+		{
+			_Vi_F(pContext, last_ft_ch);
+		}
+		else
+		{
+			_Vi_f(pContext, last_ft_ch);
+		}
+		break;
+	case L'T':
+		if (samedir)
+		{
+			_Vi_T(pContext, last_ft_ch);
+		}
+		else
+		{
+			_Vi_t(pContext, last_ft_ch);
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 void ViKeyHandler::_ViEndOfLine(ITfContext *pContext)
