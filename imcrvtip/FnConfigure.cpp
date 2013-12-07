@@ -61,6 +61,45 @@ void CTextService::_CreateConfigPath()
 	_snwprintf_s(cnfmutexname, _TRUNCATE, L"%s%s", VIMCNFMUTEX, szDigest);
 }
 
+void CTextService::_LoadBehavior()
+{
+	std::wstring strxmlval;
+
+	ReadValue(pathconfigxml, SectionBehavior, ValueOtherIme1, strxmlval);
+	if(strxmlval == L"Alt+Shift")
+	{
+		c_otherime1 = L'A';
+	}
+	else if(strxmlval == L"Ctrl+Shift")
+	{
+		c_otherime1 = L'C';
+	}
+	else if(strxmlval == L"Win+Space")
+	{
+		c_otherime1 = L'W';
+	}
+	else
+	{
+		if (IsVersion62AndOver()) // Windows 8
+		{
+			c_otherime1 = L'W';
+		}
+		else
+		{
+			c_otherime1 = L'A';
+		}
+	}
+
+	ReadValue(pathconfigxml, SectionBehavior, ValueOtherIme2, strxmlval);
+	if(strxmlval.empty())
+	{
+		c_otherime2 = L'\0';
+	}
+	else
+	{
+		c_otherime2 = strxmlval[0];
+	}
+}
 static bool operator ==(const TF_PRESERVEDKEY &a, const TF_PRESERVEDKEY &b)
 {
 	return a.uVKey == b.uVKey && a.uModifiers == b.uModifiers;

@@ -128,7 +128,7 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 	}
 	else if(IsEqualGUID(rguid, c_guidPreservedKeyOtherIme))
 	{
-		vihandler.SwitchToOtherIme();
+		vihandler.SwitchToOtherIme(c_otherime1, c_otherime2);
 		_SetKeyboardOpen(FALSE);
 		*pfEaten = TRUE;
 	}

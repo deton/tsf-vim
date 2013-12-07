@@ -5,6 +5,7 @@
 HINSTANCE hInst;
 
 // static dialog procedure
+INT_PTR CALLBACK DlgProcBehavior2(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK DlgProcPreservedKey(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
@@ -41,6 +42,7 @@ void CreateProperty(HINSTANCE hInstance)
 		int id;
 		DLGPROC DlgProc;
 	} DlgPage[] = {
+		{IDD_DIALOG_BEHAVIOR2,	DlgProcBehavior2},
 		{IDD_DIALOG_PRSRVKEY,	DlgProcPreservedKey},
 	};
 	HPROPSHEETPAGE hpsp[_countof(DlgPage)];

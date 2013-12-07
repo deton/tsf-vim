@@ -102,6 +102,7 @@ public:
 
 	// FnConfigure
 	void _CreateConfigPath();
+	void _LoadBehavior();
 	void _LoadPreservedKey();
 	void _LoadPreservedKeySub(LPCWSTR SectionPreservedKey, TF_PRESERVEDKEY preservedkey[], const TF_PRESERVEDKEY configpreservedkey[]);
 
@@ -148,6 +149,10 @@ private:
 public:
 	//状態
 	ViKeyHandler vihandler;			//Viキー処理
+
+	//動作設定
+	WCHAR c_otherime1;		//他IMEへの切替え用に送付するキーシーケンス1
+	WCHAR c_otherime2;		//他IMEへの切替え用に送付するキーシーケンス2
 
 	//preserved key
 	TF_PRESERVEDKEY preservedkeynormal[MAX_PRESERVEDKEY];

@@ -77,6 +77,8 @@ void CTextService::_KeyboardOpenCloseChanged()
 	{
 		_ResetStatus();
 
+		_LoadBehavior();
+
 		_UninitPreservedKey();
 		_LoadPreservedKey();
 		_InitPreservedKey();

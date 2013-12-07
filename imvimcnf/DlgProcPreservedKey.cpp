@@ -36,7 +36,6 @@ INT_PTR CALLBACK DlgProcPreservedKey(HWND hDlg, UINT message, WPARAM wParam, LPA
 	WCHAR key[8];
 	WCHAR keyBak[8];
 	NMLISTVIEW *pListView;
-	FILE *fp;
 
 	switch(message)
 	{
@@ -220,17 +219,6 @@ INT_PTR CALLBACK DlgProcPreservedKey(HWND hDlg, UINT message, WPARAM wParam, LPA
 			break;
 
 		case PSN_APPLY:
-			_wfopen_s(&fp, pathconfigxml, L"ab");
-			if(fp != NULL)
-			{
-				fclose(fp);
-			}
-			SetFileDacl(pathconfigxml);
-
-			WriterInit(pathconfigxml, &pXmlWriter, &pXmlFileStream);
-
-			WriterStartElement(pXmlWriter, TagRoot);
-
 			SavePreservedKey(hDlg);
 
 			WriterEndElement(pXmlWriter);	//TagRoot

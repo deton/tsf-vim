@@ -16,7 +16,17 @@ LPCWSTR AttributeKey = L"key";
 LPCWSTR AttributeVKey = L"vkey";
 LPCWSTR AttributeMKey = L"mkey";
 
-//section
+//behavior section
+
+LPCWSTR SectionBehavior = L"behavior";
+
+//behavior keys
+
+LPCWSTR ValueOtherIme1 = L"otherime1";
+LPCWSTR ValueOtherIme2 = L"otherime2";
+
+//preservedkey section
+
 LPCWSTR SectionPreservedKeyNormal = L"preservedkeynormal";
 LPCWSTR SectionPreservedKeyOtherIme = L"preservedkeyotherime";
 

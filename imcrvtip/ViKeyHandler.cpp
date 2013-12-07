@@ -406,31 +406,64 @@ void ViKeyHandler::_SendKeyWithControl(UINT vk)
 	_SendInputs(&inputs);
 }
 
-static void _QueueKeyForOtherIme(vector<INPUT> *inputs)
+static HRESULT _QueueKeyForOtherIme(vector<INPUT> *inputs, WCHAR method, WCHAR param)
 {
-	// switch to other IME
-	if (IsVersion62AndOver()) // Win+Space for Windows 8
+	int count;
+
+	switch (method)
 	{
-		_QueueKeyForModifier(inputs, VK_LWIN, FALSE);
-		_QueueKey(inputs, VK_SPACE);
-		_QueueKeyForModifier(inputs, VK_LWIN, TRUE);
-	}
-	else // Alt+Shift for Windows 7
-	{
+	case L'A': // Alt+Shift
 		_QueueKeyForModifier(inputs, VK_MENU, FALSE);
-		_QueueKey(inputs, VK_SHIFT);
+		_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
+		if (param != L'\0')
+		{
+			_QueueKey(inputs, param);
+		}
+		_QueueKeyForModifier(inputs, VK_SHIFT, TRUE);
 		_QueueKeyForModifier(inputs, VK_MENU, TRUE);
+		break;
+	case L'C': // Ctrl+Shift
+		_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
+		_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
+		if (param != L'\0')
+		{
+			_QueueKey(inputs, param);
+		}
+		_QueueKeyForModifier(inputs, VK_SHIFT, TRUE);
+		_QueueKeyForModifier(inputs, VK_CONTROL, TRUE);
+		break;
+	case L'W': // Win+Space (Windows 8)
+		_QueueKeyForModifier(inputs, VK_LWIN, FALSE);
+		if (iswdigit(param))
+		{
+			count = param - L'0';
+		}
+		else
+		{
+			count = 1;
+		}
+		for (int i = 0; i < count; i++)
+		{
+			_QueueKey(inputs, VK_SPACE);
+		}
+		_QueueKeyForModifier(inputs, VK_LWIN, TRUE);
+		break;
+	default:
+		return E_INVALIDARG;
 	}
+	return S_OK;
 }
 
-void ViKeyHandler::SwitchToOtherIme()
+void ViKeyHandler::SwitchToOtherIme(WCHAR method, WCHAR param)
 {
 	vector<INPUT> inputs;
-	_QueueKeyForOtherIme(&inputs);
-	// 切り替えた後のIMEをONにする。
-	// IMEがVK_KANJIでONになることを想定。(ON/OFFトグルでなく)
-	_QueueKey(&inputs, VK_KANJI);
-	_SendInputs(&inputs);
+	if (_QueueKeyForOtherIme(&inputs, method, param) == S_OK)
+	{
+		// 切り替えた後のIMEをONにする。
+		// XXX: IMEがVK_KANJIでONになることを想定。(ON/OFFトグルでなく)
+		_QueueKey(&inputs, VK_KANJI);
+		_SendInputs(&inputs);
+	}
 }
 
 void ViKeyHandler::_ViOp(vector<INPUT> *inputs)

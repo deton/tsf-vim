@@ -47,7 +47,17 @@ extern LPCWSTR AttributeKey;
 extern LPCWSTR AttributeVKey;
 extern LPCWSTR AttributeMKey;
 
-//section
+//behavior section
+
+extern LPCWSTR SectionBehavior;
+
+//behavior keys
+
+extern LPCWSTR ValueOtherIme1;
+extern LPCWSTR ValueOtherIme2;
+
+//preservedkey section
+
 extern LPCWSTR SectionPreservedKeyNormal;
 extern LPCWSTR SectionPreservedKeyOtherIme;
 

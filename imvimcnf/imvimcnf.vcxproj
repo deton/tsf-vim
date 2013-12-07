@@ -197,6 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConfigCnf.cpp" />
+    <ClCompile Include="DlgProcBehavior2.cpp" />
     <ClCompile Include="DlgProcPreservedKey.cpp" />
     <ClCompile Include="imvimcnf.cpp" />
     <ClCompile Include="PropertyConfConv.cpp" />
