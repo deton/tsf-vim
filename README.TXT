@@ -98,6 +98,8 @@ f{char} 指定文字まで(*)RIGHT
 t{char} 指定文字の前まで(*)RIGHT
 F{char} 指定文字まで(*)LEFT
 T{char} 指定文字の後まで(*)LEFT
+;       最後のftFTを繰り返す
+,       最後のftFTを反対方向に繰り返す
 r{char} DELETE,{char}
 s       選択開始,RIGHT,CTRL-X,tsf-vim OFF
 gg      CTRL-HOME
@@ -181,5 +183,6 @@ J       文末まで(*)RIGHT,次行の非空白文字まで(*)DELETE
     ・Insert modeへの切替時に、他IMEに切り替えるのをやめた。
       ESCキーでInsert modeを抜けられるように。
       「半/全」等のキーが押された時に、他IMEに切り替えるようにした。
+    ・;,コマンド対応
   ・v0.0.1 (2013-11-10)
     ・最初のリリース
