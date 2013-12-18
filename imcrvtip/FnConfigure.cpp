@@ -91,13 +91,21 @@ void CTextService::_LoadBehavior()
 	}
 
 	ReadValue(pathconfigxml, SectionBehavior, ValueOtherIme2, strxmlval);
-	if(strxmlval.empty())
+	if(strxmlval.size() < 2)
 	{
-		c_otherime2 = L'\0';
+		c_otherime2 = 0;
+	}
+	else if(strxmlval[0] == L'*' && iswdigit(strxmlval[1]))
+	{
+		c_otherime2 = -(strxmlval[1] - L'0');
+	}
+	else if(strxmlval[0] == L'+' && iswdigit(strxmlval[1]))
+	{
+		c_otherime2 = strxmlval[1];
 	}
 	else
 	{
-		c_otherime2 = strxmlval[0];
+		c_otherime2 = 0;
 	}
 }
 static bool operator ==(const TF_PRESERVEDKEY &a, const TF_PRESERVEDKEY &b)

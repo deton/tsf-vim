@@ -45,18 +45,41 @@ INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 		SendMessage(hwnd, CB_SETCURSEL, (WPARAM)i, 0);
 
 		hwnd = GetDlgItem(hDlg, IDC_COMBO_OTHERIME2);
-		SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)L"");
-		num[1] = L'\0';
+		//Alt+Shift等を指定回数送り付け
+		//"*1","*2","*3","*4","*5","*6","*7","*8","*9",
+		num[2] = L'\0';
+		num[0] = L'*';
+		for(i = 1; i <= 9; i++)
+		{
+			num[1] = L'0' + (WCHAR)i;
+			SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)num);
+		}
+		//Alt+Shift+0, Alt+Shift+1, ...を送り付け
+		//"+0","+1",...,"+9"
+		num[0] = L'+';
 		for(i = 0; i <= 9; i++)
 		{
-			num[0] = L'0' + (WCHAR)i;
+			num[1] = L'0' + (WCHAR)i;
 			SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)num);
 		}
 		ReadValue(pathconfigxml, SectionBehavior, ValueOtherIme2, strxmlval);
-		i = strxmlval.empty() ? 0 : _wtoi(strxmlval.c_str()) + 1;
-		if(i > 10)
+		if(strxmlval.size() < 2)
 		{
-			i = 10;
+			i = 0;
+		}
+		//  0,   1,   2,    3,   4,   5,   6,   7,   8,   9,  10,..., 18
+		//"*1","*2","*3","*4","*5","*6","*7","*8","*9","+0","+1",...,"+9"
+		else if(strxmlval[0] == L'*' && iswdigit(strxmlval[1]))
+		{
+			i = strxmlval[1] - L'1';
+		}
+		else if(strxmlval[0] == L'+' && iswdigit(strxmlval[1]))
+		{
+			i = 9 + strxmlval[1] - L'0';
+		}
+		else
+		{
+			i = 0;
 		}
 		SendMessage(hwnd, CB_SETCURSEL, (WPARAM)i, 0);
 
@@ -107,16 +130,20 @@ INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 			hwnd = GetDlgItem(hDlg, IDC_COMBO_OTHERIME2);
 			i = SendMessage(hwnd, CB_GETCURSEL, 0, 0);
-			if(i == 0)
+			//  0,   1,   2,    3,   4,   5,   6,   7,   8,   9,  10,..., 18
+			//"*1","*2","*3","*4","*5","*6","*7","*8","*9","+0","+1",...,"+9"
+			if(i < 9)
 			{
-				WriterKey(pXmlWriter, ValueOtherIme2, L"");
+				num[0] = L'*';
+				num[1] = L'1' + i;
 			}
 			else
 			{
-				num[0] = L'0' + i - 1;
-				num[1] = L'\0';
-				WriterKey(pXmlWriter, ValueOtherIme2, num);
+				num[0] = L'+';
+				num[1] = L'0' + i - 9;
 			}
+			num[2] = L'\0';
+			WriterKey(pXmlWriter, ValueOtherIme2, num);
 
 			WriterEndSection(pXmlWriter);						//End of SectionBehavior
 

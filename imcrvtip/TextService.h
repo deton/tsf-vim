@@ -152,7 +152,7 @@ public:
 
 	//動作設定
 	WCHAR c_otherime1;		//他IMEへの切替え用に送付するキーシーケンス1
-	WCHAR c_otherime2;		//他IMEへの切替え用に送付するキーシーケンス2
+	int c_otherime2;		//他IMEへの切替え用に送付するキーシーケンス2
 
 	//preserved key
 	TF_PRESERVEDKEY preservedkeynormal[MAX_PRESERVEDKEY];

@@ -406,43 +406,53 @@ void ViKeyHandler::_SendKeyWithControl(UINT vk)
 	_SendInputs(&inputs);
 }
 
-static HRESULT _QueueKeyForOtherIme(vector<INPUT> *inputs, WCHAR method, WCHAR param)
+// @param method 'A': 'Alt+Shift', 'C': 'Ctrl+Shift', 'W': 'Win+Space' 
+// @param param 負: 絶対値の回数送り付け。0: 1回送り付け。
+//   それ以外: 'A','C'の場合にparam値を文字として送り付け: 例: 'Alt+Shift+0'
+static HRESULT _QueueKeyForOtherIme(vector<INPUT> *inputs, WCHAR method, int param)
 {
-	int count;
+	int i;
+	int count = (param < 0) ? -param : 1;
 
 	switch (method)
 	{
 	case L'A': // Alt+Shift
 		_QueueKeyForModifier(inputs, VK_MENU, FALSE);
-		_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
-		if (param != L'\0')
+		if (param <= 0)
 		{
-			_QueueKey(inputs, param);
+			for (int i = 0; i < count; i++)
+			{
+				_QueueKey(inputs, VK_SHIFT);
+			}
 		}
-		_QueueKeyForModifier(inputs, VK_SHIFT, TRUE);
+		else
+		{
+			_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
+			_QueueKey(inputs, param);
+			_QueueKeyForModifier(inputs, VK_SHIFT, TRUE);
+		}
 		_QueueKeyForModifier(inputs, VK_MENU, TRUE);
 		break;
 	case L'C': // Ctrl+Shift
 		_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
-		_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
-		if (param != L'\0')
+		if (param <= 0)
 		{
-			_QueueKey(inputs, param);
+			for (int i = 0; i < count; i++)
+			{
+				_QueueKey(inputs, VK_SHIFT);
+			}
 		}
-		_QueueKeyForModifier(inputs, VK_SHIFT, TRUE);
+		else
+		{
+			_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
+			_QueueKey(inputs, param);
+			_QueueKeyForModifier(inputs, VK_SHIFT, TRUE);
+		}
 		_QueueKeyForModifier(inputs, VK_CONTROL, TRUE);
 		break;
 	case L'W': // Win+Space (Windows 8)
 		_QueueKeyForModifier(inputs, VK_LWIN, FALSE);
-		if (iswdigit(param))
-		{
-			count = param - L'0';
-		}
-		else
-		{
-			count = 1;
-		}
-		for (int i = 0; i < count; i++)
+		for (i = 0; i < count; i++)
 		{
 			_QueueKey(inputs, VK_SPACE);
 		}
@@ -454,7 +464,7 @@ static HRESULT _QueueKeyForOtherIme(vector<INPUT> *inputs, WCHAR method, WCHAR p
 	return S_OK;
 }
 
-void ViKeyHandler::SwitchToOtherIme(WCHAR method, WCHAR param)
+void ViKeyHandler::SwitchToOtherIme(WCHAR method, int param)
 {
 	vector<INPUT> inputs;
 	if (_QueueKeyForOtherIme(&inputs, method, param) == S_OK)
