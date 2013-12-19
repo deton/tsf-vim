@@ -3,6 +3,15 @@
 #include "imvimcnf.h"
 #include "resource.h"
 
+static const LPCWSTR otherime2[] =
+{
+		   //Alt+Shift等を指定回数送り付け
+	       L"*1", L"*2", L"*3", L"*4", L"*5", L"*6", L"*7", L"*8", L"*9",
+	//Alt+Shift+0, Alt+Shift+1, ...を送り付け
+	L"+0", L"+1", L"+2", L"+3", L"+4", L"+5", L"+6", L"+7", L"+8", L"+9",
+	NULL
+};
+
 INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
@@ -45,21 +54,9 @@ INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 		SendMessage(hwnd, CB_SETCURSEL, (WPARAM)i, 0);
 
 		hwnd = GetDlgItem(hDlg, IDC_COMBO_OTHERIME2);
-		//Alt+Shift等を指定回数送り付け
-		//"*1","*2","*3","*4","*5","*6","*7","*8","*9",
-		num[2] = L'\0';
-		num[0] = L'*';
-		for(i = 1; i <= 9; i++)
+		for(i = 0; otherime2[i] != NULL; i++)
 		{
-			num[1] = L'0' + (WCHAR)i;
-			SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)num);
-		}
-		//Alt+Shift+0, Alt+Shift+1, ...を送り付け
-		//"+0","+1",...,"+9"
-		num[0] = L'+';
-		for(i = 0; i <= 9; i++)
-		{
-			num[1] = L'0' + (WCHAR)i;
+			wcsncpy_s(num, _countof(num), otherime2[i], _TRUNCATE);
 			SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)num);
 		}
 		ReadValue(pathconfigxml, SectionBehavior, ValueOtherIme2, strxmlval);
@@ -67,19 +64,19 @@ INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 		{
 			i = 0;
 		}
-		//  0,   1,   2,    3,   4,   5,   6,   7,   8,   9,  10,..., 18
-		//"*1","*2","*3","*4","*5","*6","*7","*8","*9","+0","+1",...,"+9"
-		else if(strxmlval[0] == L'*' && iswdigit(strxmlval[1]))
-		{
-			i = strxmlval[1] - L'1';
-		}
-		else if(strxmlval[0] == L'+' && iswdigit(strxmlval[1]))
-		{
-			i = 9 + strxmlval[1] - L'0';
-		}
 		else
 		{
-			i = 0;
+			for(i = 0; otherime2[i] != NULL; i++)
+			{
+				if(strxmlval == otherime2[i])
+				{
+					break;
+				}
+			}
+			if(otherime2[i] == NULL)
+			{
+				i = 0;
+			}
 		}
 		SendMessage(hwnd, CB_SETCURSEL, (WPARAM)i, 0);
 
@@ -130,20 +127,7 @@ INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 			hwnd = GetDlgItem(hDlg, IDC_COMBO_OTHERIME2);
 			i = SendMessage(hwnd, CB_GETCURSEL, 0, 0);
-			//  0,   1,   2,    3,   4,   5,   6,   7,   8,   9,  10,..., 18
-			//"*1","*2","*3","*4","*5","*6","*7","*8","*9","+0","+1",...,"+9"
-			if(i < 9)
-			{
-				num[0] = L'*';
-				num[1] = L'1' + i;
-			}
-			else
-			{
-				num[0] = L'+';
-				num[1] = L'0' + i - 9;
-			}
-			num[2] = L'\0';
-			WriterKey(pXmlWriter, ValueOtherIme2, num);
+			WriterKey(pXmlWriter, ValueOtherIme2, otherime2[i]);
 
 			WriterEndSection(pXmlWriter);						//End of SectionBehavior
 
