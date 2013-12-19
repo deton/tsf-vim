@@ -11,6 +11,7 @@ class ViKeyHandler
 public:
 	ViKeyHandler(CTextService *textService);
 	~ViKeyHandler();
+	void SetPreservedKeyNormal(const TF_PRESERVEDKEY preservedkey[]);
 
 	void Reset();
 	void ResetThroughSelfSentKey();
@@ -21,6 +22,7 @@ public:
 
 private:
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
+	void _QueueEndOfSelfSendKey(std::vector<INPUT> *inputs);
 	void _SendInputs(std::vector<INPUT> *inputs);
 	void _SendKey(UINT vk, int count = 1);
 	void _SendKeyWithControl(UINT vk);
@@ -61,6 +63,7 @@ private:
 	ViCmd vicmd;
 	std::unique_ptr<mozc::win32::Win32KeyboardInterface> keyboard_;
 	BOOL isThroughSelfSentKey;
+	TF_PRESERVEDKEY preservedkeynormal;
 	WCHAR last_ft;
 	WCHAR last_ft_ch;
 };

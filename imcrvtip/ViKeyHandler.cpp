@@ -26,6 +26,12 @@ ViKeyHandler::~ViKeyHandler()
 {
 }
 
+void ViKeyHandler::SetPreservedKeyNormal(const TF_PRESERVEDKEY preservedkey[])
+{
+	preservedkeynormal.uVKey = preservedkey[0].uVKey;
+	preservedkeynormal.uModifiers = preservedkey[0].uModifiers;
+}
+
 void ViKeyHandler::Reset()
 {
 	vicmd.Reset();
@@ -351,6 +357,30 @@ static void _QueueKeyWithControl(vector<INPUT> *inputs, UINT vk)
 	_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
 	_QueueKey(inputs, vk);
 	_QueueKeyForModifier(inputs, VK_CONTROL, TRUE);
+}
+
+void ViKeyHandler::_QueueEndOfSelfSendKey(vector<INPUT> *inputs)
+{
+	if (preservedkeynormal.uModifiers & TF_MOD_ALT)
+	{
+		_QueueKeyForModifier(inputs, VK_MENU, FALSE);
+		_QueueKeyWithControl(inputs, preservedkeynormal.uVKey);
+		_QueueKeyForModifier(inputs, VK_MENU, TRUE);
+	}
+	else if (preservedkeynormal.uModifiers & TF_MOD_CONTROL)
+	{
+		_QueueKeyWithControl(inputs, preservedkeynormal.uVKey);
+	}
+	else if (preservedkeynormal.uModifiers & TF_MOD_SHIFT)
+	{
+		_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
+		_QueueKeyWithControl(inputs, preservedkeynormal.uVKey);
+		_QueueKeyForModifier(inputs, VK_SHIFT, TRUE);
+	}
+	else
+	{
+		_QueueKeyWithControl(inputs, preservedkeynormal.uVKey);
+	}
 }
 
 void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
@@ -1939,7 +1969,7 @@ void ViKeyHandler::_Vi_J(ITfContext *pContext)
 	{
 		isThroughSelfSentKey = TRUE;
 		_QueueKey(&inputs, VK_SPACE);
-		_QueueKey(&inputs, VK_ESCAPE); // to reset isThroughSelfSentKey
+		_QueueEndOfSelfSendKey(&inputs); // to reset isThroughSelfSentKey
 	}
 	_SendInputs(&inputs);
 	vicmd.Reset();
@@ -1969,7 +1999,7 @@ void ViKeyHandler::_Vi_r(BYTE vk)
 	{
 		_QueueKeyForModifier(&inputs, VK_SHIFT, TRUE);
 	}
-	_QueueKey(&inputs, VK_ESCAPE); // to reset isThroughSelfSentKey
+	_QueueEndOfSelfSendKey(&inputs); // to reset isThroughSelfSentKey
 	_SendInputs(&inputs);
 	vicmd.Reset();
 }

@@ -117,6 +117,7 @@ void CTextService::_LoadPreservedKey()
 {
 	_LoadPreservedKeySub(SectionPreservedKeyNormal, preservedkeynormal, configpreservedkeynormal);
 	_LoadPreservedKeySub(SectionPreservedKeyOtherIme, preservedkeyotherime, configpreservedkeyotherime);
+	vihandler.SetPreservedKeyNormal(preservedkeynormal);
 }
 
 void CTextService::_LoadPreservedKeySub(LPCWSTR SectionPreservedKey, TF_PRESERVEDKEY preservedkey[], const TF_PRESERVEDKEY configpreservedkey[])
