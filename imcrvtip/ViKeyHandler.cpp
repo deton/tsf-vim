@@ -379,7 +379,7 @@ void ViKeyHandler::_QueueEndOfSelfSendKey(vector<INPUT> *inputs)
 	}
 	else
 	{
-		_QueueKeyWithControl(inputs, preservedkeynormal.uVKey);
+		_QueueKey(inputs, preservedkeynormal.uVKey);
 	}
 }
 
