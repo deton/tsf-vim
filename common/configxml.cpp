@@ -29,6 +29,7 @@ LPCWSTR ValueOtherIme2 = L"otherime2";
 
 LPCWSTR SectionPreservedKeyNormal = L"preservedkeynormal";
 LPCWSTR SectionPreservedKeyOtherIme = L"preservedkeyotherime";
+LPCWSTR SectionPreservedKeyOtherImeOff = L"preservedkeyotherimeoff";
 
 HRESULT CreateStreamReader(LPCWSTR path, IXmlReader **ppReader, IStream **ppFileStream)
 {

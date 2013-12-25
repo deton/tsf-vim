@@ -30,9 +30,11 @@ static void InitPreservedKeyListView(HWND hDlg, HWND hWndListView, LPWSTR header
 
 INT_PTR CALLBACK DlgProcPreservedKey(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	HWND hwnd;
 	HWND hWndListView;
 	LVITEMW item;
 	int index, count;
+	int i;
 	WCHAR key[8];
 	WCHAR keyBak[8];
 	NMLISTVIEW *pListView;
@@ -44,9 +46,16 @@ INT_PTR CALLBACK DlgProcPreservedKey(HWND hDlg, UINT message, WPARAM wParam, LPA
 		InitPreservedKeyListView(hDlg, hWndListView, L"Normal mode仮想ｷｰ");
 		hWndListView = GetDlgItem(hDlg, IDC_LIST_PRSRVKEYOTHERIME);
 		InitPreservedKeyListView(hDlg, hWndListView, L"他IME切替 仮想ｷｰ");
+		hWndListView = GetDlgItem(hDlg, IDC_LIST_PRSRVKEYOTHERIMEOFF);
+		InitPreservedKeyListView(hDlg, hWndListView, L"他IME OFF切替 仮想ｷｰ");
+
+		hwnd = GetDlgItem(hDlg, IDC_COMBO_PRSRVKEY);
+		SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)L"Normal mode");
+		SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)L"他IME切替");
+		SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)L"他IME OFF切替");
+		SendMessage(hwnd, CB_SETCURSEL, (WPARAM)0, 0);
 
 		SetDlgItemText(hDlg, IDC_EDIT_PRSRVKEY_VKEY, L"");
-		CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_OTHERIME, BST_UNCHECKED);
 		CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_MKEY_ALT, BST_UNCHECKED);
 		CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_MKEY_CTRL, BST_UNCHECKED);
 		CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_MKEY_SHIFT, BST_UNCHECKED);
@@ -56,10 +65,20 @@ INT_PTR CALLBACK DlgProcPreservedKey(HWND hDlg, UINT message, WPARAM wParam, LPA
 		return TRUE;
 
 	case WM_COMMAND:
-		hWndListView = GetDlgItem(hDlg, IDC_LIST_PRSRVKEY);
-		if(IsDlgButtonChecked(hDlg, IDC_CHECKBOX_PRSRVKEY_OTHERIME) == BST_CHECKED)
+		hwnd = GetDlgItem(hDlg, IDC_COMBO_PRSRVKEY);
+		i = SendMessage(hwnd, CB_GETCURSEL, 0, 0);
+		switch(i)
 		{
+		case 1:
 			hWndListView = GetDlgItem(hDlg, IDC_LIST_PRSRVKEYOTHERIME);
+			break;
+		case 2:
+			hWndListView = GetDlgItem(hDlg, IDC_LIST_PRSRVKEYOTHERIMEOFF);
+			break;
+		case 0:
+		default:
+			hWndListView = GetDlgItem(hDlg, IDC_LIST_PRSRVKEY);
+			break;
 		}
 		switch(LOWORD(wParam))
 		{
@@ -191,12 +210,27 @@ INT_PTR CALLBACK DlgProcPreservedKey(HWND hDlg, UINT message, WPARAM wParam, LPA
 			pListView = (NMLISTVIEW*)((LPNMHDR)lParam);
 			if(pListView->uChanged & LVIF_STATE)
 			{
+				hwnd = GetDlgItem(hDlg, IDC_COMBO_PRSRVKEY);
 				hWndListView = ((LPNMHDR)lParam)->hwndFrom;
+				HWND hWndListViewOtherIme = GetDlgItem(hDlg, IDC_LIST_PRSRVKEYOTHERIME);
+				HWND hWndListViewOtherImeOff = GetDlgItem(hDlg, IDC_LIST_PRSRVKEYOTHERIMEOFF);
+				if(hWndListView == hWndListViewOtherIme)
+				{
+					i = 1;
+				}
+				else if(hWndListView == hWndListViewOtherImeOff)
+				{
+					i = 2;
+				}
+				else
+				{
+					i = 0;
+				}
+				SendMessage(hwnd, CB_SETCURSEL, (WPARAM)i, 0);
 				index = ListView_GetNextItem(hWndListView, -1, LVNI_SELECTED);
 				if(index == -1)
 				{
 					SetDlgItemText(hDlg, IDC_EDIT_PRSRVKEY_VKEY, L"");
-					CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_OTHERIME, BST_UNCHECKED);
 					CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_MKEY_ALT, BST_UNCHECKED);
 					CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_MKEY_CTRL, BST_UNCHECKED);
 					CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_MKEY_SHIFT, BST_UNCHECKED);
@@ -205,8 +239,6 @@ INT_PTR CALLBACK DlgProcPreservedKey(HWND hDlg, UINT message, WPARAM wParam, LPA
 				{
 					ListView_GetItemText(hWndListView, index, 0, key, _countof(key));
 					SetDlgItemText(hDlg, IDC_EDIT_PRSRVKEY_VKEY, key);
-					HWND hWndListViewOff = GetDlgItem(hDlg, IDC_LIST_PRSRVKEYOTHERIME);
-					CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_OTHERIME, hWndListView == hWndListViewOff ? BST_CHECKED : BST_UNCHECKED);
 					ListView_GetItemText(hWndListView, index, 1, key, _countof(key));
 					CheckDlgButton(hDlg, IDC_CHECKBOX_PRSRVKEY_MKEY_ALT, key[0] == L'1' ? BST_CHECKED : BST_UNCHECKED);
 					ListView_GetItemText(hWndListView, index, 2, key, _countof(key));

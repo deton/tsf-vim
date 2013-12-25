@@ -22,6 +22,7 @@
 #define IDC_BUTTON_PRSRVKEY_W                   1708
 #define IDC_BUTTON_PRSRVKEY_D                   1709
 #define IDC_LIST_PRSRVKEYOTHERIME               1710
-#define IDC_CHECKBOX_PRSRVKEY_OTHERIME          1711
+#define IDC_LIST_PRSRVKEYOTHERIMEOFF            1711
+#define IDC_COMBO_PRSRVKEY                      1712
 
 #endif //RESOURCE_H

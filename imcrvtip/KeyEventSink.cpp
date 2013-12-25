@@ -6,6 +6,7 @@
 
 static LPCWSTR c_PreservedKeyNormalDesc = L"Normal";
 static LPCWSTR c_PreservedKeyOtherImeDesc = L"OtherIme";
+static LPCWSTR c_PreservedKeyOtherImeOffDesc = L"OtherImeOff";
 
 int CTextService::_IsKeyEaten(ITfContext *pContext, WPARAM wParam, LPARAM lParam, bool isKeyDown, bool isTest)
 {
@@ -128,7 +129,13 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 	}
 	else if(IsEqualGUID(rguid, c_guidPreservedKeyOtherIme))
 	{
-		vihandler.SwitchToOtherIme(c_otherime1, c_otherime2);
+		vihandler.SwitchToOtherIme(c_otherime1, c_otherime2, FALSE);
+		_SetKeyboardOpen(FALSE);
+		*pfEaten = TRUE;
+	}
+	else if(IsEqualGUID(rguid, c_guidPreservedKeyOtherImeOff))
+	{
+		vihandler.SwitchToOtherIme(c_otherime1, c_otherime2, TRUE);
 		_SetKeyboardOpen(FALSE);
 		*pfEaten = TRUE;
 	}
@@ -189,6 +196,7 @@ BOOL CTextService::_InitPreservedKey()
 	{
 		_PRESERVE_KEY(preservedkeynormal, c_guidPreservedKeyNormal, c_PreservedKeyNormalDesc);
 		_PRESERVE_KEY(preservedkeyotherime, c_guidPreservedKeyOtherIme, c_PreservedKeyOtherImeDesc);
+		_PRESERVE_KEY(preservedkeyotherimeoff, c_guidPreservedKeyOtherImeOff, c_PreservedKeyOtherImeOffDesc);
 
 		pKeystrokeMgr->Release();
 	}
@@ -218,6 +226,7 @@ void CTextService::_UninitPreservedKey()
 	{
 		_UNPRESERVE_KEY(preservedkeynormal, c_guidPreservedKeyNormal);
 		_UNPRESERVE_KEY(preservedkeyotherime, c_guidPreservedKeyOtherIme);
+		_UNPRESERVE_KEY(preservedkeyotherimeoff, c_guidPreservedKeyOtherImeOff);
 
 		pKeystrokeMgr->Release();
 	}

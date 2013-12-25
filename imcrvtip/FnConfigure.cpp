@@ -20,6 +20,13 @@ static const TF_PRESERVEDKEY configpreservedkeyotherime[] =
 	,{ 0, 0 }
 };
 
+//他IMEに切り替えて、他IMEをオフ状態にする
+static const TF_PRESERVEDKEY configpreservedkeyotherimeoff[] =
+{
+	 { VK_OEM_ATTN/*VK_DBE_ALPHANUMERIC 0xF0*/, TF_MOD_IGNORE_ALL_MODIFIER }
+	,{ 0, 0 }
+};
+
 void CTextService::_CreateConfigPath()
 {
 	WCHAR appdata[MAX_PATH];
@@ -117,6 +124,7 @@ void CTextService::_LoadPreservedKey()
 {
 	_LoadPreservedKeySub(SectionPreservedKeyNormal, preservedkeynormal, configpreservedkeynormal);
 	_LoadPreservedKeySub(SectionPreservedKeyOtherIme, preservedkeyotherime, configpreservedkeyotherime);
+	_LoadPreservedKeySub(SectionPreservedKeyOtherImeOff, preservedkeyotherimeoff, configpreservedkeyotherimeoff);
 	vihandler.SetPreservedKeyNormal(preservedkeynormal);
 }
 

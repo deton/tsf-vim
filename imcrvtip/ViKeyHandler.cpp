@@ -494,7 +494,7 @@ static HRESULT _QueueKeyForOtherIme(vector<INPUT> *inputs, WCHAR method, int par
 	return S_OK;
 }
 
-void ViKeyHandler::SwitchToOtherIme(WCHAR method, int param)
+void ViKeyHandler::SwitchToOtherIme(WCHAR method, int param, BOOL imalnum)
 {
 	vector<INPUT> inputs;
 	if (_QueueKeyForOtherIme(&inputs, method, param) == S_OK)
@@ -502,6 +502,11 @@ void ViKeyHandler::SwitchToOtherIme(WCHAR method, int param)
 		// 切り替えた後のIMEをONにする。
 		// XXX: IMEがVK_KANJIでONになることを想定。(ON/OFFトグルでなく)
 		_QueueKey(&inputs, VK_KANJI);
+		if (imalnum)
+		{
+			// 切り替えた後のIMEを英数モードにする。
+			_QueueKey(&inputs, VK_OEM_ATTN); // VK_DBE_ALPHANUMERIC
+		}
 		_SendInputs(&inputs);
 	}
 }

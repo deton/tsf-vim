@@ -5,6 +5,7 @@
 
 TF_PRESERVEDKEY preservedkeynormal[MAX_PRESERVEDKEY];
 TF_PRESERVEDKEY preservedkeyotherime[MAX_PRESERVEDKEY];
+TF_PRESERVEDKEY preservedkeyotherimeoff[MAX_PRESERVEDKEY];
 
 static const TF_PRESERVEDKEY defaultpreservedkeynormal[] =
 {
@@ -18,6 +19,12 @@ static const TF_PRESERVEDKEY defaultpreservedkeyotherime[] =
 	,{ VK_KANJI/*0x19*/, TF_MOD_IGNORE_ALL_MODIFIER }
 	,{ VK_OEM_AUTO/*0xF3*/, TF_MOD_IGNORE_ALL_MODIFIER }
 	,{ VK_OEM_ENLW/*0xF4*/, TF_MOD_IGNORE_ALL_MODIFIER }
+	,{ 0, 0 }
+};
+
+static const TF_PRESERVEDKEY defaultpreservedkeyotherimeoff[] =
+{
+	 { VK_OEM_ATTN/*VK_DBE_ALPHANUMERIC 0xF0*/, TF_MOD_IGNORE_ALL_MODIFIER }
 	,{ 0, 0 }
 };
 
@@ -66,6 +73,7 @@ void LoadConfigPreservedKey()
 {
 	LoadConfigPreservedKeySub(SectionPreservedKeyNormal, preservedkeynormal, defaultpreservedkeynormal);
 	LoadConfigPreservedKeySub(SectionPreservedKeyOtherIme, preservedkeyotherime, defaultpreservedkeyotherime);
+	LoadConfigPreservedKeySub(SectionPreservedKeyOtherImeOff, preservedkeyotherimeoff, defaultpreservedkeyotherimeoff);
 }
 
 static void LoadPreservedKeySub(HWND hWndList, const TF_PRESERVEDKEY preservedkey[])
@@ -112,6 +120,7 @@ void LoadPreservedKey(HWND hwnd)
 
 	LoadPreservedKeySub(GetDlgItem(hwnd, IDC_LIST_PRSRVKEY), preservedkeynormal);
 	LoadPreservedKeySub(GetDlgItem(hwnd, IDC_LIST_PRSRVKEYOTHERIME), preservedkeyotherime);
+	LoadPreservedKeySub(GetDlgItem(hwnd, IDC_LIST_PRSRVKEYOTHERIMEOFF), preservedkeyotherimeoff);
 }
 
 static void SavePreservedKeySub(HWND hWndListView, LPCWSTR SectionPreservedKey, TF_PRESERVEDKEY preservedkey[])
@@ -183,4 +192,5 @@ void SavePreservedKey(HWND hwnd)
 {
 	SavePreservedKeySub(GetDlgItem(hwnd, IDC_LIST_PRSRVKEY), SectionPreservedKeyNormal, preservedkeynormal);
 	SavePreservedKeySub(GetDlgItem(hwnd, IDC_LIST_PRSRVKEYOTHERIME), SectionPreservedKeyOtherIme, preservedkeyotherime);
+	SavePreservedKeySub(GetDlgItem(hwnd, IDC_LIST_PRSRVKEYOTHERIMEOFF), SectionPreservedKeyOtherImeOff, preservedkeyotherimeoff);
 }

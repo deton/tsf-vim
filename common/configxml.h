@@ -60,5 +60,6 @@ extern LPCWSTR ValueOtherIme2;
 
 extern LPCWSTR SectionPreservedKeyNormal;
 extern LPCWSTR SectionPreservedKeyOtherIme;
+extern LPCWSTR SectionPreservedKeyOtherImeOff;
 
 #endif //CONFIGXML_H

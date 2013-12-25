@@ -157,6 +157,7 @@ public:
 	//preserved key
 	TF_PRESERVEDKEY preservedkeynormal[MAX_PRESERVEDKEY];
 	TF_PRESERVEDKEY preservedkeyotherime[MAX_PRESERVEDKEY];
+	TF_PRESERVEDKEY preservedkeyotherimeoff[MAX_PRESERVEDKEY];
 };
 
 #endif //TEXTSERVICE_H
