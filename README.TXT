@@ -1,6 +1,6 @@
 ﻿
 ================================================================================
-     tsf-vim version 0.1.0 (2013-12-XXX)
+     tsf-vim version 0.1.0 (2013-12-27)
 
      https://github.com/deton/tsf-vim
      deton@m1.interq.or.jp
