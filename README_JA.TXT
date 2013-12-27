@@ -173,13 +173,41 @@ J       文末まで(*)RIGHT,次行の非空白文字まで(*)DELETE
   「キー シーケンスの変更」ボタン→「キー シーケンスの変更」ダイアログで、
   「キーボード レイアウトの切り替え」で「左 Alt+Shift」を選択。
 
-   設定例: https://gist.github.com/deton/7393058#ime
-
 ・他IME側設定
 
   (2b)でtsf-vimが送り付ける、直接入力モードに切り替えるキーが効くようにするため、
   切り替えられたIME側の設定で、英数キーが押された時に直接入力モードに移行する
   設定をしておいてください。
+
+・設定例: https://gist.github.com/deton/7393058#ime
+
+例えば以下の使い方をするためには、下記の設定をします。
+
+* 通常はtsf-tutcodeを使用。
+ * `Ctrl+,`でひらがなモードに
+ * `Ctrl+.`でASCIIモードに
+ * `Ctrl+[`でtsf-vimに切り替えてNormal modeに
+* tsf-vimで編集操作。
+ * `Ctrl+,`でtsf-tutcodeに切り替えてひらがなモードに
+ * `Ctrl+.`でtsf-tutcodeに切り替えてASCIIモードに
+ * `Ctrl+[`でNormal modeに
+
+* OS側設定
+ * 「インストールされているサービス」の順番はMS IME, tsf-tutcode, tsf-vim
+ * 「キーボード レイアウトの切り替え」: `左 Alt+Shift`
+* tsf-vim側設定
+ * ホットキー(Normal mode): `Ctrl+[` (0xDB)
+ * ホットキー(他IME切替): `Ctrl+,` (0xBC)
+ * ホットキー(他IME OFF切替): `Ctrl+.` (0xBE)
+ * 他IME切替時送出キー(Windows 7の場合): `Alt+Shift` `*2`
+ * 他IME切替時送出キー(Windows 8の場合): `Win+Space` `*2`
+* tsf-tutcode側設定(要tsf-tutcode-0.2.0以降)
+ * キー設定(ON): `Ctrl+,` (0xBC)
+ * キー設定(ON): `漢字` (0x19) (tsf-vimは他IME切替時に漢字キーを送り付け)
+ * キー設定(OFF): `Ctrl+/` (0xBF)
+ * キー設定(ASCII): `Ctrl+.` (0xBE)
+ * キー設定(ASCII): `英数` (0xF0) (tsf-vimは他IME OFF切替時に英数キーを送り付け)
+ * キー設定(他IME切替): `Ctrl+[` (0xDB)
 
 --------------------------------------------------------------------------------
      設定
