@@ -129,13 +129,13 @@ STDAPI CTextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEate
 	}
 	else if(IsEqualGUID(rguid, c_guidPreservedKeyOtherIme))
 	{
-		vihandler.SwitchToOtherIme(c_otherime1, c_otherime2, FALSE);
+		vihandler.SwitchToOtherIme(c_otherime1, c_otherime2, FALSE, c_otherimeoffwait);
 		_SetKeyboardOpen(FALSE);
 		*pfEaten = TRUE;
 	}
 	else if(IsEqualGUID(rguid, c_guidPreservedKeyOtherImeOff))
 	{
-		vihandler.SwitchToOtherIme(c_otherime1, c_otherime2, TRUE);
+		vihandler.SwitchToOtherIme(c_otherime1, c_otherime2, TRUE, c_otherimeoffwait);
 		_SetKeyboardOpen(FALSE);
 		*pfEaten = TRUE;
 	}

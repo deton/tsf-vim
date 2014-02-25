@@ -12,6 +12,8 @@ static const LPCWSTR otherime2[] =
 	NULL
 };
 
+static LPCWSTR defaultWait = L"0";
+
 INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
@@ -80,6 +82,10 @@ INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 		}
 		SendMessage(hwnd, CB_SETCURSEL, (WPARAM)i, 0);
 
+		ReadValue(pathconfigxml, SectionBehavior, ValueOtherImeOffWait, strxmlval);
+		if(strxmlval.empty()) strxmlval = defaultWait;
+		SetDlgItemTextW(hDlg, IDC_EDIT_OTHERIMEOFFWAIT, strxmlval.c_str());
+
 		return TRUE;
 
 	case WM_COMMAND:
@@ -90,6 +96,17 @@ INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			switch(HIWORD(wParam))
 			{
 			case CBN_SELCHANGE:
+				PropSheet_Changed(GetParent(hDlg), hDlg);
+				return TRUE;
+			default:
+				break;
+			}
+			break;
+
+		case IDC_EDIT_OTHERIMEOFFWAIT:
+			switch(HIWORD(wParam))
+			{
+			case EN_CHANGE:
 				PropSheet_Changed(GetParent(hDlg), hDlg);
 				return TRUE;
 			default:
@@ -128,6 +145,9 @@ INT_PTR CALLBACK DlgProcBehavior2(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			hwnd = GetDlgItem(hDlg, IDC_COMBO_OTHERIME2);
 			i = SendMessage(hwnd, CB_GETCURSEL, 0, 0);
 			WriterKey(pXmlWriter, ValueOtherIme2, otherime2[i]);
+
+			GetDlgItemTextW(hDlg, IDC_EDIT_OTHERIMEOFFWAIT, num, _countof(num));
+			WriterKey(pXmlWriter, ValueOtherImeOffWait, num);
 
 			WriterEndSection(pXmlWriter);						//End of SectionBehavior
 

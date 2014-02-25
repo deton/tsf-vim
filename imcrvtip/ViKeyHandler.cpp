@@ -383,7 +383,7 @@ void ViKeyHandler::_QueueEndOfSelfSendKey(vector<INPUT> *inputs)
 	}
 }
 
-void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
+void ViKeyHandler::_SendInputs(vector<INPUT> *inputs, vector<INPUT> *inputs2, int waitms)
 {
 	// cf. deleter.UnsetModifiers()
 	mozc::win32::KeyboardStatus keyboard_state;
@@ -399,11 +399,14 @@ void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
 			to_be_updated = true;
 			keyboard_state.SetState(VK_SHIFT, kUnsetState);
 			_QueueKeyForModifier(inputs, VK_SHIFT, TRUE, TRUE);
-			// restore modifier
-			// XXX:SendInput()直後にdeleter.EndDeletion()を呼んでも、
-			// CTRL-F押下時にVK_NEXT送り付けても動かない
-			// (おそらくCTRL押下状態になってCTRL-NEXTになるため)
-			_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
+			if (inputs2 == NULL)
+			{
+				// restore modifier
+				// XXX:SendInput()直後にdeleter.EndDeletion()を呼んでも、
+				// CTRL-F押下時にVK_NEXT送り付けても動かない
+				// (おそらくCTRL押下状態になってCTRL-NEXTになるため)
+				_QueueKeyForModifier(inputs, VK_SHIFT, FALSE);
+			}
 		}
 		if (keyboard_state.IsPressed(VK_CONTROL))
 		{
@@ -411,15 +414,31 @@ void ViKeyHandler::_SendInputs(vector<INPUT> *inputs)
 			to_be_updated = true;
 			keyboard_state.SetState(VK_CONTROL, kUnsetState);
 			_QueueKeyForModifier(inputs, VK_CONTROL, TRUE, TRUE);
-			_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
+			if (inputs2 == NULL)
+			{
+				_QueueKeyForModifier(inputs, VK_CONTROL, FALSE);
+			}
 		}
 		if (to_be_updated)
 		{
 			keyboard_->SetKeyboardState(keyboard_state);
 		}
 	}
-
 	keyboard_->SendInput(*inputs);
+
+	if (inputs2 != NULL)
+	{
+		if (shiftPressed)
+		{
+			_QueueKeyForModifier(inputs2, VK_SHIFT, FALSE);
+		}
+		if (controlPressed)
+		{
+			_QueueKeyForModifier(inputs2, VK_CONTROL, FALSE);
+		}
+		::Sleep(waitms);
+		keyboard_->SendInput(*inputs2);
+	}
 }
 
 void ViKeyHandler::_SendKey(UINT vk, int count)
@@ -494,21 +513,33 @@ static HRESULT _QueueKeyForOtherIme(vector<INPUT> *inputs, WCHAR method, int par
 	return S_OK;
 }
 
-void ViKeyHandler::SwitchToOtherIme(WCHAR method, int param, BOOL imalnum)
+void ViKeyHandler::SwitchToOtherIme(WCHAR method, int param, BOOL imalnum, int otherimeoffwait)
 {
 	vector<INPUT> inputs;
-	if (_QueueKeyForOtherIme(&inputs, method, param) == S_OK)
+	if (_QueueKeyForOtherIme(&inputs, method, param) != S_OK)
 	{
-		// 切り替えた後のIMEをONにする。
-		// XXX: IMEがVK_KANJIでONになることを想定。(ON/OFFトグルでなく)
-		_QueueKey(&inputs, VK_KANJI);
+		return;
+	}
+	// 切り替えた後のIMEをONにする。
+	// XXX: IMEがVK_KANJIでONになることを想定。(ON/OFFトグルでなく)
+	_QueueKey(&inputs, VK_KANJI);
+	if (otherimeoffwait == 0 || !imalnum)
+	{
 		if (imalnum)
 		{
 			// 切り替えた後のIMEを英数モードにする。
 			_QueueKey(&inputs, VK_OEM_ATTN); // VK_DBE_ALPHANUMERIC
 		}
 		_SendInputs(&inputs);
+		return;
 	}
+
+	// XXX: Win8だと、imalnumの場合に、1度に送り付けると無視されるので、
+	// Sleep()を入れて2回に分けて送り付ける
+	vector<INPUT> alnuminputs;
+	// 切り替えた後のIMEを英数モードにする。
+	_QueueKey(&alnuminputs, VK_OEM_ATTN); // VK_DBE_ALPHANUMERIC
+	_SendInputs(&inputs, &alnuminputs, otherimeoffwait);
 }
 
 void ViKeyHandler::_ViOp(vector<INPUT> *inputs)

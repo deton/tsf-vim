@@ -153,6 +153,7 @@ public:
 	//動作設定
 	WCHAR c_otherime1;		//他IMEへの切替え用に送付するキーシーケンス1
 	int c_otherime2;		//他IMEへの切替え用に送付するキーシーケンス2
+	int c_otherimeoffwait;	//他IME切替後、OFFモード切替送付待ち時間[ms]
 
 	//preserved key
 	TF_PRESERVEDKEY preservedkeynormal[MAX_PRESERVEDKEY];

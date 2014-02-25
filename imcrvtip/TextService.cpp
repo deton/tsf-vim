@@ -3,7 +3,7 @@
 #include "TextService.h"
 
 CTextService::CTextService()
-	: vihandler(this)
+	: vihandler(this), c_otherimeoffwait(0)
 {
 	DllAddRef();
 

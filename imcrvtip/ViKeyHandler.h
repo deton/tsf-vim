@@ -15,7 +15,7 @@ public:
 
 	void Reset();
 	void ResetThroughSelfSentKey();
-	void SwitchToOtherIme(WCHAR method, int param, BOOL imalnum);
+	void SwitchToOtherIme(WCHAR method, int param, BOOL imalnum, int otherimeoffwait);
 	BOOL IsThroughSelfSentKey();
 	BOOL IsWaitingNextKey();
 	HRESULT HandleKey(TfEditCookie ec, ITfContext *pContext, WCHAR ch, BYTE vk);
@@ -23,7 +23,7 @@ public:
 private:
 	void _HandleFunc(TfEditCookie ec, ITfContext *pContext, WCHAR ch);
 	void _QueueEndOfSelfSendKey(std::vector<INPUT> *inputs);
-	void _SendInputs(std::vector<INPUT> *inputs);
+	void _SendInputs(std::vector<INPUT> *inputs, vector<INPUT> *inputs2 = NULL, int waitms = 0);
 	void _SendKey(UINT vk, int count = 1);
 	void _SendKeyWithControl(UINT vk);
 	void _ViOp(std::vector<INPUT> *inputs);

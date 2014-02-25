@@ -24,6 +24,7 @@ LPCWSTR SectionBehavior = L"behavior";
 
 LPCWSTR ValueOtherIme1 = L"otherime1";
 LPCWSTR ValueOtherIme2 = L"otherime2";
+LPCWSTR ValueOtherImeOffWait = L"otherimeoffwait";
 
 //preservedkey section
 

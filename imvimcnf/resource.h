@@ -11,6 +11,7 @@
 
 #define IDC_COMBO_OTHERIME1                     1206
 #define IDC_COMBO_OTHERIME2                     1207
+#define IDC_EDIT_OTHERIMEOFFWAIT                1208
 
 #define IDC_LIST_PRSRVKEY                       1701
 #define IDC_EDIT_PRSRVKEY_VKEY                  1702

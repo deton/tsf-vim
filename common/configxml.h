@@ -55,6 +55,7 @@ extern LPCWSTR SectionBehavior;
 
 extern LPCWSTR ValueOtherIme1;
 extern LPCWSTR ValueOtherIme2;
+extern LPCWSTR ValueOtherImeOffWait;
 
 //preservedkey section
 

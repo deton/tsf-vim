@@ -114,6 +114,9 @@ void CTextService::_LoadBehavior()
 	{
 		c_otherime2 = 0;
 	}
+
+	ReadValue(pathconfigxml, SectionBehavior, ValueOtherImeOffWait, strxmlval);
+	c_otherimeoffwait = wcstol(strxmlval.c_str(), NULL, 0);
 }
 static bool operator ==(const TF_PRESERVEDKEY &a, const TF_PRESERVEDKEY &b)
 {
