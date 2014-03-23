@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <?define version="0.1.0" ?>
+    <?define version="0.1.1" ?>
     <Product Id="*" Name="tsf-vim" Language="1033" Version="$(var.version)" Manufacturer="KIHARA Hideto" UpgradeCode="9EBA70C8-054C-4f03-80CD-783651B524B5">
         <Package Id="*" Compressed="yes" Description="tsf-vim" Comments="version $(var.version)" Platform="x64" InstallerVersion="200" InstallScope="perMachine" InstallPrivileges="elevated" />
         <Media Id="1" Cabinet="tsfvim.cab" EmbedCab="yes" />

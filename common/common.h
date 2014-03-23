@@ -3,7 +3,7 @@
 #define COMMON_H
 
 #define TEXTSERVICE_NAME	L"tsf-vim"
-#define TEXTSERVICE_VER		L"0.1.0"
+#define TEXTSERVICE_VER		L"0.1.1"
 
 #ifndef _DEBUG
 #define TEXTSERVICE_DESC	TEXTSERVICE_NAME
@@ -14,8 +14,8 @@
 //for resource
 #define RC_AUTHOR			"KIHARA Hideto"
 #define RC_PRODUCT			"tsf-vim"
-#define RC_VERSION			"0.1.0"
-#define RC_VERSION_D		0,1,0,0
+#define RC_VERSION			"0.1.1"
+#define RC_VERSION_D		0,1,1,0
 
 #define MAX_KRNLOBJNAME		256
 #define MAX_PRESERVEDKEY	8
